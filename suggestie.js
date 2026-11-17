@@ -2,7 +2,7 @@
 // vooringevuld met de naam van de oefening. Geen account of opslag in de app nodig.
 // Instellen: plak hieronder de vooringevulde link van het formulier, met OEFENING op de plek van de oefening.
 (function(){
-const FORM='';
+const FORM='https://docs.google.com/forms/d/e/1FAIpQLSfW4r07un-M1WLEXwtFc9mlvhTlo5_dnSGVkD_UVD9D4X4hRA/viewform?usp=pp_url&entry.534773472=OEFENING';
 if(!FORM)return;
 const css=document.createElement('style');
 css.textContent='.sug{font-size:12.5px;padding:5px 9px;background:none}.sugg{margin-left:auto;align-self:center;font-size:13px;padding:6px 12px;margin-bottom:10px;background:#fff}';
