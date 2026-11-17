@@ -150,3 +150,35 @@ aside.card{border-top:0}
 @media print{.timebar,.setsum,.owback,.sheetx,.owexp,.thumb,.owmenu{display:none!important}.dr.closed{display:block}.dr.closed .body{display:grid}}
 header .sugg{background:#fff;color:#1d1d1b;border:0;border-radius:12px}
 @media (max-width:700px){#rotBtns{display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}#rotBtns button{font-size:13px;padding:8px 4px}}
+
+/* ---------- drie kolommen op brede schermen: instellingen | trainingslijst | gekozen oefening ---------- */
+.owdetail{display:none}
+@media (min-width:1100px){
+ .wrap{max-width:1560px;grid-template-columns:270px minmax(320px,.85fr) minmax(420px,1.25fr);gap:20px;padding-left:20px;padding-right:20px}
+ .owdetail{display:block;position:sticky;top:12px;align-self:start;max-height:calc(100vh - 24px);overflow:auto;padding:20px 22px;container-type:inline-size}
+ .owd-blk{font-size:12px;font-weight:600;color:var(--mut);text-transform:uppercase;letter-spacing:.04em}
+ .owd-head h2{font:700 24px/1.2 var(--disp);margin:2px 0 4px}
+ .owd-head .meta{margin:6px 0 14px}
+ .owd-body{grid-template-columns:1fr;gap:16px}
+ .owd-body svg.scn,.owd-body svg{max-height:none}
+ .owd-body .senv{max-height:460px}
+ @container (min-width:640px){.owd-body{grid-template-columns:minmax(250px,42%) 1fr}}
+ .ow-wide .owexp svg{transform:rotate(-90deg)}
+ .ow-wide .dr.closed{cursor:pointer;grid-template-columns:104px 1fr}
+ .ow-wide .dr.closed .thumb{width:104px}
+ .ow-wide .dr.closed .dh{flex-wrap:wrap}
+ .ow-wide .dr.closed h3{flex:1 1 100%;font-size:15.5px}
+ .ow-wide .dr.closed .tools{flex:1 1 100%}
+ .ow-wide .dr.closed .tools>:not(.owsw){display:inline-flex}
+ .ow-wide .dr.closed .owsw{width:40px;padding:0;justify-content:center}
+ .ow-wide .dr.closed .owsw span{display:none}
+ .ow-wide .dr.closed .owexp{display:inline-flex;grid-column:2;padding:2px 0}
+ .ow-wide .dr.closed.sel{box-shadow:0 0 0 2px var(--blue),var(--shadow)}
+ .ow-wide .dr.closed:hover{box-shadow:0 0 0 2px var(--line),var(--shadow)}
+ .ow-wide .dr.closed.sel:hover{box-shadow:0 0 0 2px var(--blue),var(--shadow)}
+}
+@media print{.owdetail{display:none!important}}
+
+/* kop past op één regel op laptops */
+@media (min-width:701px) and (max-width:1500px){header h1{font-size:19px}.tabs button{padding:9px 10px;font-size:14px}.tabs{gap:2px}header{flex-wrap:nowrap}.brand{min-width:0}}
+@media (min-width:1100px){.ow-wide .dr.closed .meta{gap:4px}.ow-wide .dr.closed .meta .chip{font-size:11.5px;padding:1px 7px}}
