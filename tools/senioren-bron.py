@@ -483,6 +483,41 @@ N.append(ex(54, 'Smashen in tweetallen tegen de grond', 'insp', ['inspelen', 'aa
  [['A', Y, (200, 470), (200, 470), (200, 470), (205, 470)], ['B', SV, (360, 520), (360, 520), (355, 525), (360, 520)]],
  [(200, 445), (280, 500), (360, 450), (360, 515), (200, 465)], door=['A', 'B']))
 
+# ------------------------------------------------------------ WARMING-UP ZONDER BAL
+NB = [(560, 690)] * 5   # geen bal: de bal staat stil buiten beeld en wordt niet getekend
+N.append(ex(55, 'Dynamische warming-up zonder bal', 'wu', ['warming'], A,
+ 'Iedereen op de achterlijn, verspreid over de breedte. De trainer roept steeds een loopvorm; de groep loopt naar het net en wandelt langs de zijlijn terug.',
+ 'Spieren en gewrichten in 10 minuten wedstrijdklaar maken, zonder materiaal.',
+ ['Rustig inlopen en armen zwaaien (voor, achter, kruislings).', 'Knieheffen, hakken-billen en zijwaarts kruispassen naar het net.', 'Uitvalspassen met romprotatie en heupopeners.', 'Afsluiten met 3 korte sprints en 3 bloksprongen bij het net.'],
+ ['Elke ronde een beetje sneller, de laatste ronde op wedstrijdtempo.', 'Lang uitademen bij de rekoefeningen, niet veren.'],
+ 'Laat elke ronde een andere speler de loopvorm kiezen en voordoen.',
+ [['A', Y, (170, 630), (170, 470), (170, 370), (130, 500)], ['B', Y, (250, 630), (250, 470), (250, 370), (130, 560)], ['C', Y, (330, 630), (330, 470), (330, 370), (440, 500)], ['D', Y, (410, 630), (410, 470), (410, 370), (440, 560)]],
+ NB, mn=10, door=['A', 'B', 'C', 'D']))
+N.append(ex(56, 'Reactiespel op signaal', 'wu', ['warming', 'verdediging'], A,
+ 'Spelers in tweetallen tegenover elkaar op de 3-meterlijnen aan beide kanten van het net. De trainer roept een kleur of steekt een arm omhoog; iedereen reageert zo snel mogelijk.',
+ 'Reactiesnelheid en een explosieve eerste stap, zonder bal.',
+ ['Trainer roept "links": iedereen sprint naar de zijlijn links.', 'Trainer roept "net": bloksprong bij het net.', 'Trainer roept "achter": achteruit naar de achterlijn en laag zakken.', 'Wie het laatst is, doet 3 squats.'],
+ ['Klein en laag staan, gewicht op de voorvoeten.', 'Eerst kijken, dan bewegen: niet raden.'],
+ 'Moeilijker: de trainer wijst in plaats van roept, of doet het omgekeerde van wat hij roept.',
+ [['TR', TR, (500, 340)], ['A', Y, (230, 450), (130, 450), (230, 360), (230, 620)], ['B', Y, (330, 450), (130, 470), (330, 360), (330, 620)], ['C', OPP, (230, 230), (130, 230), (230, 320), (230, 60)], ['D', OPP, (330, 230), (130, 210), (330, 320), (330, 60)]],
+ NB, mn=10))
+N.append(ex(57, 'Voetenwerkcircuit: blok, verdediging en aanloop', 'wu', ['warming', 'blok', 'aanval'], A,
+ 'Drie stations zonder bal. Station 1 aan het net: zijwaartse blokpas en bloksprong. Station 2 in het achterveld: verdedigingshouding en uitstappen. Station 3 bij de 3-meterlijn: aanlooppas en afzet. Elke minuut wisselen.',
+ 'Volleybalspecifieke bewegingen opwarmen voordat de bal erbij komt.',
+ ['Station 1: blokpas van 4 naar 3, bloksprong, terug en weer springen.', 'Station 2: laag zakken, uitstappen links en rechts, opstaan.', 'Station 3: aanloop links-rechts-links en afzet met armzwaai.', 'Op het fluitsignaal schuift elke groep een station door.'],
+ ['Kwaliteit boven snelheid: rustig maar zuiver.', 'Bij de bloksprong de handen voor je gezicht houden.'],
+ 'Met 12 spelers: 4 per station. Laatste ronde: alles op volle snelheid.',
+ [['B1', BL, 'b4', 'b3', 'b3', 'b4'], ['V1', LIB, '5', (165, 560), (200, 580), '5'], ['A1', Y, (420, 500), (410, 450), (400, 400), (420, 500)]],
+ NB, mn=10, door=['B1', 'V1', 'A1']))
+N.append(ex(58, 'Spiegeltikkertje op een veldhelft', 'wu', ['warming'], A,
+ 'Speel op één veldhelft. Tweetallen: een tikker en een loper, die tegenover elkaar aan weerszijden van de middenlijn (het net) staan en alleen langs de netlijn mogen bewegen.',
+ 'Snel zijwaarts verplaatsen en wegdraaien, als opwarming voor het blokwerk.',
+ ['De loper probeert langs de netlijn een pion aan de zijlijn te bereiken.', 'De tikker spiegelt aan de andere kant en probeert er eerder te zijn.', 'Is de tikker eerst, dan krijgt hij een punt.', 'Na 5 pogingen wisselen van rol.'],
+ ['Zijwaartse pas, voeten niet kruisen bij korte afstanden.', 'Blijf laag om snel te kunnen keren.'],
+ 'Moeilijker: na het bereiken van de pion meteen een bloksprong.',
+ [['A', Y, (280, 380), (200, 380), (360, 380), (140, 380)], ['B', OPP, (280, 300), (210, 300), (350, 300), (150, 300)], ['P1', W, (120, 380)], ['P2', W, (440, 380)]],
+ NB, mn=10, door=['A', 'B']))
+
 # Titels en niveaus van de oude oefeningen opschonen
 OUD = {
  's1': ('Vlinder: service, pass en doorlopen', None), 's2': ('Driehoeks-pepper over het net', None),
@@ -503,6 +538,10 @@ for d in sen:
         if t: d['t'] = t
         if n: d['niv'] = n
 sen += N
+for d in sen:
+    d.pop('zb', None)
+    if len(set(map(tuple, d['bal']))) == 1:
+        d['zb'] = True
 # Inspelen is een eigen blok na de warming-up. Warming-up en Inspelen zijn ook thema's.
 LEN = {'wu': 10, 'insp': 10, 'tech': 20, 'spel': 20, 'zes': 20, 'eind': 10}
 NAAR_INSP = {'s2', 's7', 's11', 'n1'}
@@ -527,7 +566,7 @@ for d in sen:
         d['p'].append(['TR', TR, [list(b0)] * 4])
         print('aangooier toegevoegd:', d['id'], d['t'])
 # Aantal spelers dat een oefening tegelijk nodig heeft (trainer en materiaal tellen niet mee)
-OBJ = {'K', 'M1', 'M5', 'M6', 'Z', 'GZ', 'BOX'}
+OBJ = {'K', 'M', 'M2', 'M1', 'M5', 'M6', 'Z', 'GZ', 'BOX', 'P1', 'P2'}
 for d in sen:
     k = sum(1 for nm, kl, _ in d['p'] if kl != TR and nm not in OBJ and not (nm == 'P' and kl == BL))
     d['need'] = 4 if d['blok'] in ('zes', 'eind') else max(2, min(k, 12))
