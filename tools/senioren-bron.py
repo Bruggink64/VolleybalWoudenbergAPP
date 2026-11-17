@@ -754,6 +754,19 @@ N.append(ex(86, 'Speel die bal: opstaan en scoren', 'eind', ['transitie', 'verde
  [['TR', TR, 'o3'], ['A', Y, (200, 600), (210, 560), (210, 560), (210, 560)], ['B', Y, (280, 610), (290, 470), (290, 380), (290, 380)], ['C', Y, (360, 600), (360, 520), (170, 420), (160, 380)]],
  ['o3', (210, 555), (290, 375), (160, 370), (330, 130)]))
 
+# ------------------------------------------------------------ SUGGESTIES VAN TRAINERS (via het suggestieformulier)
+N.append(ex(87, 'Aanvalsritme dubbel: aanvallen op beide veldhelften', 'tech', ['aanval', 'sideout'], A,
+ 'Variant op "Aanvalsritme: de rij met drie sethoogtes", waarbij meer spelers tegelijk bezig zijn. Aan beide kanten van het net staat een rij aanvallers op positie 4, een spelverdeler en een aangooier. Beide kanten werken tegelijk en slaan diagonaal naar het achterveld van de overkant.',
+ 'De aanloop afstemmen op de hoogte van de set, met veel herhalingen en weinig wachttijd.',
+ ['De aangooier gooit naar de spelverdeler terwijl aanvaller 1 aanloopt.', 'De spelverdeler zet om de beurt hoog, halfhoog en snel naar positie 4.', 'Aanvaller 1 slaat diagonaal naar het achterveld van de overkant en sluit achteraan in de rij aan.', 'De overkant doet tegelijk hetzelfde; na 10 aanvallen wisselen aangooier en spelverdeler met een aanvaller.'],
+ ['Links-rechts-links: een lange laatste stap, armen naar achter en dan explosief omhoog.', 'Kijk voor je slaat even of de overkant niet net de bal ophaalt.', 'Met 8 spelers: twee aanvallers per kant; met 10 of meer: drie of meer.'],
+ 'Laat de kant die in 10 aanvallen de meeste ballen in het veld slaat de rij van de overkant uitdagen. Of zet een passief blok van twee spelers bij de overkant.',
+ [['G1', Y, (300, 470)], ['S1', SV, (336, 370)],
+  ['A1', Y, (150, 455), (112, 440), (132, 366), (150, 580)], ['A2', Y, (150, 520), (150, 520), (150, 490), (150, 455)], ['A3', Y, (150, 580), (150, 580), (150, 560), (150, 520)],
+  ['G2', OPP, (260, 210)], ['S2', OPP, (224, 310)],
+  ['B1', OPP, (410, 225), (448, 240), (428, 314), (410, 100)], ['B2', OPP, (410, 160), (410, 160), (410, 190), (410, 225)], ['B3', OPP, (410, 100), (410, 100), (410, 120), (410, 160)]],
+ [(300, 470), (336, 370), (132, 366), (330, 120), (300, 470)], door=['A1', 'A2', 'A3'], need=8))
+
 # Titels en niveaus van de oude oefeningen opschonen
 OUD = {
  's1': ('Vlinder: service, pass en doorlopen', None), 's2': ('Driehoeks-pepper over het net', None),
