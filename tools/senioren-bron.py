@@ -953,6 +953,20 @@ for d in sen:
     d['need'] = 4 if d['blok'] in ('zes', 'eind') else max(2, min(k, 12))
     if 'needx' in d: d['need'] = d.pop('needx')  # vast minimum, ook als de animatie meer spelers toont
     d.pop('niv', None)
+# Posities: welke eigen spelers in de animatie een vaste positie hebben (spelverdeler, midden, diagonaal, libero)
+POSRE = [('sv', re.compile(r'^SV$')), ('mid', re.compile(r'^(MID\d?|MB)$')), ('dia', re.compile(r'^DIA$')), ('lib', re.compile(r'^(L|LIB)$'))]
+for d in sen:
+    ro = {}
+    for nm, kl, _ in d['p']:
+        if kl in (TR, OPP):
+            continue
+        for rol, rx in POSRE:
+            if rx.match(nm):
+                ro[nm] = rol
+    d.pop('ro', None); d.pop('rol', None)
+    if ro:
+        d['ro'] = ro
+        d['rol'] = {r: sum(1 for x in ro.values() if x == r) for r in dict.fromkeys(ro.values())}
 f.write_text(head + 'window.SEN=' + json.dumps(sen, ensure_ascii=False, separators=(',', ':')).replace('},{"id"', '},\n{"id"') + ';\n')
 import collections
 c = collections.Counter(d['blok'] for d in sen)
