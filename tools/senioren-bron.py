@@ -396,6 +396,12 @@ for d in sen:
         if t: d['t'] = t
         if n: d['niv'] = n
 sen += N
+# Aantal spelers dat een oefening tegelijk nodig heeft (trainer en materiaal tellen niet mee)
+OBJ = {'K', 'M1', 'M5', 'M6', 'Z', 'GZ', 'BOX'}
+for d in sen:
+    k = sum(1 for nm, kl, _ in d['p'] if kl != TR and nm not in OBJ and not (nm == 'P' and kl == BL))
+    d['need'] = 4 if d['blok'] in ('zes', 'eind') else max(2, min(k, 12))
+    d.pop('niv', None)
 f.write_text(head + 'window.SEN=' + json.dumps(sen, ensure_ascii=False, separators=(',', ':')).replace('},{"id"', '},\n{"id"') + ';\n')
 import collections
 c = collections.Counter(d['blok'] for d in sen)
