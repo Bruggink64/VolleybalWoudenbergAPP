@@ -22,6 +22,9 @@ const I={
  down:'M6 9l6 6 6-6'
 };
 const phone=()=>window.matchMedia('(max-width:700px)').matches;
+// brede schermen (pc, laptop, tablet liggend): drie kolommen, instellingen | lijst | gekozen oefening
+const WIDEQ=window.matchMedia('(min-width:1100px)');
+const wide=()=>WIDEQ.matches;
 let busy=false;
 
 // ---------- tabbladen ----------
@@ -62,9 +65,9 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'&&q('aside.sheet'))cl
 const OPEN=new Map(); // per oefening (naam) ingeklapt of open, zolang de pagina open is
 let allOpen=null;     // null = standaard: telefoon dicht, pc open
 function keyOf(dr){const h=q('h3',dr);return h?h.textContent.trim():'';}
-function isOpen(dr){const k=keyOf(dr);if(OPEN.has(k))return OPEN.get(k);return allOpen!==null?allOpen:!phone();}
+function isOpen(dr){if(wide())return false;const k=keyOf(dr);if(OPEN.has(k))return OPEN.get(k);return allOpen!==null?allOpen:!phone();}
 function setOpen(dr,o){dr.classList.toggle('open',o);dr.classList.toggle('closed',!o);const b=q('.owexp',dr);
- if(b){b.setAttribute('aria-expanded',o);q('span',b).textContent=o?'Minder tonen':'Uitleg en animatie';}}
+ if(b){if(wide()){b.removeAttribute('aria-expanded');q('span',b).textContent='Bekijk uitleg';}else{b.setAttribute('aria-expanded',o);q('span',b).textContent=o?'Minder tonen':'Uitleg en animatie';}}}
 function card(dr){
  if(dr.dataset.ow)return;dr.dataset.ow=1;
  const tl=q('.tools',dr),sv=q('.body svg',dr);
@@ -86,8 +89,8 @@ function card(dr){
   tl.appendChild(menu);
  }
  if(!q(':scope>.owexp',dr)){const e=document.createElement('button');e.type='button';e.className='owexp noprint';e.innerHTML='<span></span>'+ic(I.down);
-  e.onclick=ev=>{ev.stopPropagation();const o=!dr.classList.contains('open');OPEN.set(keyOf(dr),o);setOpen(dr,o);};dr.appendChild(e);}
- dr.addEventListener('click',ev=>{if(!dr.classList.contains('closed'))return;if(ev.target.closest('button,a,select,input,details,summary'))return;OPEN.set(keyOf(dr),true);setOpen(dr,true);});
+  e.onclick=ev=>{ev.stopPropagation();if(wide()){select(dr);return;}const o=!dr.classList.contains('open');OPEN.set(keyOf(dr),o);setOpen(dr,o);};dr.appendChild(e);}
+ dr.addEventListener('click',ev=>{if(ev.target.closest('button,a,select,input,details,summary'))return;if(wide()){select(dr);return;}if(!dr.classList.contains('closed'))return;OPEN.set(keyOf(dr),true);setOpen(dr,true);});
  setOpen(dr,isOpen(dr));
 }
 // de Suggestie-knop (suggestie.js) komt later bij; verplaats hem naar het menu
@@ -105,11 +108,36 @@ function timebar(outId){
  if(!blks.length){tb.innerHTML='';return;}
  let tot=0;const segs=blks.map((b,i)=>{const len=parseInt((q('.bh span',b)||{}).textContent,10)||10;tot+=len;
   if(!b.id)b.id=outId+'_blk'+i;return {id:b.id,len,name:(q('.bh h2',b)||{}).textContent||''};});
- const h='<div class="tbh"><span>Opbouw van de training</span><span>'+tot+' min · <button type="button" class="owall">'+(isAllOpen(out)?'Alles inklappen':'Alles uitklappen')+'</button></span></div><div class="tbs">'
+ const h='<div class="tbh"><span>Opbouw van de training</span><span>'+tot+' min'+(wide()?'':' · <button type="button" class="owall">'+(isAllOpen(out)?'Alles inklappen':'Alles uitklappen')+'</button>')+'</span></div><div class="tbs">'
   +segs.map((s,i)=>'<a href="#'+s.id+'" style="flex:'+s.len+'" title="'+s.name+', '+s.len+' minuten"><i style="background:'+COL[i%COL.length]+'"></i><span>'+s.name+'</span></a>').join('')+'</div>';
- if(tb._h!==h){tb._h=h;tb.innerHTML=h;q('.owall',tb).onclick=()=>{allOpen=!isAllOpen(out);OPEN.clear();qa('.dr',out).forEach(d=>setOpen(d,allOpen));timebar(outId);};}
+ if(tb._h!==h){tb._h=h;tb.innerHTML=h;const ab=q('.owall',tb);if(ab)ab.onclick=()=>{allOpen=!isAllOpen(out);OPEN.clear();qa('.dr',out).forEach(d=>setOpen(d,allOpen));timebar(outId);};}
 }
 function isAllOpen(out){const d=qa('.dr',out);return d.length>0&&d.every(x=>x.classList.contains('open'));}
+
+
+// ---------- gekozen oefening (drie kolommen) ----------
+const SEL={};   // per lijst: welke oefening is gekozen (naam en plek)
+function listOf(dr){return dr.closest('#out,#s_out');}
+function select(dr){const l=listOf(dr);if(!l)return;SEL[l.id]={key:keyOf(dr),idx:qa('.dr',l).indexOf(dr)};detail();}
+function stripIds(html){return html.replace(/\bid="([^"]+)"/g,'id="$1_d"').replace(/url\(#([^)]+)\)/g,'url(#$1_d)');}
+function detail(){
+ ['out','s_out'].forEach(id=>{const out=document.getElementById(id);if(!out)return;const wrap=out.closest('.wrap');if(!wrap)return;
+  let d=q(':scope>.owdetail',wrap);
+  if(!wide()){if(d)d.remove();qa('.dr.sel',out).forEach(x=>x.classList.remove('sel'));return;}
+  if(!d){d=document.createElement('section');d.className='owdetail card noprint';d.setAttribute('aria-label','Gekozen oefening');wrap.appendChild(d);}
+  const list=qa('.dr',out);let h='';let sel=null;
+  if(list.length){const s0=SEL[id]||{key:'',idx:0};sel=list.find(x=>keyOf(x)===s0.key)||list[Math.min(s0.idx,list.length-1)];
+   SEL[id]={key:keyOf(sel),idx:list.indexOf(sel)};
+   const body=q('.body',sel),meta=q('.meta',sel),blk=sel.closest('.blk'),bn=blk?(q('.bh h2',blk)||{}).textContent:'';
+   h='<div class="owd-head"><div class="owd-blk">'+(bn||'')+'</div><h2>'+keyOf(sel).replace(/&/g,'&amp;').replace(/</g,'&lt;')+'</h2>'+(meta?'<div class="meta">'+meta.innerHTML+'</div>':'')+'</div>'
+    +'<div class="body owd-body">'+(body?stripIds(body.innerHTML):'')+'</div>';}
+  else h='<p class="note">Zet eerst een oefening in de training.</p>';
+  list.forEach(x=>x.classList.toggle('sel',x===sel));
+  if(d._h!==h){const top=d.scrollTop;d._h=h;d.innerHTML=h;d.scrollTop=SELKEEP[id]===(SEL[id]||{}).key?top:0;SELKEEP[id]=(SEL[id]||{}).key;}
+ });
+}
+const SELKEEP={};
+WIDEQ.addEventListener&&WIDEQ.addEventListener('change',()=>{document.body.classList.toggle('ow-wide',wide());qa('.dr').forEach(dr=>setOpen(dr,isOpen(dr)));apply();});
 
 // ---------- zaalmodus ----------
 function hall(){const top=document.getElementById('hallTop'),bar=q('#hall .hbar');if(!top||!bar)return;
@@ -118,7 +146,7 @@ function hall(){const top=document.getElementById('hallTop'),bar=q('#hall .hbar'
  const h=m?Array.from({length:+m[2]},(_,i)=>'<i'+(i<+m[1]?' class="on"':'')+'></i>').join(''):'';if(p._h!==h){p._h=h;p.innerHTML=h;}}
 
 function apply(){if(busy)return;busy=true;
- try{tabs();sheets();qa('.dr').forEach(card);late();timebar('out');timebar('s_out');hall();}
+ try{document.body.classList.toggle('ow-wide',wide());tabs();sheets();qa('.dr').forEach(card);late();timebar('out');timebar('s_out');detail();hall();}
  finally{busy=false;}
 }
 apply();
