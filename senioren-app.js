@@ -2,11 +2,11 @@
 // Gebruikt $, esc, toast en LS uit index.html. Oefeningen staan in senioren.js (window.SEN).
 (function(){
 const SEN=window.SEN||[];
-const THEMA={sideout:'5-1 side-out',service:'Service en pass',aanval:'Aanval',blok:'Blok en blokverdediging',verdediging:'Veldverdediging',transitie:'Transitie'};
-const BLOK=['wu','tech','spel','zes','eind'];
-const BNAAM=['Warming-up met bal','Techniek','Spelsituatie','6 tegen 6 op het thema','Eindspel'];
-const BLEN=[15,20,20,25,10];
-const T={th:['all','all','all','all','all'],n:12,slots:[],pins:new Set(),built:false};
+const THEMA={warming:'Warming-up',inspelen:'Inspelen',sideout:'5-1 side-out',service:'Service en pass',aanval:'Aanval',blok:'Blok en blokverdediging',verdediging:'Veldverdediging',transitie:'Transitie'};
+const BLOK=['wu','insp','tech','spel','zes','eind'];
+const BNAAM=['Warming-up','Inspelen','Techniek','Spelsituatie','6 tegen 6 op het thema','Eindspel'];
+const BLEN=[10,10,20,20,20,10];
+const T={th:['all','all','all','all','all','all'],n:12,slots:[],pins:new Set(),built:false};
 const NMIN=4,NMAX=12;
 const byId=new Map(SEN.map(d=>[d.id,d]));
 const rnd=a=>a[Math.floor(Math.random()*a.length)];
@@ -37,40 +37,65 @@ function verdeling(d){
  if(team(d)){const a=Math.ceil(n/2);return{team:true,a,b:n-a,rij:0,groepen:1,in:n,kort:0};}
  const k=d.need;
  if(n<k)return{in:n,rij:0,groepen:1,kort:k-n};
- const tr=d.p.some(p=>p[1]==='#2dd4bf'),groepen=!tr&&n>=2*k?2:1,inn=groepen*k;
+ const tr=d.p.some(p=>p[1]==='#2dd4bf'),vrij=d.blok==='wu'||d.blok==='insp';
+ // warming-up en inspelen: alle groepjes tegelijk; andere blokken: hooguit 2 groepen naast elkaar
+ const groepen=tr?1:vrij?Math.floor(n/k):(n>=2*k?2:1),inn=groepen*k;
  return{in:inn,rij:n-inn,groepen,kort:0};
 }
-function badge(d){const v=verdeling(d);return '<p class="sbadge'+(v.kort?' warn':'')+'">'+(v.team?T.n+' spelers: '+v.a+' tegen '+v.b:v.kort?'Vraagt '+d.need+' spelers, je hebt er '+T.n:T.n+' spelers: '+v.in+' in de oefening'+(v.groepen===2?' (2 groepen)':'')+(v.rij?', '+v.rij+' in de rij':''))+'</p>';}
+// Volgorde van doordraaien: eigen opgave (d.door) of alle eigen spelers in volgorde, daarna de rij
+const OBJ=new Set(['K','M','M1','M2','M5','M6','Z','GZ','BOX']);
+function doorOrder(d){
+ if(team(d))return [];
+ if(d.door)return d.door;
+ return d.p.filter(p=>p[1]!=='#2dd4bf'&&p[1]!=='#f87171'&&!OBJ.has(p[0])&&!(p[0]==='P'&&p[1]==='#fb923c')).map(p=>p[0]);
+}
+function badge(d){const v=verdeling(d);return '<p class="sbadge'+(v.kort?' warn':'')+'">'+(v.team?T.n+' spelers: '+v.a+' tegen '+v.b:v.kort?'Vraagt '+d.need+' spelers, je hebt er '+T.n:T.n+' spelers: '+v.in+' in de oefening'+(v.groepen>1?' ('+v.groepen+' groepen)':'')+(v.rij?', '+v.rij+' in de rij':''))+'</p>';}
 function plan(d){
  const n=T.n,v=verdeling(d);
  if(v.team)return n+' spelers: '+v.a+' tegen '+v.b+(n<12?'. Speel met minder posities: de spelverdeler blijft, de trainer brengt de bal in bij de kant met minder spelers.':' in de 5-1 opstelling.');
  if(v.kort)return 'Deze oefening vraagt '+d.need+' spelers en je hebt er '+n+'. De trainer neemt '+(v.kort>1?v.kort+' rollen':'een rol')+' over, bijvoorbeeld de aangever of de serveerder.';
  let t=n+' spelers: '+d.need+' tegelijk in de oefening';
- if(v.groepen===2)t+=', twee groepen naast elkaar (links en rechts op het veld, of op elke helft een groep)';
+ if(v.groepen>2)t+=', '+v.groepen+' groepjes tegelijk verspreid over het veld';else if(v.groepen===2)t+=', twee groepen naast elkaar (links en rechts op het veld, of op elke helft een groep)';
  if(v.rij)t+='. '+v.rij+' speler'+(v.rij>1?'s wachten':' wacht')+' in de rij en '+(v.rij>1?'draaien':'draait')+' na elke bal of ronde door';
+ const o=doorOrder(d);if(o.length>1||(o.length&&v.rij))t+='. Doordraaien: '+o.join(' → ')+(v.rij?' → achteraan in de rij → '+o[0]:' → '+o[0]);
  return t+'.';
 }
 // Bewegende animatie op een groot veld (viewBox 560x680, net op y=340)
 function anim(d){
- const D=7,kt='0;0.2;0.4;0.6;0.88;1',kb='0;0.15;0.3;0.45;0.6;0.88;1';
+ const D=9,kt='0;0.15;0.3;0.45;0.6;0.82;0.96;1',kb='0;0.12;0.24;0.36;0.48;0.6;0.96;1';
  let o='<svg viewBox="0 0 560 680" role="img" aria-label="Animatie: '+esc(d.t)+'" class="senv">'
   +'<rect x="110" y="40" width="340" height="600" rx="4" style="fill:var(--court)" stroke="#fff" stroke-width="3"/>'
   +'<line x1="110" y1="230" x2="450" y2="230" stroke="#fff" stroke-opacity=".6" stroke-width="2" stroke-dasharray="6 4"/>'
   +'<line x1="110" y1="450" x2="450" y2="450" stroke="#fff" stroke-opacity=".6" stroke-width="2" stroke-dasharray="6 4"/>'
   +'<line x1="96" y1="340" x2="464" y2="340" stroke="#ffd100" stroke-width="6"/>'
   +'<text x="122" y="62" fill="#fff" fill-opacity=".7" font-size="14" font-weight="700">overkant</text><text x="122" y="628" fill="#fff" fill-opacity=".7" font-size="14" font-weight="700">eigen veld</text>';
- const v=verdeling(d);
- // spelers in de rij: links naast het veld
- for(let i=0;i<v.rij;i++){const y=420+i*34;o+='<circle cx="55" cy="'+y+'" r="13" fill="#ffcc00" fill-opacity=".55" stroke="#1d1d1b" stroke-width="2"/>';}
+ const v=verdeling(d),ord=doorOrder(d),start=nm=>{const p=d.p.find(x=>x[0]===nm);return p?p[2][0]:null;};
+ const gap=Math.min(34,240/Math.max(1,v.rij-1)),ry=i=>420+i*gap,RX=55;
+ // waar gaat elke speler heen bij het doordraaien?
+ const dest={};ord.forEach((nm,i)=>{if(i<ord.length-1)dest[nm]=start(ord[i+1]);else dest[nm]=v.rij?[RX,ry(v.rij-1)]:start(ord[0]);});
+ const op='0;0;0;0;0;1;1;0';
+ // pijlen en tekst tijdens het doordraaien
+ if(ord.length>1||(ord.length&&v.rij)){
+  o+='<defs><marker id="ah'+d.id+'" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0L10,5L0,10z" fill="#fff"/></marker></defs><g opacity="0"><animate attributeName="opacity" values="'+op+'" keyTimes="'+kt+'" dur="'+D+'s" repeatCount="indefinite"/>';
+  ord.forEach(nm=>{const p=d.p.find(x=>x[0]===nm);if(!p||!dest[nm])return;const a=p[2][3],b=dest[nm];if(Math.hypot(b[0]-a[0],b[1]-a[1])<8)return;
+   const mx=(a[0]+b[0])/2+(b[1]-a[1])*.18,my=(a[1]+b[1])/2-(b[0]-a[0])*.18;
+   o+='<path d="M'+a[0]+' '+a[1]+' Q'+mx+' '+my+' '+b[0]+' '+b[1]+'" fill="none" stroke="#fff" stroke-width="3" stroke-dasharray="7 5" marker-end="url(#ah'+d.id+')"/>';});
+  if(v.rij&&start(ord[0])){const b=start(ord[0]);o+='<path d="M'+RX+' '+ry(0)+' Q'+((RX+b[0])/2)+' '+(Math.min(ry(0),b[1])-40)+' '+b[0]+' '+b[1]+'" fill="none" stroke="#fff" stroke-width="3" stroke-dasharray="7 5" marker-end="url(#ah'+d.id+')"/>';}
+  o+='<rect x="215" y="652" width="130" height="24" rx="12" fill="#1d1d1b"/><text x="280" y="669" text-anchor="middle" font-size="14" font-weight="800" fill="#ffd100">doordraaien</text></g>';
+ }
+ // spelers in de rij: links naast het veld; bij doordraaien schuift de voorste het veld in en de rest op
+ for(let i=0;i<v.rij;i++){const y=ry(i),to=i===0&&ord.length&&start(ord[0])?start(ord[0]):[RX,ry(i-1)];
+  const xs=[RX,RX,RX,RX,RX,to[0],to[0],RX].join(';'),ys=[y,y,y,y,y,to[1],to[1],y].join(';');
+  o+='<circle cx="'+RX+'" cy="'+y+'" r="13" fill="#ffcc00" fill-opacity=".6" stroke="#1d1d1b" stroke-width="2">'+(ord.length?'<animate attributeName="cx" values="'+xs+'" keyTimes="'+kt+'" dur="'+D+'s" repeatCount="indefinite"/><animate attributeName="cy" values="'+ys+'" keyTimes="'+kt+'" dur="'+D+'s" repeatCount="indefinite"/>':'')+'</circle>';}
  if(v.rij)o+='<text x="55" y="404" text-anchor="middle" font-size="13" font-weight="800" fill="#fff" fill-opacity=".85">rij</text>';
- if(v.groepen===2)o+='<text x="505" y="404" text-anchor="middle" font-size="13" font-weight="800" fill="#fff">2×</text><text x="505" y="422" text-anchor="middle" font-size="11" fill="#fff" fill-opacity=".85">groep</text>';
-
+ if(v.groepen>1)o+='<text x="505" y="404" text-anchor="middle" font-size="13" font-weight="800" fill="#fff">'+v.groepen+'×</text><text x="505" y="422" text-anchor="middle" font-size="11" fill="#fff" fill-opacity=".85">groep</text>';
  d.p.forEach(p=>{const q=p[2];if(q.some((v,i)=>i&&Math.hypot(v[0]-q[i-1][0],v[1]-q[i-1][1])>4))o+='<polyline points="'+q.map(v=>v.join(',')).join(' ')+'" fill="none" stroke="'+p[1]+'" stroke-width="2.5" stroke-dasharray="6 5" opacity=".8"/>';});
  const b=d.bal;o+='<polyline points="'+b.map(v=>v.join(',')).join(' ')+'" fill="none" stroke="#fde047" stroke-width="2" stroke-dasharray="3 5" opacity=".7"/>';
- d.p.forEach(p=>{const q=p[2],vs=[...q,q[3],q[0]],vx=vs.map(v=>v[0]).join(';'),vy=vs.map(v=>v[1]).join(';');
+ d.p.forEach(p=>{const q=p[2],to=dest[p[0]]||q[0],vs=[...q,q[3],to,to,q[0]],vx=vs.map(v=>v[0]).join(';'),vy=vs.map(v=>v[1]).join(';');
   o+='<g><circle r="17" fill="'+p[1]+'" stroke="#1d1d1b" stroke-width="3" cx="'+q[0][0]+'" cy="'+q[0][1]+'"><animate attributeName="cx" values="'+vx+'" keyTimes="'+kt+'" dur="'+D+'s" repeatCount="indefinite"/><animate attributeName="cy" values="'+vy+'" keyTimes="'+kt+'" dur="'+D+'s" repeatCount="indefinite"/></circle>'
    +'<text font-size="11" font-weight="900" text-anchor="middle" fill="#1d1d1b" x="'+q[0][0]+'" y="'+(q[0][1]+4)+'"><animate attributeName="x" values="'+vx+'" keyTimes="'+kt+'" dur="'+D+'s" repeatCount="indefinite"/><animate attributeName="y" values="'+vs.map(v=>v[1]+4).join(';')+'" keyTimes="'+kt+'" dur="'+D+'s" repeatCount="indefinite"/>'+esc(p[0])+'</text></g>';});
- const bs=[...b,b[4],b[0]];
+ const still=b.every(x=>x[0]===b[0][0]&&x[1]===b[0][1]);if(still)return o+'</svg>';
+ const bs=[...b,b[4],b[4],b[0]];
  o+='<circle r="10" fill="#fde047" stroke="#b45309" stroke-width="2.5" cx="'+b[0][0]+'" cy="'+b[0][1]+'"><animate attributeName="cx" values="'+bs.map(v=>v[0]).join(';')+'" keyTimes="'+kb+'" dur="'+D+'s" repeatCount="indefinite"/><animate attributeName="cy" values="'+bs.map(v=>v[1]).join(';')+'" keyTimes="'+kb+'" dur="'+D+'s" repeatCount="indefinite"/></circle>';
  return o+'</svg>';
 }
@@ -117,7 +142,7 @@ const KEY='vvw.senioren.bewaard';
 function savedUI(){const L=LS.get(KEY,[]);$('s_saved').innerHTML=L.map((s,i)=>'<div class="row"><button style="flex:3" onclick="senLoad('+i+')">'+esc(s.name)+'</button><button aria-label="Verwijder '+esc(s.name)+'" onclick="senForget('+i+')">×</button></div>').join('');}
 window.senSave=()=>{if(!T.slots.flat().length){toast('Deze training is nog leeg');return;}const name=$('s_name').value.trim()||'Training '+new Date().toLocaleDateString('nl-NL');
  const L=LS.get(KEY,[]);L.unshift({name,th:T.th.slice(),n:T.n,slots:T.slots.map(a=>a.map(d=>d.id))});if(LS.set(KEY,L.slice(0,20))){toast('Bewaard op dit apparaat');$('s_name').value='';savedUI();}else toast('Bewaren lukt niet in deze browser');};
-window.senLoad=i=>{const s=LS.get(KEY,[])[i];if(!s)return;T.th=Array.isArray(s.th)?s.th.slice():BLOK.map(()=>'all');T.n=Math.max(NMIN,Math.min(NMAX,s.n||12));T.slots=s.slots.map(a=>a.map(id=>byId.get(id)).filter(Boolean));T.pins=new Set();controls();render();toast('Training geladen');};
+window.senLoad=i=>{const s=LS.get(KEY,[])[i];if(!s)return;const old=s.slots.length===5;T.th=Array.isArray(s.th)?s.th.slice():BLOK.map(()=>'all');if(old){T.th.splice(1,0,'all');s.slots.splice(1,0,[]);}T.n=Math.max(NMIN,Math.min(NMAX,s.n||12));T.slots=s.slots.map(a=>a.map(id=>byId.get(id)).filter(Boolean));T.pins=new Set();controls();render();toast('Training geladen');};
 window.senForget=i=>{const L=LS.get(KEY,[]);L.splice(i,1);LS.set(KEY,L);savedUI();};
 function controls(){
  const same=T.th.every(x=>x===T.th[0]);$('s_th').value=same?T.th[0]:'mix';$('s_n').value=T.n;$('s_nv').textContent=T.n;
