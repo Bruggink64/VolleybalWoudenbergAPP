@@ -39,7 +39,7 @@ function verdeling(d){
  if(n<k)return{in:n,rij:0,groepen:1,kort:k-n};
  const tr=d.p.some(p=>p[1]==='#2dd4bf'),vrij=d.blok==='wu'||d.blok==='insp';
  // warming-up en inspelen: alle groepjes tegelijk; andere blokken: hooguit 2 groepen naast elkaar
- const groepen=tr?1:vrij?Math.floor(n/k):(n>=2*k?2:1),inn=groepen*k;
+ const groepen=vrij?Math.floor(n/k):tr?1:(n>=2*k?2:1),inn=groepen*k;
  return{in:inn,rij:n-inn,groepen,kort:0};
 }
 // Volgorde van doordraaien: eigen opgave (d.door) of alle eigen spelers in volgorde, daarna de rij
@@ -109,7 +109,7 @@ function detail(d,open){
   +(d.aandacht.length?'<h4>Aandachtspunten</h4>'+ul(d.aandacht):'')
   +(d.variatie?'<details'+(open?' open':'')+'><summary>Variatie</summary><p>'+esc(d.variatie)+'</p></details>':'')+'</div>';
 }
-function chips(d){const v=verdeling(d);return '<span class="chip">± '+d.min+' min</span><span class="chip'+(v.kort?' warn':'')+'">'+(team(d)?'vanaf 4 spelers':d.need+' spelers per groep')+'</span>'+d.thema.map(t=>'<span class="chip">'+esc(THEMA[t])+'</span>').join('');}
+function chips(d){const v=verdeling(d);return '<span class="chip">± '+d.min+' min</span><span class="chip'+(v.kort?' warn':'')+'">'+(team(d)?'vanaf 4 spelers':d.need+' spelers per groep')+'</span>'+(d.zb?'<span class="chip">zonder bal</span>':'')+d.thema.map(t=>'<span class="chip">'+esc(THEMA[t])+'</span>').join('');}
 function render(){
  let t0=0;
  $('s_out').innerHTML=T.slots.map((items,b)=>{const start=t0,len=BLEN[b],sum=items.reduce((a,d)=>a+d.min,0);t0+=len;
@@ -132,7 +132,7 @@ let PK=null;
 window.senPick=(b,i)=>{PK={b,i};$('s_pq').value='';$('s_pb').value=String(b);senPickList();$('s_pick').showModal();};
 window.senPickList=()=>{const q=$('s_pq').value.trim().toLowerCase(),b=+$('s_pb').value,inT=new Set(T.slots.flat().map(d=>d.id));
  const L=SEN.filter(d=>d.blok===BLOK[b]&&(!q||d.t.toLowerCase().includes(q)));
- $('s_plist').innerHTML=L.length?L.map(d=>'<button '+(inT.has(d.id)?'disabled ':'')+'onclick="senTake(\''+d.id+'\')"><b>'+esc(d.t)+'</b><span>'+esc(d.thema.map(t=>THEMA[t]).join(', '))+', '+(team(d)?'vanaf 4':d.need)+' spelers, ± '+d.min+' min'+(inT.has(d.id)?', staat al in de training':'')+'</span></button>').join(''):'<p class="note">Geen oefening gevonden voor dit blok.</p>';};
+ $('s_plist').innerHTML=L.length?L.map(d=>'<button '+(inT.has(d.id)?'disabled ':'')+'onclick="senTake(\''+d.id+'\')"><b>'+esc(d.t)+'</b><span>'+(d.zb?'zonder bal, ':'')+esc(d.thema.map(t=>THEMA[t]).join(', '))+', '+(team(d)?'vanaf 4':d.need)+' spelers, ± '+d.min+' min'+(inT.has(d.id)?', staat al in de training':'')+'</span></button>').join(''):'<p class="note">Geen oefening gevonden voor dit blok.</p>';};
 window.senTake=id=>{const d=byId.get(id),{b,i}=PK;if(i<0)T.slots[b].push(d);else{T.pins.delete(T.slots[b][i].id);T.slots[b][i]=d;}$('s_pick').close();render();};
 function asText(){let t='Training jeugd/senioren (90 min, '+T.n+' spelers)\n',t0=0;
  T.slots.forEach((items,b)=>{t+='\n'+t0+' min – '+BNAAM[b]+' ('+BLEN[b]+' min'+(T.th[b]==='all'?'':', '+THEMA[T.th[b]])+')\n';t0+=BLEN[b];items.forEach(d=>t+='• '+d.t+'\n');});
