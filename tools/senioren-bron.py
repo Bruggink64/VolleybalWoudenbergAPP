@@ -767,6 +767,40 @@ N.append(ex(87, 'Aanvalsritme dubbel: aanvallen op beide veldhelften', 'tech', [
   ['B1', OPP, (410, 225), (448, 240), (428, 314), (410, 100)], ['B2', OPP, (410, 160), (410, 160), (410, 190), (410, 225)], ['B3', OPP, (410, 100), (410, 100), (410, 120), (410, 160)]],
  [(300, 470), (336, 370), (132, 366), (330, 120), (300, 470)], door=['A1', 'A2', 'A3'], need=8))
 
+# Meer warming-ups zonder bal (suggestie van een trainer)
+N.append(ex(88, 'Sprong en landing: blessurepreventie', 'wu', ['warming'], A,
+ 'Tweetallen naast elkaar bij het net. Ze springen over een lijn op de grond en landen zacht, eerst op twee benen, daarna op één been. De trainer let op knieën en voeten.',
+ 'Zacht landen en stabiel blijven, om knie- en enkelblessures te voorkomen.',
+ ['Tien keer op twee benen over de lijn springen en landen met gebogen knieën.', 'Tien keer zijwaarts over de lijn springen, rustig landen en een seconde stilstaan.', 'Op één been springen en landen, daarna van been wisselen.', 'Afsluiten met drie bloksprongen bij het net, handen boven het net.'],
+ ['Knieën boven de tweede teen, niet naar binnen laten zakken.', 'Zacht landen: je hoort bijna niets.', 'Kwaliteit boven aantal: liever vijf goede sprongen dan tien slordige.'],
+ 'Moeilijker: spring met een kwartslag draai en land stabiel.',
+ [['A', Y, (200, 600), (200, 500), (200, 400), (200, 600)], ['B', Y, (320, 600), (320, 500), (320, 400), (320, 600)], ['P1', W, (260, 500)]],
+ NB, mn=10, door=['A', 'B']))
+N.append(ex(89, 'Mobiliteitsparcours: heupen, schouders en enkels', 'wu', ['warming'], A,
+ 'Eén lange rij op de achterlijn. De groep loopt in stappen naar het net en wandelt langs de zijlijn terug. Bij elke lengte hoort een andere beweging.',
+ 'Gewrichten losmaken en het bewegingsbereik vergroten voordat er gesprongen en geslagen wordt.',
+ ['Lengte 1: grote armcirkels voorwaarts en achterwaarts tijdens het lopen.', 'Lengte 2: wandelende uitvalspas met romprotatie naar het voorste been.', 'Lengte 3: lopen op de hakken, daarna op de tenen, met rustige enkelrotaties.', 'Lengte 4: knie optillen en naar buiten draaien (heupcirkel), links en rechts.'],
+ ['Rustig en groot bewegen, niet veren.', 'Blijf rustig doorademen, ook in de uitvalspas.', 'Voel waar het stug is en geef daar extra aandacht aan.'],
+ 'Laat per lengte een speler de beweging voordoen en tellen.',
+ [['A', Y, (150, 620), (150, 500), (150, 400), (150, 620)], ['B', Y, (230, 620), (230, 500), (230, 400), (230, 620)], ['C', Y, (310, 620), (310, 500), (310, 400), (310, 620)], ['D', Y, (390, 620), (390, 500), (390, 400), (390, 620)]],
+ NB, mn=10, door=['A', 'B', 'C', 'D']))
+N.append(ex(90, 'Pionnenpoort: sprint, stop en zakken', 'wu', ['warming', 'verdediging'], A,
+ 'Twee pionnen vormen een poort halverwege het veld. Tweetallen werken om de beurt: A sprint door de poort naar het net, remt af en zakt in verdedigingshouding. B start zodra A weer terug is.',
+ 'Versnellen, afremmen en laag zakken, zoals bij een verdedigingsactie.',
+ ['A sprint door de poort naar het net.', 'Remmen op beide voeten en laag zakken in verdedigingshouding, twee seconden blijven staan.', 'Zijwaarts schuiven naar de zijlijn en rustig terug naar de achterlijn.', 'B start zodra A weer bij de achterlijn staat; na vijf rondes wisselen van rol.'],
+ ['Voor het remmen kleine pasjes, gewicht op de voorvoeten.', 'Houd de borst boven de knieën bij het zakken.', 'Hoofd omhoog: kijk naar waar de bal zou komen.'],
+ 'Moeilijker: de trainer wijst aan of er links of rechts uitgestapt wordt.',
+ [['A', Y, (220, 620), (220, 480), (220, 390), (220, 620)], ['B', Y, (340, 620), (340, 620), (340, 540), (340, 620)], ['P1', W, (190, 480)], ['P2', W, (250, 480)]],
+ NB, mn=10, door=['A', 'B']))
+N.append(ex(91, 'Partner-kracht: duwen, trekken en stabiliseren', 'wu', ['warming'], A,
+ 'Tweetallen tegenover elkaar op de eigen veldhelft. Ze doen korte krachtoefeningen waarbij de partner tegenstand geeft: duwen met de handen, plank met aantikken en wandzit rug tegen rug.',
+ 'Romp, schouders en benen activeren met alleen het eigen lichaam en een partner.',
+ ['Staand handen tegen elkaars handen duwen, tien seconden, rustig opbouwen.', 'Plank tegenover elkaar en om de beurt de hand van de partner aantikken, twintig seconden.', 'Rug tegen rug zitten (wandzit) en samen tien keer opstaan en weer zakken.', 'Schouder tegen schouder zijwaarts duwen, tien seconden per kant.'],
+ ['Houd je rug recht en je buik aangespannen.', 'Bouw de druk langzaam op en laat ook rustig los.', 'Stop meteen bij pijn in rug of schouder.'],
+ 'Moeilijker: houd de plank langer of til tijdens het aantikken één been op.',
+ [['A', Y, (220, 500), (240, 500), (220, 500), (220, 520)], ['B', Y, (330, 500), (310, 500), (330, 500), (330, 520)]],
+ NB, mn=10, door=['A', 'B']))
+
 # Titels en niveaus van de oude oefeningen opschonen
 OUD = {
  's1': ('Vlinder: service, pass en doorlopen', None), 's2': ('Driehoeks-pepper over het net', None),
