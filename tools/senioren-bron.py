@@ -45,7 +45,7 @@ N.append(ex(1, 'Inspelen in tweetallen: van toetsen naar slaan', 'wu', ['aanval'
  ['A speelt de bal bovenhands over het net naar B.', 'B speelt onderarms hoog voor zichzelf.', 'B zet de bal op voor zichzelf en slaat uit stand naar A.', 'A verdedigt hoog en het tweetal gaat door.'],
  ['Eerst controle, dan kracht: de laatste 3 minuten pas echt slaan.', 'Na elke slag direct terug in de verdedigende houding.'],
  'Hoger niveau: B slaat gericht op de linker- of rechterschouder van A, zodat A moet verplaatsen.',
- [['A', Y, (220, 260), (220, 260), (220, 260), (230, 270)], ['B', SV, (340, 430), (340, 440), (340, 430), (340, 430)]],
+ [['A', OPP, (220, 260), (220, 260), (220, 260), (230, 270)], ['B', Y, (340, 430), (340, 440), (340, 430), (340, 430)]],
  [(220, 255), (340, 425), (340, 395), (220, 265), (220, 230)]))
 N.append(ex(2, 'Balcirculatie met spelverdeler', 'wu', ['sideout', 'verdediging'], A,
  'Per veldhelft één spelverdeler aan het net en drie of vier spelers in het achterveld. Alle achterspelers op één na hebben een bal in de handen.',
@@ -151,8 +151,8 @@ N.append(ex(14, 'Swingblok in het midden: lees links of rechts', 'tech', ['blok'
  ['De spelverdeler aan de overkant kiest links of rechts.', 'De middenblokkeerder leest de set en zet een swingblok in.', 'Hij sluit aan bij de buitenblokkeerder; samen een dubbelblok.', 'Daarna terug naar het midden en de volgende bal.'],
  ['Eerst de bal, dan de spelverdeler, dan de aanvaller.', 'Laatste stap draait de heup terug naar het net.'],
  'Begin met een vaste richting; daarna kiest de spelverdeler vrij. Topniveau: voeg een snelle middenbal toe.',
- [['MB', BL, 'b3', (230, 352), (175, 352), (175, 345)], ['BL4', BL, 'b4'], ['BL2', BL, 'b2'], ['OSV', OPP, (300, 320)], ['AV', OPP, 'box4', 'box4', 'box4', 'box4']],
- [(300, 320), (395, 285), (395, 285), (180, 340), (300, 320)]))
+ [['MB', BL, 'b3', (330, 352), (360, 352), (360, 345)], ['BL4', BL, 'b4'], ['BL2', BL, 'b2'], ['OSV', OPP, (300, 320)], ['AV', OPP, 'box4', 'box4', 'box4', 'box4']],
+ [(300, 320), (395, 285), (395, 285), (380, 338), (300, 320)]))
 N.append(ex(15, 'Dubbelblok sluiten op de buitenkant', 'tech', ['blok'], V,
  'Trainer op een box aan de overkant op positie 4 (onze positie 2). Middenblokkeerder en blokkeerder op positie 2 blokkeren samen; een verdediger op positie 1 en 5.',
  'Geen gat tussen de blokkeerders en de buitenste hand draait de bal naar binnen.',
@@ -184,14 +184,14 @@ N.append(ex(18, 'Serveren op matten', 'tech', ['service'], A,
  ['Na elke service even terug naar je routine: stuiter, adem, toss.', 'Mik op de mat, niet op de lijn.'],
  'Hoger niveau: sprong- of floatservice en de mat kleiner maken (een handdoek).',
  [['S1', Y, 'srv5', 'srv5', 'srv5', 'srv'], ['S2', Y, 'srv', 'srv', 'srv', 'srv5'], ['M1', W, (165, 100)], ['M6', W, (280, 90)], ['M5', W, (395, 100)]],
- ['srv5', (395, 100), 'srv', (165, 100), (280, 90)]))
+ ['srv5', (395, 100), 'srv', (165, 100), (165, 100)]))
 N.append(ex(19, 'Tactisch serveren: float en sprongservice', 'tech', ['service'], H,
  'Serveerders verdeeld over twee zones (1 en 5). Aan de overkant een ontvangstlinie van drie. De trainer roept per service een doel: een speler, een naad tussen twee spelers of de korte zone.',
  'Service als eerste aanval: druk zetten op een zwakke passer of op de naad tussen spelers.',
  ['De trainer roept het doel, bijvoorbeeld "naad 5-6".', 'De serveerder slaat een float of sprongservice op dat doel.', 'De passers spelen de bal naar het doel op 2/3.', 'Een pass die de spelverdeler niet kan opzetten is een punt voor de serveerder.'],
  ['Float: korte slag zonder doorzwaaien, pols vast.', 'Sprong: toss voor je slaghand en een volle aanloop.'],
  'Laat de serveerders zelf een doel kiezen en het na de service zeggen: klopte het?',
- [['S', Y, 'srv'], ['P1', OPP, 'o1', (175, 110), 'o1', 'o1'], ['P6', OPP, 'o6'], ['P5', OPP, 'o5'], ['OSV', OPP, (230, 300)]],
+ [['S', Y, 'srv'], ['S5', Y, 'srv5'], ['P1', OPP, 'o1', (175, 110), 'o1', 'o1'], ['P6', OPP, 'o6'], ['P5', OPP, 'o5'], ['OSV', OPP, (230, 300)]],
  ['srv', (175, 115), (230, 300), 'srv5', (220, 100)]))
 N.append(ex(20, 'Van blok naar aanval', 'tech', ['blok', 'transitie'], V,
  'Blokkeerder op positie 4, trainer op een box aan de overkant. Na de bloksprong valt de blokkeerder af naar buiten en wordt hij aanvaller. Een spelverdeler zet op.',
@@ -225,7 +225,7 @@ N.append(ex(23, 'Blok en veldverdediging tegen de box', 'spel', ['blok', 'verded
  ['De trainer gooit een set naar zichzelf op de box.', 'Het dubbelblok sluit op positie 2; positie 4 valt af naar de 3-meterlijn.', 'De verdedigers op 1, 6 en 5 staan naast en achter de schaduw van het blok.', 'De verdedigde bal gaat via de spelverdeler naar een aanval op 4.'],
  ['Verdedigers staan waar het blok niet is.', 'Bij een tip: positie 1 of de afvallende speler op 4 neemt hem.'],
  'Laat de trainer na 5 ballen ook vanaf positie 2 aan de overkant slaan (box op onze positie 4): alles spiegelt.',
- [['TR', TR, 'box4'], ['B2', BL, 'b2', (395, 345), (395, 345), 'b2'], ['B3', BL, 'b3', (355, 345), (355, 345), 'b3'], ['V4', Y, '4', (160, 460), (160, 460), 'a4'], ['V5', Y, '5', (175, 560), (175, 560), '5'], ['V6', LIB, '6', (300, 600), (300, 600), '6'], ['V1', Y, '1', (420, 510), (420, 510), '1']],
+ [['TR', TR, 'box4'], ['B2', BL, 'b2', (395, 345), (395, 345), 'sv'], ['B3', BL, 'b3', (355, 345), (355, 345), 'b3'], ['V4', Y, '4', (160, 460), (160, 460), 'a4'], ['V5', Y, '5', (175, 560), (175, 560), '5'], ['V6', LIB, '6', (300, 600), (300, 600), '6'], ['V1', Y, '1', (420, 510), (420, 510), '1']],
  ['box4', (395, 280), (175, 555), 'sv', 'a4']))
 N.append(ex(24, 'Side-out met drie passers en twee aanvallers', 'spel', ['sideout'], A,
  'Eigen kant: drie passers (5, 6, 1), een spelverdeler die inloopt en aanvallers op 4 en 2 (of 3). Serveerders aan de overkant; een verdediger aan de overkant speelt de aanval uit.',
@@ -299,23 +299,23 @@ N.append(ex(32, '6 tegen 6 met verdedigingsopdracht', 'zes', ['verdediging', 'bl
  ['De trainer gooit een vrije bal naar het aanvallende team.', 'Dat team speelt een aanval over buiten.', 'Het verdedigende team zet een dubbelblok en verdedigt in de afgesproken plekken.', 'Een verdedigde bal moet worden afgemaakt: dan is het een punt.'],
  ['Na elke rally: stonden de verdedigers in de juiste vakken?', 'Libero is de baas in het achterveld.'],
  'Wissel na 8 punten. Hoger niveau: het aanvallende team mag ook de middenaanval gebruiken.',
- [['TR', TR, (480, 200)], ['OA', OPP, 'o2', 'o2', (170, 300), (170, 300)], ['B2', BL, 'b2', 'b2', (395, 345), (395, 345)], ['B3', BL, 'b3', 'b3', (355, 345), (355, 345)], ['V1', Y, '1', '1', (420, 510), (420, 510)], ['L', LIB, '6', '6', (300, 600), (300, 600)], ['V5', Y, '5', '5', (175, 555), (175, 555)], ['V4', Y, '4', '4', (160, 460), (160, 460)]],
- [(480, 200), (230, 300), (170, 285), (175, 550), 'sv']))
+ [['TR', TR, (480, 200)], ['OSV', OPP, (230, 305)], ['OA', OPP, 'o4', 'o4', (400, 300), (400, 300)], ['B2', BL, 'b2', 'b2', (395, 345), 'sv'], ['B3', BL, 'b3', 'b3', (355, 345), (355, 345)], ['V1', Y, '1', '1', (420, 510), (420, 510)], ['L', LIB, '6', '6', (300, 600), (300, 600)], ['V5', Y, '5', '5', (175, 555), (175, 555)], ['V4', Y, '4', '4', (160, 460), (160, 460)]],
+ [(480, 200), (230, 300), (400, 285), (175, 550), 'sv']))
 N.append(ex(33, 'Punt telt pas na transitie', 'zes', ['transitie'], V,
  'Gewone 6 tegen 6, maar een punt uit de side-out (eerste aanval na de service) telt niet. Alleen punten na een verdediging of vrije bal tellen.',
  'Bewust trainen op het verdedigen en weer aanvallen, het deel dat in wedstrijden vaak beslist.',
  ['Team A serveert, team B haalt de side-out.', 'Wordt die aanval verdedigd, dan begint de transitie.', 'Het team dat in de transitie scoort, krijgt het punt.', 'Scoort de side-out direct, dan wordt de rally overgedaan zonder punt.'],
  ['Na je aanval direct terug naar je verdedigingsplek.', 'De spelverdeler roept wie de transitiebal krijgt.'],
  'Laat de trainer bij een directe side-out meteen een vrije bal geven, zodat het tempo hoog blijft.',
- [['A4', Y, 'a4', (160, 450), (150, 460), 'a4'], ['SV', SV, 'sv', (380, 470), 'sv', 'sv'], ['L', LIB, '6', (280, 560), (280, 560), '6'], ['OA', OPP, (380, 310), (380, 310), (380, 310), (380, 310)], ['OL', OPP, 'o6', 'o6', 'o6', (300, 140)]],
- ['a4', (300, 140), (380, 300), (280, 555), 'sv']))
+ [['OS', OPP, 'osrv5'], ['L', LIB, '6', (280, 560), '6', '6'], ['SV', SV, 'sv'], ['A4', Y, (130, 470), (130, 470), (140, 410), 'a4'], ['OL', OPP, 'o6', 'o6', 'o6', (300, 140)]],
+ ['osrv5', (280, 555), 'sv', 'a4', (300, 140)]))
 N.append(ex(34, 'Blokpunten tellen dubbel', 'zes', ['blok'], A,
  'Gewone 6 tegen 6 in de 5-1 opstelling. Een punt met een blok is 2 punten, een aanval die tegen het blok uit gaat is ook 2 punten voor de aanvallers.',
  'Blokkeerders én aanvallers bewust laten kiezen: dichtzetten of slim langs het blok spelen.',
  ['Speel een normale rally.', 'Scoort het blok direct, dan krijgt dat team 2 punten.', 'Slaat de aanvaller via het blok uit, dan krijgt de aanvaller 2 punten.', 'Alle andere punten tellen gewoon.'],
  ['Blok: handen over het net en naar binnen.', 'Aanvaller: kijk naar de buitenste hand van het blok.'],
  'Speel sets naar 15. Hoger niveau: ook een "soft block" (bal hoog in eigen veld) levert een bonuspunt op als de rally gewonnen wordt.',
- [['OSV', OPP, (230, 305)], ['OA', OPP, (400, 200), (400, 250), (400, 300), (400, 300)], ['B2', BL, 'b2', (395, 345), (395, 340), (395, 340)], ['B3', BL, 'b3', (350, 345), (355, 340), (355, 340)], ['L', LIB, '6'], ['V5', Y, '5']],
+ [['OSV', OPP, (230, 305)], ['OA', OPP, (400, 200), (400, 285), (400, 300), (400, 300)], ['B2', BL, 'b2', (395, 345), (395, 340), (395, 340)], ['B3', BL, 'b3', (350, 345), (355, 340), (355, 340)], ['L', LIB, '6'], ['V5', Y, '5']],
  [(230, 305), (395, 290), (395, 330), (395, 330), (380, 200)]))
 N.append(ex(35, 'Aanvallen op zones', 'zes', ['aanval'], V,
  'Gewone 6 tegen 6. De trainer wijst voor elke rally een "goudzone" aan (bijvoorbeeld diep in de hoek bij 1 of kort bij 4). Een aanval die daar scoort is 3 punten.',
@@ -323,8 +323,8 @@ N.append(ex(35, 'Aanvallen op zones', 'zes', ['aanval'], V,
  ['De trainer zegt de goudzone voor de service.', 'Speel de rally normaal uit.', 'Een aanval die in de goudzone scoort, is 3 punten.', 'Na elke 5 rally\'s kiest de trainer een andere zone.'],
  ['Kijk bij de aanloop al naar de zone en naar het blok.', 'Plaatsen kan ook met een tip of een zachte bal.'],
  'Lager niveau: matten als zone gebruiken. Hoger niveau: de goudzone wordt pas na de pass genoemd.',
- [['SV', SV, 'sv'], ['A4', Y, (130, 470), (140, 410), 'a4', 'a4'], ['L', LIB, '6'], ['GZ', W, (395, 90)], ['OV', OPP, 'o6', 'o6', (300, 110), (330, 100)]],
- [(280, 560), 'sv', 'a4', (395, 95), (395, 95)]))
+ [['OS', OPP, 'osrv'], ['L', LIB, '6', (280, 560), '6', '6'], ['SV', SV, 'sv'], ['A4', Y, (130, 470), (130, 470), (140, 410), 'a4'], ['GZ', W, (395, 90)], ['OV', OPP, 'o6', 'o6', 'o6', (330, 100)]],
+ ['osrv', (280, 555), 'sv', 'a4', (395, 95)]))
 N.append(ex(36, 'Rotatiewedstrijd: elke rotatie tot 3', 'zes', ['sideout', 'service'], A,
  'Twee teams in 5-1 opstelling. Beide teams starten in rotatie 1. Een team draait pas door als het in die rotatie 3 punten heeft gemaakt. Wie het eerst alle zes rotaties rond is, wint.',
  'Het team leert in elke rotatie punten te maken, niet alleen in de "makkelijke".',
@@ -349,7 +349,7 @@ N.append(ex(38, 'Serveerwedstrijd: raak de zone', 'eind', ['service'], A,
  ['De trainer roept een zone.', 'Om de beurt serveren de spelers van beide teams.', 'De trainer telt de punten; elke 3 services een nieuwe zone.', 'Het eerste team met 15 punten wint.'],
  ['Ook als je moe bent: je eigen routine.', 'Kies je service: veilig of met risico.'],
  'Hoger niveau: alleen de korte zones (2, 3, 4) of de achterste hoeken.',
- [['S1', Y, 'srv', 'srv', 'srv5', 'srv5'], ['S2', OPP, 'osrv1', 'osrv1', 'osrv5', 'osrv5'], ['Z', W, (165, 100)]],
+ [['S1', Y, 'srv', 'srv', 'srv', 'srv5'], ['S2', OPP, 'osrv1', 'osrv1', 'osrv1', 'osrv5'], ['Z', W, (165, 100)]],
  ['srv', (165, 100), 'osrv1', (395, 580), 'srv5']))
 N.append(ex(39, 'Blokkoning: aanvaller tegen blokkeerder', 'eind', ['blok', 'aanval'], V,
  'Aan beide kanten van het net een rij. Een speler valt aan op een set van de trainer, aan de overkant blokkeert een speler. Wie wint (aanval of blok), blijft staan.',
@@ -365,7 +365,7 @@ N.append(ex(40, 'Niet laten vallen: verdedigingsspel', 'eind', ['verdediging'], 
  ['De trainer brengt een bal in, waar hij maar wil.', 'Het team verdedigt en speelt in drie keer over het net.', 'De overkant speelt de bal ook in drie keer terug.', 'Valt de bal, dan is het een punt voor de andere ploeg; meteen de volgende bal.'],
  ['Elke bal is speelbaar tot hij op de grond ligt.', 'Roep altijd: "ik!"'],
  'Tempo omhoog: de trainer gooit al een nieuwe bal in zodra de vorige over het net is.',
- [['TR', TR, (490, 450)], ['V1', LIB, '5', (190, 560), '5', '5'], ['SV', SV, '3', 'sv', 'sv', '3'], ['A', Y, '4', '4', 'a4', '4'], ['O', OPP, 'o6', 'o6', 'o6', (300, 130)]],
+ [['TR', TR, (490, 450)], ['V1', LIB, '5', (190, 560), '5', '5'], ['SV', SV, '3', 'sv', 'sv', '3'], ['A', Y, '4', '4', (155, 375), 'a4'], ['O', OPP, 'o6', 'o6', 'o6', (300, 130)]],
  [(490, 450), (190, 555), 'sv', 'a4', (300, 130)]))
 N.append(ex(41, 'Drie ballen achter elkaar', 'eind', ['transitie', 'verdediging'], V,
  'Wedstrijd 6 tegen 6 waarin een team pas een punt krijgt als het drie rally\'s achter elkaar wint. Na elke rally gooit de trainer direct een nieuwe bal in bij het team dat verloor.',
@@ -373,7 +373,7 @@ N.append(ex(41, 'Drie ballen achter elkaar', 'eind', ['transitie', 'verdediging'
  ['Speel een rally uit.', 'De trainer gooit meteen een bal in bij het team dat verloor.', 'Ook die rally wordt uitgespeeld; daarna nog een derde.', 'Wint één team alle drie, dan krijgt het een punt. Speel tot 3 punten.'],
  ['Na een rally niet stilstaan: direct terug naar de basisplek.', 'Coach elkaar: wie neemt de volgende bal?'],
  'Lager niveau: twee ballen achter elkaar in plaats van drie.',
- [['TR', TR, (490, 300)], ['SV', SV, 'sv'], ['A4', Y, (150, 470), (140, 420), 'a4', (160, 460)], ['L', LIB, '6'], ['OV', OPP, 'o5', 'o5', (380, 110), (380, 110)]],
+ [['TR', TR, (490, 300)], ['SV', SV, 'sv'], ['A4', Y, (150, 470), (140, 420), (140, 400), 'a4'], ['L', LIB, '6'], ['OV', OPP, 'o5', 'o5', (380, 110), (380, 110)]],
  [(490, 300), (280, 555), 'sv', 'a4', (380, 110)]))
 
 # ------------------------------------------------------------ WARMING-UP (fysiek, met bal) en INSPELEN (na de warming-up)
@@ -384,7 +384,7 @@ N.append(ex(42, 'Loopscholing langs het net met bal', 'wu', ['warming'], A,
  ['Elke ronde een andere loopvorm: hakken-billen, zijwaarts, kruispas, achteruit.', 'Rustig beginnen en per ronde het tempo opvoeren.'],
  'Voeg na 5 minuten een sprint van 3 meter toe na de bloksprong.',
  [['A', Y, (200, 640), (200, 470), (200, 365), (240, 560)], ['B', Y, (360, 640), (360, 470), (360, 365), (320, 560)], ['C', Y, (200, 665)], ['D', Y, (360, 665)]],
- [(200, 630), (200, 465), (200, 345), (200, 360), (240, 550)], door=['A', 'C'], mn=10))
+ [(200, 630), (200, 465), (200, 345), (240, 555), (240, 555)], door=['A', 'C'], mn=10))
 N.append(ex(43, 'Tikkertje met overgooien', 'wu', ['warming'], A,
  'Speel op een veldhelft. Twee tikkers hebben samen één bal en mogen alleen tikken met de bal in de hand. Met de bal mag je niet lopen; de tikkers gooien de bal naar elkaar over.',
  'Opwarmen met spel: snel van richting veranderen en om je heen kijken.',
@@ -407,15 +407,15 @@ N.append(ex(45, 'Schouders los: werpen in tweetallen', 'wu', ['warming', 'aanval
  ['A werpt de bal met een hoge armzwaai naar B.', 'B vangt boven het hoofd.', 'B werpt terug met de andere voet voor.', 'Elke minuut een stap verder naar achteren.'],
  ['Elleboog hoog, hand achter het hoofd voor de worp.', 'Draai in met de romp, niet alleen met de arm.'],
  'Laatste minuut: werp met een sprongetje, als een sprongservice.',
- [['A', Y, (280, 470), (280, 470), (280, 520), (280, 540)], ['B', OPP, (280, 210), (280, 210), (280, 160), (280, 140)]],
- [(280, 460), (280, 210), (280, 210), (280, 520), (280, 140)], door=['A', 'B'], mn=10))
+ [['A', Y, (280, 470), (280, 470), (280, 520), (280, 540)], ['B', OPP, (280, 210), (280, 210), (280, 205), (280, 150)]],
+ [(280, 460), (280, 210), (280, 210), (280, 520), (280, 150)], door=['A', 'B'], mn=10))
 N.append(ex(46, 'Estafette: verplaatsen en spelen', 'wu', ['warming', 'verdediging'], A,
  'Twee rijen op de achterlijn. Voor elke rij drie pionnen op het veld. Op de laatste pion speelt de trainer een bal toe die je terugspeelt.',
  'Wedstrijdje om de spieren warm te maken en tegelijk het verplaatsen naar de bal te oefenen.',
  ['De eerste speler sprint naar pion 1 en shuffelt naar pion 2.', 'Bij pion 3 gooit de trainer een bal.', 'De speler speelt hem onderarms terug naar de trainer.', 'Terug sprinten en de volgende aantikken.'],
  ['Bij de bal: stilstaan, dan pas spelen.', 'Moedig je teamgenoten aan.'],
  'Welke rij is het eerst klaar? Verliezers doen 5 bloksprongen.',
- [['TR', TR, (280, 370)], ['A', Y, (200, 640), (180, 520), (220, 440), (200, 640)], ['C', Y, (200, 665)], ['B', OPP, (360, 640), (380, 520), (340, 440), (360, 640)], ['D', OPP, (360, 665)]],
+ [['TR', TR, (280, 370)], ['A', Y, (200, 640), (180, 520), (220, 440), (200, 640)], ['C', Y, (200, 665)], ['B', Y, (360, 640), (360, 640), (380, 520), (340, 440)], ['D', Y, (360, 665)]],
  [(280, 370), (280, 370), (220, 435), (280, 370), (340, 435)], door=['A', 'C'], mn=10))
 
 N.append(ex(47, 'Tweetallen bovenhands: van stil naar verplaatsen', 'insp', ['inspelen', 'sideout'], A,
@@ -432,7 +432,7 @@ N.append(ex(48, 'Tweetallen onderarms: hoog voor jezelf en dan over', 'insp', ['
  ['A speelt de bal onderarms naar B.', 'B speelt de bal hoog voor zichzelf.', 'B speelt hem onderarms terug naar A.', 'A doet hetzelfde.'],
  ['Plank vroeg vormen, armen gestrekt en schouders naar voren.', 'Speel vanuit de benen, niet vanuit de armen.'],
  'Moeilijker: A gooit of speelt steeds iets naast B, zodat B moet verplaatsen.',
- [['A', Y, (200, 470), (200, 470), (200, 470), (210, 470)], ['B', SV, (360, 520), (360, 520), (350, 510), (360, 520)]],
+ [['A', Y, (200, 470), (200, 470), (200, 470), (210, 470)], ['B', Y, (360, 520), (360, 520), (350, 510), (360, 520)]],
  [(200, 465), (360, 515), (360, 470), (360, 515), (200, 465)], door=['A', 'B']))
 N.append(ex(49, 'Tweetallen over het net op doelen', 'insp', ['inspelen', 'service'], A,
  'Tweetallen over het net. Leg aan beide kanten een hoepel of mat in het achterveld. Elke bal die op het doel valt is een punt.',
@@ -448,7 +448,7 @@ N.append(ex(50, 'Drietallen in een lijn: de middelste draait', 'insp', ['inspele
  ['A speelt de bal naar de middelste, B.', 'B speelt terug naar A.', 'B draait om; A speelt nu over B heen naar C.', 'C speelt naar B en het begint opnieuw. Na 1 minuut wisselt B met A.'],
  ['Na het draaien: eerst je voeten stil, dan spelen.', 'Middelste speler: bal hoog en recht terug.'],
  'Moeilijker: B speelt de bal niet terug maar door naar C (achterwaarts).',
- [['A', Y, (280, 600), (280, 600), (280, 600), (280, 600)], ['B', SV, (280, 500), (280, 500), (280, 495), (280, 500)], ['C', Y, (280, 400)]],
+ [['A', Y, (280, 600), (280, 600), (280, 600), (280, 600)], ['B', Y, (280, 500), (280, 500), (280, 495), (280, 500)], ['C', Y, (280, 400)]],
  [(280, 595), (280, 495), (280, 595), (280, 405), (280, 495)], door=['A', 'B', 'C']))
 N.append(ex(51, 'Tweetallen: inslaan en verdedigen over het net', 'insp', ['inspelen', 'aanval', 'verdediging'], A,
  'Tweetallen over het net. A gooit de bal op en slaat uit stand naar B; B verdedigt hoog voor zichzelf, zet op voor zichzelf en slaat terug.',
@@ -465,23 +465,23 @@ N.append(ex(52, 'Inserveren in tweetallen op korte afstand', 'insp', ['inspelen'
  ['Toss laag en recht voor je slaghand.', 'Kijk naar het doel, sla door het midden van de bal.'],
  'Laatste ronde: serveer op een doel dat je partner aanwijst.',
  [['A', Y, (200, 520), (200, 520), (200, 560), (200, 600)], ['B', OPP, (360, 160), (360, 160), (360, 120), (360, 80)]],
- [(200, 510), (360, 165), (360, 130), (200, 560), (360, 80)], door=['A', 'B']))
+ [(200, 510), (360, 165), (360, 125), (200, 595), (200, 575)], door=['A', 'B']))
 N.append(ex(53, 'Vierkant: bal rond en doorlopen', 'insp', ['inspelen', 'transitie'], A,
  'Vier spelers in een vierkant (ongeveer 4 bij 4 meter) met één bal. Speel de bal kruislings rond; wie de bal speelt, loopt naar de plek waar hij de bal heen speelde.',
  'Spelen en meteen bewegen: na elke balaanraking een nieuwe plek innemen.',
  ['Speler A speelt diagonaal naar C en loopt achter de bal aan naar die hoek.', 'C speelt naar B en loopt naar de hoek van B.', 'B speelt naar D en loopt mee.', 'Zo blijft de bal en de hele groep in beweging.'],
  ['Roep de naam van wie je de bal geeft.', 'Lopen na het spelen, nooit tijdens het spelen.'],
  'Met 5 spelers: de vijfde wacht in een hoek en sluit aan als de bal komt.',
- [['A', Y, (220, 420), (300, 500), (300, 500), (300, 500)], ['B', Y, (340, 420), (340, 420), (340, 420), (220, 500)], ['C', Y, (340, 500), (340, 500), (220, 420), (220, 420)], ['D', Y, (220, 500), (220, 500), (220, 500), (220, 500)]],
- [(220, 415), (340, 495), (340, 415), (220, 495), (220, 415)], door=['A', 'C', 'B', 'D']))
+ [['A', Y, (220, 420), (300, 500), (300, 500), (300, 500)], ['B', Y, (340, 420), (340, 420), (340, 420), (255, 480)], ['C', Y, (340, 500), (340, 500), (335, 465), (325, 440)], ['D', Y, (220, 500), (220, 500), (220, 500), (220, 500)]],
+ [(220, 415), (340, 495), (340, 415), (220, 495), (300, 495)], door=['A', 'C', 'B', 'D']))
 N.append(ex(54, 'Smashen in tweetallen tegen de grond', 'insp', ['inspelen', 'aanval'], V,
  'Tweetallen op 6 meter, aan dezelfde kant van het net. A slaat de bal hard voor B op de grond, zodat hij hoog opstuit; B vangt of speelt hem. Daarna wisselen.',
  'Schouder warm maken voor de aanval met veel herhalingen en een volle armzwaai.',
  ['A gooit de bal op en slaat hem op de grond, halverwege.', 'De bal stuit hoog naar B.', 'B vangt of verdedigt de bal en slaat terug.', 'Na 10 slagen een stap verder uit elkaar.'],
  ['Volle armzwaai: elleboog hoog, pols los.', 'Raak de bal voor je lichaam.'],
  'Hoger niveau: met een aanloop van drie passen en afzet.',
- [['A', Y, (200, 470), (200, 470), (200, 470), (205, 470)], ['B', SV, (360, 520), (360, 520), (355, 525), (360, 520)]],
- [(200, 445), (280, 500), (360, 450), (360, 515), (200, 465)], door=['A', 'B']))
+ [['A', Y, (200, 470), (200, 470), (200, 470), (205, 470)], ['B', Y, (360, 520), (360, 520), (355, 525), (360, 520)]],
+ [(200, 445), (280, 500), (358, 512), (360, 505), (200, 465)], door=['A', 'B']))
 
 # ------------------------------------------------------------ WARMING-UP ZONDER BAL
 NB = [(560, 690)] * 5   # geen bal: de bal staat stil buiten beeld en wordt niet getekend
@@ -554,7 +554,7 @@ N.append(ex(62, 'Slalom-estafette met hoepels', 'wu', ['warming'], A,
  ['De eerste speler slalomt om de pionnen.', 'Hij pakt de bal uit de eerste hoepel en legt hem in de tweede.', 'Terug sprinten en de volgende aantikken.', 'De volgende brengt de bal weer terug naar de eerste hoepel.'],
  ['Laag om de pionnen, kleine snelle passen.', 'Moedig je team aan.'],
  'Variatie: de bal niet dragen maar bovenhands voor jezelf spelen tijdens het lopen.',
- [['A', Y, (200, 640), (170, 520), (230, 440), (200, 640)], ['B', OPP, (360, 640), (390, 520), (330, 440), (360, 640)], ['C', Y, (200, 665)], ['D', OPP, (360, 665)], ['M', W, (200, 470)], ['M2', W, (230, 400)]],
+ [['A', Y, (200, 640), (190, 510), (215, 455), (228, 412)], ['B', OPP, (360, 640), (370, 510), (345, 455), (332, 412)], ['C', Y, (200, 665)], ['D', OPP, (360, 665)], ['M', W, (200, 470)], ['M2', W, (230, 400)]],
  [(200, 470), (200, 470), (230, 440), (230, 400), (230, 400)], mn=10, door=['A', 'C']))
 N.append(ex(63, 'Aanloop zonder bal, daarna met bal', 'wu', ['warming', 'aanval'], A,
  'Iedereen verspreid over de breedte, drie grote stappen van het net. Eerst de aanloop zonder bal oefenen, daarna gooit iedereen zichzelf een bal op en vangt hem op het hoogste punt.',
@@ -579,8 +579,8 @@ N.append(ex(65, 'Driehoek: achter je bal aan', 'insp', ['inspelen'], A,
  ['Rij 1 speelt naar rij 2 en sluit daar achteraan aan.', 'Rij 2 speelt naar rij 3 en loopt mee.', 'Rij 3 speelt naar rij 1.', 'Na 2 minuten een nieuwe techniek: gooien, bovenhands, onderarms, met stuit.'],
  ['Draai je voeten naar waar de bal heen moet.', 'Na het spelen meteen lopen.'],
  'Moeilijker: andersom draaien, of met twee ballen tegelijk.',
- [['A', Y, (200, 600), (220, 560), (300, 470), (360, 410)], ['B', Y, (360, 410), (360, 410), (330, 500), (220, 590)], ['C', Y, (200, 420), (200, 420), (200, 420), (200, 420)]],
- [(200, 595), (360, 405), (200, 415), (200, 595), (360, 405)], door=['A', 'B', 'C']))
+ [['A', Y, (200, 600), (220, 560), (300, 470), (360, 410)], ['B', Y, (360, 410), (360, 410), (290, 415), (215, 440)], ['C', Y, (200, 420), (200, 420), (200, 420), (200, 500)], ['A2', Y, (200, 640), (200, 600), (200, 600), (200, 600)]],
+ [(200, 595), (360, 405), (200, 415), (200, 595), (360, 405)], door=['A', 'B', 'C'], need=3))
 N.append(ex(66, 'Ingooien in tweetallen: opbouw in zes stappen', 'insp', ['inspelen', 'aanval'], A,
  'Tweetallen met één bal over het net op 6 tot 8 meter. Elke minuut een volgende stap, van gooien naar slaan.',
  'Schouder en handen stap voor stap klaarmaken voor de training.',
@@ -588,14 +588,14 @@ N.append(ex(66, 'Ingooien in tweetallen: opbouw in zes stappen', 'insp', ['inspe
  ['Elleboog hoog bij het gooien met één hand.', 'Vang de bal boven je voorhoofd in de bovenhandse vorm.'],
  'Laatste stap: achterin onderarms en voorin bovenhands door elkaar.',
  [['A', Y, (280, 460), (280, 460), (280, 470), (280, 460)], ['B', OPP, (280, 220), (280, 220), (280, 210), (280, 220)]],
- [(280, 450), (280, 225), (280, 300), (280, 455), (280, 225)], door=['A', 'B']))
+ [(280, 450), (280, 225), (280, 410), (280, 455), (280, 225)], door=['A', 'B']))
 N.append(ex(67, 'Viertal: twee voor, twee achter', 'insp', ['inspelen', 'sideout'], A,
  'Viertallen aan één kant van het net: twee spelers op de 3-meterlijn, twee op de 7-meterlijn. Achter speelt onderarms, voor speelt bovenhands. Wie gespeeld heeft, schuift een plek op.',
  'Inspelen met de rollen van passer en spelverdeler, en steeds van plek wisselen.',
  ['Achter speelt onderarms naar voor.', 'Voor speelt bovenhands terug naar de andere achterspeler.', 'Wie speelt, schuift één plek naar links of rechts.', 'Na 2 minuten: voor en achter wisselen.'],
  ['Achter: lage houding, plank naar het doel.', 'Voor: eerst stilstaan, dan pas spelen.'],
  'Moeilijker: voor moet de bal achterwaarts spelen.',
- [['A1', Y, (220, 580), (220, 580), (340, 580), (340, 580)], ['A2', Y, (340, 580)], ['V1', SV, (220, 450), (220, 450), (220, 450), (340, 450)], ['V2', SV, (340, 450)]],
+ [['A1', Y, (220, 580), (220, 580), (280, 610), (330, 610)], ['A2', Y, (340, 580), (340, 580), (340, 580), (225, 580)], ['V1', SV, (220, 450), (220, 450), (270, 430), (300, 430)], ['V2', SV, (340, 450)]],
  [(220, 575), (220, 445), (340, 575), (340, 445), (220, 575)], door=['A1', 'A2', 'V2', 'V1']))
 N.append(ex(68, 'Verdedigen tussen twee pionnen', 'insp', ['inspelen', 'verdediging'], A,
  'Tweetallen: A staat laag tussen twee pionnen op 2 meter afstand; B gooit de bal steeds naast A. A schuift zijwaarts en speelt de bal terug.',
@@ -603,7 +603,7 @@ N.append(ex(68, 'Verdedigen tussen twee pionnen', 'insp', ['inspelen', 'verdedig
  ['A schuift met een zijpas naar de linkerpion.', 'B gooit de bal net naast A.', 'A speelt de bal onderarms terug naar B.', 'Na 10 ballen wisselen; daarna met kruispas en schuin achteruit.'],
  ['Blijf laag, schouders voor de knieën.', 'Kom vóór de bal, speel niet opzij.'],
  'Moeilijker: B slaat de bal in plaats van gooien.',
- [['A', LIB, (280, 560), (230, 560), (330, 560), (280, 560)], ['B', Y, (280, 430)], ['P1', W, (220, 575)], ['P2', W, (340, 575)]],
+ [['A', LIB, (280, 560), (230, 560), (290, 560), (330, 560)], ['B', Y, (280, 430)], ['P1', W, (220, 575)], ['P2', W, (340, 575)]],
  [(280, 425), (230, 555), (280, 430), (330, 555), (280, 430)], door=['A', 'B']))
 
 N.append(ex(69, 'Kort, lang, kort: passen onder druk', 'tech', ['service', 'verdediging'], A,
@@ -653,7 +653,7 @@ N.append(ex(74, 'Bal redden over het hele veld', 'tech', ['verdediging'], V,
  ['De laatste stap groot en laag.', 'Hoog redden is genoeg, niet perfect passen.'],
  'Lager niveau: de bal mag één keer stuiten.',
  [['TR', TR, (280, 400)], ['A', LIB, (140, 610), (250, 520), (390, 430), (390, 430)], ['B', Y, (430, 610)]],
- [(280, 395), (280, 395), (390, 420), (380, 300), (380, 300)], door=['A', 'B']))
+ [(280, 395), (280, 395), (390, 420), (370, 400), (370, 400)], door=['A', 'B']))
 N.append(ex(75, 'Receptie, aanval en blok met doorschuiven', 'tech', ['service', 'blok', 'aanval'], V,
  'Op één helft: twee serveerders aan de overkant, een blokkeerder op positie 2 aan de overkant, een spelverdeler en twee passers. Wie de receptie niet neemt, valt aan.',
  'Ontvangst en aanval in één vloeiende actie, tegen een echt blok.',
@@ -677,7 +677,7 @@ N.append(ex(77, 'Rallypass: twee goede ballen, dan aanval', 'spel', ['verdedigin
  ['De trainer speelt de bal in een hoek.', 'De verdediger speelt hem hoog naar de spelverdeler, die terugspeelt naar de trainer.', 'Na twee goede verdedigingen zet de spelverdeler op voor een aanval.', 'De verdedigers wisselen na elke aanval.'],
  ['Praat met elkaar: wie neemt de bal in het midden?', 'Na de verdediging meteen klaar voor de volgende.'],
  'Moeilijker: drie goede ballen achter elkaar, of de trainer slaat harder.',
- [['TR', TR, 'o3'], ['V1', LIB, (200, 560), (160, 610), (200, 560), (170, 470)], ['V2', Y, (360, 560), (360, 560), (400, 600), (360, 560)], ['SV', SV, 'sv']],
+ [['TR', TR, 'o3'], ['V1', LIB, (200, 560), (160, 610), (200, 560), (170, 470)], ['V2', Y, (360, 560), (360, 560), (380, 580), (400, 600)], ['SV', SV, 'sv']],
  ['o3', (160, 605), 'sv', 'o3', (400, 595)], door=['V1', 'V2']))
 N.append(ex(78, 'Aanval-verdediging-carrousel', 'spel', ['aanval', 'verdediging'], A,
  'Een spelverdeler aan het net, een aanvaller op 4. Aan de overkant twee verdedigers op 5 en 1, en een rij wachtenden. De aanvaller probeert te scoren, de verdedigers proberen hem hoog te houden.',
@@ -693,8 +693,8 @@ N.append(ex(79, '2 tegen 2 binnen de 3 meter', 'spel', ['sideout', 'aanval'], A,
  ['Een speler brengt de bal in met een onderhandse service.', 'Het andere tweetal speelt in drie keer terug.', 'De derde bal moet geplaatst worden, niet geslagen.', 'Na 5 punten wisselen de tweetallen.'],
  ['Plaats de bal in de vrije ruimte.', 'Na je balcontact meteen naar je plek.'],
  'Variaties: alles bovenhands (ook de eerste bal), alles onderarms, of de derde bal met één hand plaatsen.',
- [['A', Y, (220, 430), (220, 430), (260, 375), (260, 375)], ['B', Y, (330, 430), (330, 410), (330, 410), (330, 420)], ['C', OPP, (220, 260), (220, 260), (220, 270), (260, 280)], ['D', OPP, (330, 260)]],
- [(330, 250), (330, 405), (260, 370), (240, 270), (220, 265)]))
+ [['A', Y, (220, 430), (220, 430), (260, 375), (260, 375)], ['B', Y, (330, 430), (330, 410), (330, 410), (330, 420)], ['C', OPP, (220, 260), (220, 260), (220, 270), (260, 280)], ['D', OPP, (330, 215), (330, 215), (330, 250), (330, 260)]],
+ [(330, 220), (330, 405), (260, 370), (240, 270), (220, 265)]))
 N.append(ex(80, 'Koning van het veld 2 tegen 2', 'spel', ['sideout', 'transitie'], A,
  'Twee tegen twee op een half veld (in de lengte). Aan de ene kant de koningen, aan de andere kant de uitdagers. Wie wint aan de uitdagerskant, wordt koning.',
  'Snel en slim spelen in kleine teams, met veel balcontacten en verplaatsen.',
@@ -709,8 +709,8 @@ N.append(ex(81, 'Onder het net door: sparren per drie', 'spel', ['transitie', 'a
  ['De trainer gooit de bal in bij team blauw.', 'Blauw speelt in drie keer over het net.', 'Blauw rent onder het net door naar de andere kant.', 'Team rood neemt de volgende bal; daarna weer blauw.'],
  ['Onder het net door: hoofd laag en uitkijken voor elkaar.', 'Snel klaarstaan, de trainer wacht niet.'],
  'Eerst samenwerken (zo veel mogelijk goede aanvallen), daarna als wedstrijd tegen elkaar.',
- [['TR', TR, (490, 470)], ['B1', Y, (200, 560), (200, 560), (280, 360), (250, 200)], ['B2', Y, (330, 420), (330, 420), (300, 360), (330, 230)], ['R1', OPP, (220, 640), (220, 640), (220, 600), (220, 560)]],
- [(490, 470), (200, 555), (330, 415), (200, 360), (250, 100)]))
+ [['TR', TR, (490, 470)], ['B1', Y, (200, 560), (200, 560), (240, 470), (260, 380)], ['B2', Y, (330, 420), (330, 420), (330, 420), (320, 380)], ['B3', Y, (180, 430), (180, 430), (190, 390), (200, 365)], ['R1', OPP, (220, 640), (220, 640), (220, 600), (220, 560)]],
+ [(490, 470), (200, 555), (330, 415), (200, 360), (250, 100)], need=3))
 
 N.append(ex(82, 'Drie ballen: service, aanval en vrije bal', 'zes', ['sideout', 'transitie', 'verdediging'], A,
  'Een basisteam van zes tegen een team aan de overkant. Het basisteam krijgt na elkaar drie ballen: een service, een aanval van de trainer en een vrije bal.',
@@ -743,7 +743,7 @@ N.append(ex(85, 'Bowlen met de service', 'eind', ['service'], A,
  ['Om de beurt serveert een speler van elk team.', 'Elke omgegooide pion is een punt.', 'Het andere team zet de pionnen niet terug: zo wordt het steeds moeilijker.', 'Het team dat het eerst alle pionnen om heeft, wint.'],
  ['Kies je doel voordat je de bal opgooit.', 'Een veilige service is beter dan een fout.'],
  'Lager niveau: van dichterbij serveren of een onderhandse service.',
- [['S1', Y, 'srv', 'srv', 'srv5', 'srv5'], ['S2', OPP, 'osrv1', 'osrv1', 'osrv5', 'osrv5'], ['M', W, (300, 150)], ['M2', W, (240, 500)]],
+ [['S1', Y, 'srv', 'srv', 'srv', 'srv5'], ['S2', OPP, 'osrv1', 'osrv1', 'osrv1', 'osrv5'], ['M', W, (300, 150)], ['M2', W, (240, 500)]],
  ['srv', (300, 150), 'osrv1', (240, 500), 'srv5'], door=['S1', 'S2']))
 N.append(ex(86, 'Speel die bal: opstaan en scoren', 'eind', ['transitie', 'verdediging'], A,
  'Drietallen. Een drietal ligt op de buik achter de 7-meterlijn. De trainer staat aan de overkant met een kar, klapt op de bal en speelt hem meteen over het net.',
@@ -856,8 +856,8 @@ N.append(ex(98, 'Gooibal over het net met aanname', 'wu', ['warming', 'sideout']
  ['A gooit de bal over het net naar het open gebied.', 'D vangt de bal en gooit hem door naar E.', 'E gooit de bal terug over het net.', 'Het andere team verdedigt en gooit weer terug.'],
  ['Roep wie de bal neemt.', 'Maak na het vangen één stap in de richting van de gooi.'],
  'Moeilijker: de bal moet na de vangst via een tweede speler van het team gaan voordat hij over het net mag.',
- [['A', Y, (230, 520), (240, 500), (260, 500), (240, 500)], ['B', Y, (330, 560), (320, 540), (310, 520), (320, 540)], ['C', Y, (280, 620), (280, 600), (280, 580), (280, 600)], ['D', OPP, (230, 160), (250, 220), (260, 240), (240, 220)], ['E', OPP, (330, 120), (330, 150), (330, 230), (330, 170)], ['F', OPP, (280, 90), (280, 110), (280, 150), (280, 130)]],
- [(240, 505), (250, 335), (255, 230), (330, 220), (330, 160)], mn=10, need=6, door=['A', 'B', 'C']))
+ [['A', Y, (230, 520), (240, 500), (260, 500), (240, 500)], ['B', Y, (330, 560), (320, 540), (310, 520), (320, 540)], ['C', Y, (280, 620), (280, 600), (280, 580), (280, 600)], ['D', OPP, (230, 160), (250, 220), (260, 240), (240, 220)], ['E', OPP, (330, 120), (330, 150), (330, 200), (330, 220)], ['F', OPP, (280, 90), (280, 110), (280, 150), (280, 130)]],
+ [(240, 505), (250, 335), (255, 230), (330, 220), (320, 530)], mn=10, need=6, door=['A', 'B', 'C']))
 N.append(ex(99, 'Trefbal met zachte ballen', 'wu', ['warming'], A,
  'Twee teams, ieder op een eigen helft. Je gooit met een zachte bal naar de benen van de tegenstanders. Getroffen spelers gaan achter de achterlijn van de ander en spelen vandaar terug.',
  'Hartslag omhoog met een kort, hectisch spel waarin uitwijken en vangen centraal staan.',
@@ -872,8 +872,8 @@ N.append(ex(100, 'Volleybal-tennis met één stuit', 'wu', ['warming', 'verdedig
  ['A speelt de bal over het net.', 'De bal stuitert aan de overkant één keer.', 'D speelt hem terug over het net.', 'Wie de bal niet terug krijgt, verliest het punt.'],
  ['Kijk naar de bal en loop erheen voordat je hem raakt.', 'Speel hoog en breed om de tegenstander te laten lopen.'],
  'Moeilijker: de bal mag niet stuiteren; je speelt de bal altijd bovenhands of onderarms.',
- [['A', Y, (240, 480), (240, 460), (250, 440), (240, 470)], ['B', Y, (330, 560), (320, 540), (300, 520), (320, 550)], ['D', OPP, (240, 160), (250, 190), (260, 200), (250, 180)], ['E', OPP, (330, 220), (320, 230), (310, 260), (320, 240)]],
- [(240, 480), (250, 335), (260, 260), (250, 335), (240, 460)], mn=10, need=4))
+ [['A', Y, (240, 480), (240, 460), (250, 440), (240, 470)], ['B', Y, (330, 560), (320, 540), (300, 520), (320, 550)], ['D', OPP, (240, 160), (250, 190), (255, 210), (250, 195)], ['E', OPP, (330, 220), (320, 230), (310, 260), (320, 240)]],
+ [(240, 480), (250, 335), (255, 255), (250, 195), (240, 465)], mn=10, need=4))
 N.append(ex(101, 'Voetbal-warming op een halve veldhelft', 'wu', ['warming'], A,
  'Drie tegen drie met een zachte voetbal op één veldhelft. Doelen zijn twee pionnen op de achterlijn. Je mag alleen met de voeten spelen; geen keepers.',
  'Warmlopen met een afwisselend spel dat ook de coördinatie en het overzicht traint.',
@@ -897,7 +897,7 @@ N.append(ex(103, 'Rugbypass-loop over de lengte', 'wu', ['warming', 'transitie']
  ['Pas de bal niet naar voren, maar zijwaarts of achteruit.', 'Loop op ritme, niet te snel om de pass goed te geven.'],
  'Moeilijker: met een tweede bal of met de bal over het hoofd doorgeven.',
  [['A', Y, (200, 640), (200, 570), (200, 490), (200, 400)], ['B', Y, (280, 640), (280, 575), (280, 495), (280, 405)], ['C', Y, (360, 640), (360, 570), (360, 490), (360, 400)]],
- [(280, 620), (340, 570), (230, 500), (300, 460), (220, 400)], mn=10, need=3))
+ [(280, 620), (340, 570), (230, 500), (285, 410), (215, 400)], mn=10, need=3))
 
 # Titels en niveaus van de oude oefeningen opschonen
 OUD = {
@@ -919,6 +919,46 @@ for d in sen:
         if t: d['t'] = t
         if n: d['niv'] = n
 sen += N
+# Correcties op de oude oefeningen (s..), nagelopen tegen de tekst (17-11-2026)
+# Kleuren volgens de legenda: eigen team geel, spelverdeler paars, libero groen, blok oranje, overkant rood, trainer turquoise
+KLEUR_OUD = {'SV': SV, 'LIB': LIB, 'L': LIB, 'SRV': OPP, 'UIT': OPP, 'OPP': OPP, 'SET': OPP, 'AT': OPP, 'Z': W, 'DOEL': W}
+CORR = {
+ # drie serveerders achter de achterlijn, drie doelzones aan de overkant
+ 's9': {'p': [['S1', Y, [[160, 660], [400, 660], [400, 660], [400, 660]]], ['S2', Y, [[280, 660], [160, 660], [160, 660], [160, 660]]],
+              ['S3', Y, [[400, 660], [280, 660], [280, 660], [280, 660]]], ['M1', W, [[165, 100]] * 4], ['M6', W, [[280, 90]] * 4], ['M5', W, [[395, 100]] * 4]],
+        'bal': [[160, 655], [165, 100], [160, 655], [280, 90], [280, 655]]},
+ # het blok schuift als groep van 4 via 3 naar 2; de trainer houdt de bal steeds boven het blok
+ 's10': {'p': [['BL1', BL, [[125, 365], [240, 365], [355, 365], [355, 365]]], ['BL2', BL, [[165, 365], [280, 365], [395, 365], [395, 365]]],
+               ['BL3', BL, [[205, 365], [320, 365], [435, 365], [435, 365]]], ['TR', TR, [[165, 318], [280, 318], [395, 318], [395, 318]]]],
+         'bal': [[165, 318], [280, 318], [395, 318], [395, 335], [395, 300]]},
+}
+CORR_P = {
+ 's14': {'LIB': [[200, 540], [200, 540], [405, 440], [405, 440]]},
+ 's19': {'K3': [[250, 440], [250, 440], [255, 400], [250, 370]]},
+}
+CORR_BAL = {'s16': {3: [152, 462]}}
+for d in sen:
+    if not d['id'].startswith('s'):
+        continue
+    for q in d['p']:
+        nm = q[0]
+        q[1] = KLEUR_OUD.get(nm, TR if q[1] == TR else Y)
+    if d['id'] == 's14':  # passer aan de overkant
+        for q in d['p']:
+            if q[0] == 'PAS': q[1] = OPP
+    if d['id'] == 's15':  # de trainer serveert; het doel is materiaal; drie passers wisselen elkaar af
+        d['needx'] = 3
+        for q in d['p']:
+            if q[0] == 'SRV': q[0], q[1] = 'TR', TR
+            if q[0] == 'DOEL': q[0], q[1] = 'Z', W
+    c = CORR.get(d['id'])
+    if c:
+        d.update({k: v for k, v in c.items()})
+    for nm, pos in CORR_P.get(d['id'], {}).items():
+        for q in d['p']:
+            if q[0] == nm: q[2] = pos
+    for i, v in CORR_BAL.get(d['id'], {}).items():
+        d['bal'][i] = v
 for d in sen:
     d.pop('zb', None)
     if len(set(map(tuple, d['bal']))) == 1:
