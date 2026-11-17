@@ -9,6 +9,7 @@
 const q=(s,r)=>(r||document).querySelector(s), qa=(s,r)=>Array.from((r||document).querySelectorAll(s));
 const ic=d=>'<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="'+d+'"/></svg>';
 const I={
+ home:'M3 11l9-8 9 8M5 10v10h5v-6h4v6h5V10',
  mini:'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM3.5 10c5 0 9 3 10 10M20.5 10c-5 0-9 3-10 10M7 4.5c3 3 5 4 10 4',
  sen:'M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM2 21v-1a6 6 0 0 1 12 0v1M17 11a3 3 0 1 0 0-6M22 21v-1a5 5 0 0 0-4-4.9',
  rot:'M21 12a9 9 0 1 1-3-6.7M21 4v5h-5',
@@ -25,7 +26,7 @@ let busy=false;
 
 // ---------- tabbladen ----------
 function tabs(){
- const set=[['t_gen','mini','Mini’s','Mini’s'],['t_sen','sen','Jeugd & Senioren','Jeugd/Sen.'],['t_rot','rot','5-1 rotaties','5-1'],['t_def','def','Verdediging','Verdediging']];
+ const set=[['t_home','home','Home','Home'],['t_gen','mini','Mini’s','Mini’s'],['t_sen','sen','Jeugd & Senioren','Jeugd/Sen.'],['t_rot','rot','5-1 rotaties','5-1'],['t_def','def','Verdediging','Verdediging']];
  set.forEach(([id,k,l,s])=>{const b=document.getElementById(id);if(!b||b.dataset.ow)return;b.dataset.ow=1;
   b.innerHTML='<span class="ic">'+ic(I[k])+'</span><span class="long">'+l+'</span><span class="short">'+s+'</span>';
   b.setAttribute('aria-label',l);});
