@@ -108,7 +108,7 @@ function plan(d){
 }
 // Bewegende animatie op een groot veld (viewBox 560x680, net op y=340)
 function anim(d){
- const D=9,kt='0;0.15;0.3;0.45;0.6;0.82;0.96;1',kb='0;0.12;0.24;0.36;0.48;0.6;0.96;1';
+ const D=9,kt='0;0.15;0.3;0.45;0.6;0.82;0.96;1',kb='0;0.15;0.3;0.45;0.6;0.7;0.96;1';
  let o='<svg viewBox="0 0 560 680" role="img" aria-label="Animatie: '+esc(d.t)+'" class="senv">'
   +'<rect x="110" y="40" width="340" height="600" rx="4" style="fill:var(--court)" stroke="#fff" stroke-width="3"/>'
   +'<line x1="110" y1="230" x2="450" y2="230" stroke="#fff" stroke-opacity=".6" stroke-width="2" stroke-dasharray="6 4"/>'

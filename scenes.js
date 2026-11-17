@@ -449,17 +449,28 @@ function formation(F,spec,k,fi){
    // rally: eigen balverloop [team,index,{u,v}]; start: wie de bal serveert
    const ev=tri?spec.rally:[['B',tb-1,[7,6]],['A',ta>1?1:0,[-7,-5]],['B',0,[6,-6]],['A',0,[0,0]]];
    const kfs={};const key=(s,i)=>s+i;
-   const bp=[tri&&spec.start?(spec.start[0]==='A'?A:B)[spec.start[1]]:A[0]],bt=[0];
+   const st=spec.start||['A',0],stP=(st[0]==='A'?A:B)[st[1]];
+   const bp=[tri&&spec.start?stP:A[0]],bt=[0];
+   // serve: de serveerder staat bij de start achter de achterlijn, serveert en loopt daarna het veld in;
+   // aan het eind van de rally loopt hij met de bal terug naar de serviceplek
+   const SV=!!spec.serve,sk=SV?.88:1,S=SV?[st[0]==='A'?F.pad-.05*F.cw:F.pad+1.05*F.cw,stP[1]]:null;
+   if(SV){bp[0]=S;const sb=(st[0]==='A'?A:B)[st[1]];kfs[key(st[0],st[1])]={base:sb,p:[S,S,sb],t:[0,.05,.2]};}
    ev.forEach((e,n)=>{
     const base=(e[0]==='A'?A:B)[e[1]],L=Array.isArray(e[2])?[base[0]+e[2][0],base[1]+e[2][1]]:P(e[2].u,e[2].v);
-    const s=n*.25+.04,ar=n*.25+.2,dep=n===3?1:(n+1)*.25+.04;
+    const s=(n*.25+.04)*sk,ar=(n*.25+.2)*sk,dep=(n===3?1:(n+1)*.25+.04)*sk;
     bp.push(bp[bp.length-1]);bt.push(s);bp.push(L);bt.push(ar);
     const q=kfs[key(e[0],e[1])]||(kfs[key(e[0],e[1])]={base,p:[base],t:[0]});
     q.p.push(base,L,L);q.t.push(s,ar,dep);
     if(n<3){q.p.push(base);q.t.push(Math.min(1,dep+.1));}
    });
-   A.forEach((p,i)=>{const q=kfs[key('A',i)];o+=player(p[0],p[1],sideA,q?tl(q.p,q.t,T,bg):'');});
-   B.forEach((p,i)=>{const q=kfs[key('B',i)];o+=player(p[0],p[1],sideB,q?tl(q.p,q.t,T,bg):'');});
+   if(SV){const q=kfs[key(st[0],st[1])],last=bp[bp.length-1],lt=bt[bt.length-1];
+    // de bal gaat naar de serveerder, die met de bal terugloopt achter de achterlijn
+    const cur=q.p[q.p.length-1],ct=q.t[q.t.length-1];
+    if(Math.hypot(cur[0]-last[0],cur[1]-last[1])>3){q.p.push(cur,last);q.t.push(Math.max(ct,lt-.1),lt);}
+    q.p.push(last,S);q.t.push(lt,.97);bp.push(last,S);bt.push(lt,.97);}
+   // de speler start op het eerste sleutelpunt (bij de service: achter de achterlijn)
+   A.forEach((p,i)=>{const q=kfs[key('A',i)],s0=q?q.p[0]:p;o+=player(s0[0],s0[1],sideA,q?tl(q.p,q.t,T,bg):'');});
+   B.forEach((p,i)=>{const q=kfs[key('B',i)],s0=q?q.p[0]:p;o+=player(s0[0],s0[1],sideB,q?tl(q.p,q.t,T,bg):'');});
    o+=mball(bp,bt,T,bg,KIND(act));
    const extra=k-ta-tb;for(let r=0;r<extra&&r<4;r++)o+=bench(F,r,true);
    if(extra>4)o+='<text x="'+n2(P(1.08,0)[0]-6)+'" y="'+n2(P(0,.98)[1])+'" fill="#fff" font-size="7" font-weight="800">+'+(extra-4)+'</text>';
@@ -599,7 +610,7 @@ window.sceneSpec=derive;
 
 // ---------- handmatige correcties per oefening (id uit VolleyWijzer) ----------
 // Velden: form (pairs|netpairs|triples|vs|queue|serve|relay|tag|scatter|circle|wall|circuit|solo|cross|sideline|lanes|feed|netrun),
-// extra: teams 'half', rows, course [[u,v],..] (looproute voorste speler), back, follow, flee, oneSide, keepers, tagger, move, under, mid, bench, chase, objs met at:[[u,v]] of grid:true,
+// extra: serve (rally begint met service van achter de achterlijn), teams 'half', rows, course [[u,v],..] (looproute voorste speler), back, follow, flee, oneSide, keepers, tagger, move, under, mid, bench, chase, objs met at:[[u,v]] of grid:true,
 // action (throw|roll|bounce|serve|smash|block|dive|overhead|forearm|run), teams [a,b], net true/false,
 // over true/false, trainer true/false, objs [{t:'hoepel',n:8}, ...]
 window.SCENE_OVERRIDES={
@@ -778,7 +789,7 @@ window.SCENE_OVERRIDES={
  // Op commando
  '019634e5-7951-7817-aca9-99d0712272ce':{form:'pairs',action:'dive',over:false},
  // De omgedraaide Pylon
- '01965ca3-e34a-7ac8-b61c-22d1b11c974d':{form:'vs',teams:[1,1],action:'throw'},
+ '01965ca3-e34a-7ac8-b61c-22d1b11c974d':{serve:true,form:'vs',teams:[1,1],action:'throw'},
  // Traag-snel
  '01965ca5-b3f8-7438-af59-647408fa3e13':{form:'feed',over:true,trainer:true,action:'throw'},
  // Lopen en bouncen
@@ -912,7 +923,7 @@ window.SCENE_OVERRIDES={
  // Doeltjes smash
  '01965cda-e03a-76ad-86b7-a552f905c374':{form:'queue',action:'smash',over:true,objs:[]},
  // Smashball Level 4
- '01965e24-68bb-7d54-aabd-b3be2fd299d7':{form:'vs',teams:[3,3],action:'smash'},
+ '01965e24-68bb-7d54-aabd-b3be2fd299d7':{serve:true,form:'vs',teams:[3,3],action:'smash'},
  // Korfvolley
  '01965d7f-a683-7877-83fc-fd99691f8941':{form:'pairs',action:'overhead',over:false},
  // Deense One on One (bovenhands)
@@ -1057,7 +1068,7 @@ window.SCENE_OVERRIDES={
  // Pepperen
  '0196ed96-5987-7c6b-9744-5ad85ecc38cf':{form:'pairs',over:false,action:'throw'},
  // Voor-tijdens-na (serveren)
- '0196a4b3-c6a0-7bcd-a324-4915c0138da0':{form:'vs',teams:[1,2],action:'smash'},
+ '0196a4b3-c6a0-7bcd-a324-4915c0138da0':{serve:true,form:'vs',teams:[1,2],action:'smash'},
  // De setter van het net
  '0196a4bc-f0a1-7c7a-8276-73f50b3658cc':{form:'queue',action:'smash',trainer:true,over:true},
  // Iemand is hem, niemand is hem
@@ -1077,12 +1088,21 @@ window.SCENE_OVERRIDES={
  // Tennisbalpylon
  '0196a4a1-7ee9-7779-8fc2-6b16c93759c6':{form:'vs',teams:[2,2],action:'throw',net:true,objs:[]},
  // Chaosbal
- '0196a4aa-a974-73ee-908d-7a2733ed581d':{form:'vs',teams:[3,3],action:'throw',net:true},
+ '0196a4aa-a974-73ee-908d-7a2733ed581d':{serve:true,form:'vs',teams:[3,3],action:'throw',net:true},
  // King of the court
- '0196a4aa-a974-73ee-908d-7a27343c2cab':{form:'vs',teams:[2,2],action:'smash',net:true},
+ '0196a4aa-a974-73ee-908d-7a27343c2cab':{serve:true,form:'vs',teams:[2,2],action:'smash',net:true},
  // 1 tegen 1 King of the Court
  '0196c980-87cc-7f49-897e-7e71b7a2676f':{form:'vs',teams:[1,1],action:'throw',net:true},
  // Sinttchoukbal
- '0196c8a4-ccc7-7eb0-98e7-87545ccbbb49':{form:'queue',action:'smash',over:false,net:false}
+ '0196c8a4-ccc7-7eb0-98e7-87545ccbbb49':{form:'queue',action:'smash',over:false,net:false},
+ // ===== Serveerders zichtbaar (17-11-2026): rally begint met een service vanaf achter de achterlijn =====
+ // Smashball Level 3
+ '01965d48-aef9-70a9-8164-4ac8c5d9caea':{serve:true},
+ // Gekleurde dopjes
+ '01965e01-9ac1-7e5b-b0c5-28cd00058bd6':{serve:true},
+ // Bal in de lucht
+ '0196a4b3-c6a0-7bcd-a324-4915bf28f536':{serve:true},
+ // Sintvolleysoftbal
+ '0196c89d-774c-7c45-8fc3-de99cce0e2b8':{serve:true},
 };
 })();
