@@ -7,6 +7,7 @@
 const CLUB='CKL8Z3K';                 // verenigingscode van VV Woudenberg bij de Nevobo
 const WELKOM_TITEL='Welkom, trainer!';
 const WELKOM_TEKST='Fijn dat je er bent. Stel hier in een paar tikken een training samen voor de mini’s of voor jeugd en senioren, en bekijk de 5-1 rotaties en de verdediging. Hieronder zie je wie er deze week speelt en hoe onze teams het deden. Veel trainingsplezier!';
+const WELKOM_KORT='Stel snel een training samen en zie hieronder wie er deze week speelt.'; // op de telefoon
 const AANTAL=8;                       // aantal wedstrijden per lijst voordat "Meer tonen" verschijnt
 // -------------------
 
@@ -52,7 +53,7 @@ async function laad(){
  put(LSK,data);return data;
 }
 
-let D=null,meerP=false,meerU=false,fout='';
+let D=null,meerP=false,meerU=false,fout='',tab='p';
 function teams(){
  const s=new Set();if(D){D.p.forEach(w=>s.add(w.team));D.u.forEach(w=>s.add(w.team));}
  const v=x=>{const m=/^([A-Z]+)\s*(\d*)/.exec(x)||[];return [m[1]||x,+(m[2]||0)];};
@@ -60,7 +61,8 @@ function teams(){
  return Array.from(s).sort((x,y)=>{const a=v(x),b=v(y),ia=volg.indexOf(a[0]),ib=volg.indexOf(b[0]);
   return (ia<0?99:ia)-(ib<0?99:ib)||String(a[0]).localeCompare(b[0])||a[1]-b[1];});
 }
-const naam=(s)=>isW(s)?'<b>'+esc(s)+'</b>':esc(s);
+// eigen teams zonder sponsornaam: "Vallei Finance Group Woudenberg DS 1" -> "Woudenberg DS 1"
+const naam=(s)=>isW(s)?'<b>Woudenberg '+esc(teamVan(s))+'</b>':esc(s);
 
 function programma(lijst){
  const nu=Date.now()-2*3600e3,rest=lijst.filter(w=>w.t>=nu).sort((a,b)=>a.t-b.t);
@@ -93,7 +95,7 @@ function weekStat(){
  if(!D)return '';const nu=Date.now(),wk=D.p.filter(w=>w.t>=nu-2*3600e3&&w.t<nu+7*864e5);
  const thuis=wk.filter(w=>/woudenberg/i.test(w.plaats||'')).length;
  const vorig=D.u.filter(w=>w.t>=nu-7*864e5),win=vorig.filter(w=>{const wa=isW(w.a),wb=isW(w.b);return wa!==wb&&((wa?w.sa:w.sb)>(wa?w.sb:w.sa));}).length;
- return '<div class="hm-stats"><div><b>'+wk.length+'</b><span>wedstrijden de komende 7 dagen</span></div><div><b>'+thuis+'</b><span>daarvan thuis</span></div><div><b>'+win+'/'+vorig.length+'</b><span>gewonnen afgelopen week</span></div></div>';
+ return '<div class="hm-stats"><div><b>'+wk.length+'</b><span><i>wedstrijden de </i>komende 7 dagen</span></div><div><b>'+thuis+'</b><span><i>daarvan </i>thuis</span></div><div><b>'+win+'/'+vorig.length+'</b><span>gewonnen<i> afgelopen week</i></span></div></div>';
 }
 
 function teken(){
@@ -101,24 +103,26 @@ function teken(){
  const team=get(TEAMK,''),f=l=>team?l.filter(w=>w.team===team):l,ts=teams();
  const opt='<option value="">Alle teams</option>'+ts.map(t=>'<option'+(t===team?' selected':'')+'>'+esc(t)+'</option>').join('');
  const bij=D?'Bijgewerkt '+new Date(D.bij).toLocaleString('nl-NL',{...TZ,weekday:'short',hour:'2-digit',minute:'2-digit'}):'';
- el.innerHTML='<section class="hm-welkom"><h2>'+esc(WELKOM_TITEL)+'</h2><p>'+esc(WELKOM_TEKST)+'</p>'
+ el.innerHTML='<section class="hm-welkom"><h2>'+esc(WELKOM_TITEL)+'</h2><p class="hm-lang">'+esc(WELKOM_TEKST)+'</p><p class="hm-kort">'+esc(WELKOM_KORT)+'</p>'
   +'<div class="hm-snel"><button type="button" data-v="gen">Training mini’s</button><button type="button" data-v="sen">Training jeugd &amp; senioren</button>'
   +'<button type="button" data-v="rot">5-1 rotaties</button><button type="button" data-v="def">Verdediging</button></div></section>'
   +weekStat()
-  +'<div class="hm-kop"><label for="hm_team">Team</label><select id="hm_team">'+opt+'</select><button type="button" id="hm_ver" class="hm-ver">Vernieuwen</button><span class="hm-bij">'+esc(fout||bij)+'</span></div>'
-  +'<div class="hm-cols"><section class="card hm-lijst"><h3>Programma</h3>'+(D?programma(f(D.p)):'<p class="hm-leeg">Wedstrijden laden…</p>')+'</section>'
-  +'<section class="card hm-lijst"><h3>Uitslagen</h3>'+(D?uitslagen(f(D.u)):'<p class="hm-leeg">Uitslagen laden…</p>')+'</section></div>'
-  +'<p class="note hm-bron">Wedstrijdgegevens: Nevobo (volleybal.nl). Tik op een wedstrijd voor alle details. Meer over de club op <a href="https://www.volleybalwoudenberg.nl" target="_blank" rel="noopener">volleybalwoudenberg.nl</a>.</p>';
+  +'<div class="hm-kop"><label for="hm_team">Team</label><select id="hm_team">'+opt+'</select><button type="button" id="hm_ver" class="hm-ver" aria-label="Vernieuwen" title="Vernieuwen"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a9 9 0 1 1-3-6.7M21 4v5h-5"/></svg><span>Vernieuwen</span></button></div>'
+  +'<div class="hm-seg" role="tablist"><button type="button" role="tab" data-t="p" aria-selected="'+(tab==='p')+'">Programma</button><button type="button" role="tab" data-t="u" aria-selected="'+(tab==='u')+'">Uitslagen</button></div>'
+  +'<div class="hm-cols" data-tab="'+tab+'"><section class="card hm-lijst hm-p"><h3>Programma</h3>'+(D?programma(f(D.p)):'<p class="hm-leeg">Wedstrijden laden…</p>')+'</section>'
+  +'<section class="card hm-lijst hm-u"><h3>Uitslagen</h3>'+(D?uitslagen(f(D.u)):'<p class="hm-leeg">Uitslagen laden…</p>')+'</section></div>'
+  +'<p class="note hm-bron">'+((fout||bij)?esc(fout||bij)+'. ':'')+'Wedstrijdgegevens: Nevobo (volleybal.nl). Tik op een wedstrijd voor alle details. Meer over de club op <a href="https://www.volleybalwoudenberg.nl" target="_blank" rel="noopener">volleybalwoudenberg.nl</a>.</p>';
  el.querySelectorAll('.hm-snel button').forEach(b=>b.onclick=()=>{setView(b.dataset.v);window.scrollTo(0,0);});
  $('hm_team').onchange=e=>{put(TEAMK,e.target.value);meerP=meerU=false;teken();};
  $('hm_ver').onclick=ververs;
+ el.querySelectorAll('.hm-seg button').forEach(b=>b.onclick=()=>{tab=b.dataset.t;teken();});
  el.querySelectorAll('.hm-meer').forEach(b=>b.onclick=()=>{if(b.dataset.m==='p')meerP=!meerP;else meerU=!meerU;teken();});
 }
 let bezig=false;
 async function ververs(){
- if(bezig)return;bezig=true;fout='';const b=$('hm_ver');if(b){b.disabled=true;b.textContent='Laden…';}
+ if(bezig)return;bezig=true;fout='';const b=$('hm_ver');if(b){b.disabled=true;b.classList.add('laadt');}
  try{D=await laad();}
- catch(e){fout=D?'Geen verbinding, dit is de stand van '+new Date(D.bij).toLocaleString('nl-NL',{...TZ,weekday:'short',hour:'2-digit',minute:'2-digit'}):'De wedstrijden konden niet worden geladen. Probeer het later opnieuw.';}
+ catch(e){fout=D?'Geen verbinding, dit is de stand van '+new Date(D.bij).toLocaleString('nl-NL',{...TZ,weekday:'short',hour:'2-digit',minute:'2-digit'}):'De wedstrijden konden niet worden geladen. Probeer het later opnieuw';}
  finally{bezig=false;teken();}
 }
 
