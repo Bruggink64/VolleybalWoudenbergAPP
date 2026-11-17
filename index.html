@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>VV Woudenberg: Mini’s Trainingsgenerator</title>
 <!-- Clublettertype (Poppins). Zonder internet valt de app terug op een systeemlettertype; alles blijft werken. -->
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&family=Inter:wght@400;500;600&display=swap">
 <style>
 :root{--bg:#eef1f6;--card:#fff;--ink:#0b1b33;--mut:#55637c;--line:#d8deea;--acc:#ffd100;--navy:#1d1d1b;--navy2:#0b2b4f;--blue:#0089fe;--court:#3b97d6;--a:#1d4ed8;--b:#059669;--ball:#f59e0b;--chip:#edf1f7;--link:#006fd1;--rail:#1d1d1b;
 --disp:Poppins,"Century Gothic","Avenir Next","Segoe UI",system-ui,sans-serif;
@@ -136,6 +136,7 @@ dialog#pick::backdrop,dialog#s_pick::backdrop{background:rgba(0,0,0,.45)}
 @media(max-width:560px){header{padding:12px 12px 0}.logo{height:46px}.brand{flex:1;min-width:0}header h1{font-size:18px}header p{font-size:12px}.tabs{margin-left:0;width:100%}.tabs button{flex:1;padding:8px 4px 10px;font-size:14px}.blk{grid-template-columns:42px 1fr;gap:0 8px}.tm{width:42px;height:42px;font-size:15px}.blk::before{left:20px}.bh h2{font-size:20px}}
 @media print{aside,.noprint,header p,.net{display:none!important}.wrap{display:block}.dt details{display:block}.dt details>*{display:block}.dr{break-inside:avoid}}
 </style>
+<link rel="stylesheet" href="ontwerp.css">
 </head>
 <body>
 <header>
@@ -600,5 +601,6 @@ controls();savedUI();flagsUI();if(!decode(location.hash.slice(1)))gen();
 <script src="senioren.js"></script>
 <script src="senioren-app.js"></script>
 <script src="suggestie.js"></script>
+<script src="ontwerp.js"></script>
 </body>
 </html>
