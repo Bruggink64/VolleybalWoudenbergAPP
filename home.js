@@ -83,19 +83,37 @@ function uitslagen(lijst){
  const toon=meerU?rest.slice(0,AANTAL*4):rest.slice(0,AANTAL);let h='',dk='';
  toon.forEach(w=>{const d=new Date(w.t),k=dagKey(d);
   if(k!==dk){dk=k;h+='<h4 class="hm-dag">'+esc(dag(d))+'</h4>';}
-  const wa=isW(w.a),wb=isW(w.b),ons=wa&&!wb?w.sa:w.sb,zij=wa&&!wb?w.sb:w.sa;
-  const res=(wa&&wb)?'':(ons>zij?'win':'verlies');
+  const res=uitkomst(w);
   h+='<a class="hm-w" href="'+esc(w.url)+'" target="_blank" rel="noopener"><span class="hm-s '+res+'">'+w.sa+'–'+w.sb+'</span>'
    +'<span class="hm-m"><span class="hm-ts">'+naam(w.a)+' <i>–</i> '+naam(w.b)+'</span>'
    +(w.sets?'<span class="hm-z">'+esc(w.sets)+'</span>':'')+'</span></a>';});
  if(rest.length>toon.length||meerU)h+='<button type="button" class="hm-meer" data-m="u">'+(meerU?'Minder tonen':'Meer tonen ('+(rest.length-toon.length)+' meer)')+'</button>';
  return h;
 }
-function weekStat(){
- if(!D)return '';const nu=Date.now(),wk=D.p.filter(w=>w.t>=nu-2*3600e3&&w.t<nu+7*864e5);
- const thuis=wk.filter(w=>/woudenberg/i.test(w.plaats||'')).length;
- const vorig=D.u.filter(w=>w.t>=nu-7*864e5),win=vorig.filter(w=>{const wa=isW(w.a),wb=isW(w.b);return wa!==wb&&((wa?w.sa:w.sb)>(wa?w.sb:w.sa));}).length;
- return '<div class="hm-stats"><div><b>'+wk.length+'</b><span><i>wedstrijden de </i>komende 7 dagen</span></div><div><b>'+thuis+'</b><span><i>daarvan </i>thuis</span></div><div><b>'+win+'/'+vorig.length+'</b><span>gewonnen<i> afgelopen week</i></span></div></div>';
+// mini-teams (L1 t/m L6) tellen niet mee in de clubcijfers
+const mini=t=>/^L\d/i.test(t);
+// 'win', 'gelijk' (2-2 bij vaste sets), 'verlies', of '' bij een onderling duel
+function uitkomst(w){const wa=isW(w.a),wb=isW(w.b);if(wa&&wb)return '';
+ const ons=wa?w.sa:w.sb,zij=wa?w.sb:w.sa;return ons>zij?'win':ons<zij?'verlies':'gelijk';}
+function tegel(b,kort,lang){return '<div><b>'+b+'</b><span>'+(lang?'<i>'+lang+'</i>':'')+kort+'</span></div>';}
+function weekStat(team){
+ if(!D)return '';const nu=Date.now();
+ if(!team){
+  const wk=D.p.filter(w=>!mini(w.team)&&w.t>=nu-2*3600e3&&w.t<nu+7*864e5);
+  const thuis=wk.filter(w=>/woudenberg/i.test(w.plaats||'')).length;
+  const vorig=D.u.filter(w=>!mini(w.team)&&w.t>=nu-7*864e5&&uitkomst(w)),win=vorig.filter(w=>uitkomst(w)==='win').length;
+  return '<div class="hm-stats">'+tegel(wk.length,'komende 7 dagen','wedstrijden de ')+tegel(thuis,'thuis','daarvan ')+tegel(win+'/'+vorig.length,'gewonnen',null).replace('</span>','<i> afgelopen week</i></span>')+'</div>'
+   +'<p class="hm-uitleg">Zonder de mini’s. Kies een team voor de cijfers van het seizoen.</p>';
+ }
+ // seizoen van één team
+ const g=D.u.filter(w=>w.team===team&&uitkomst(w)).sort((a,b)=>b.t-a.t);
+ let W=0,G=0,V=0,sv=0,st=0;
+ g.forEach(w=>{const u=uitkomst(w);if(u==='win')W++;else if(u==='gelijk')G++;else V++;const wa=isW(w.a);sv+=wa?w.sa:w.sb;st+=wa?w.sb:w.sa;});
+ const volg=D.p.filter(w=>w.team===team&&w.t>=nu-2*3600e3).sort((a,b)=>a.t-b.t)[0];
+ const vorm=g.slice(0,5).reverse().map(w=>{const u=uitkomst(w);return '<i class="hm-v '+u+'" title="'+esc(w.a+' – '+w.b+': '+w.sa+'-'+w.sb)+'">'+(u==='win'?'W':u==='gelijk'?'G':'V')+'</i>';}).join('');
+ return '<div class="hm-stats hm-team">'+tegel(g.length,'gespeeld')+tegel(W,'gewonnen')+(G?tegel(G,'gelijk'):'')+tegel(V,'verloren')+tegel(sv+'–'+st,'sets')+'</div>'
+  +'<div class="hm-vorm">'+(vorm?'<span>Laatste '+Math.min(5,g.length)+'</span>'+vorm:'<span>Nog geen uitslagen dit seizoen</span>')
+  +(volg?'<span class="hm-volg">Volgende: <b>'+esc(dag(new Date(volg.t)))+' '+esc(tijd(new Date(volg.t)))+'</b>, '+(isW(volg.a)?esc(volg.b):esc(volg.a))+(/woudenberg/i.test(volg.plaats||'')?' (thuis)':' (uit)')+'</span>':'')+'</div>';
 }
 
 function teken(){
@@ -106,8 +124,8 @@ function teken(){
  el.innerHTML='<section class="hm-welkom"><h2>'+esc(WELKOM_TITEL)+'</h2><p class="hm-lang">'+esc(WELKOM_TEKST)+'</p><p class="hm-kort">'+esc(WELKOM_KORT)+'</p>'
   +'<div class="hm-snel"><button type="button" data-v="gen">Training mini’s</button><button type="button" data-v="sen">Training jeugd &amp; senioren</button>'
   +'<button type="button" data-v="rot">5-1 rotaties</button><button type="button" data-v="def">Verdediging</button></div></section>'
-  +weekStat()
   +'<div class="hm-kop"><label for="hm_team">Team</label><select id="hm_team">'+opt+'</select><button type="button" id="hm_ver" class="hm-ver" aria-label="Vernieuwen" title="Vernieuwen"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a9 9 0 1 1-3-6.7M21 4v5h-5"/></svg><span>Vernieuwen</span></button></div>'
+  +weekStat(team)
   +'<div class="hm-seg" role="tablist"><button type="button" role="tab" data-t="p" aria-selected="'+(tab==='p')+'">Programma</button><button type="button" role="tab" data-t="u" aria-selected="'+(tab==='u')+'">Uitslagen</button></div>'
   +'<div class="hm-cols" data-tab="'+tab+'"><section class="card hm-lijst hm-p"><h3>Programma</h3>'+(D?programma(f(D.p)):'<p class="hm-leeg">Wedstrijden laden…</p>')+'</section>'
   +'<section class="card hm-lijst hm-u"><h3>Uitslagen</h3>'+(D?uitslagen(f(D.u)):'<p class="hm-leeg">Uitslagen laden…</p>')+'</section></div>'

@@ -21,6 +21,15 @@
 @keyframes hmdraai{to{transform:rotate(360deg)}}
 .hm-kort,.hm-seg{display:none}
 .hm-stats i{font-style:normal}
+.hm-team{grid-template-columns:repeat(auto-fit,minmax(0,1fr))}
+.hm-uitleg{font-size:12.5px;color:var(--mut);margin:-6px 0 12px}
+.hm-vorm{display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin:-4px 0 14px;font-size:13px;color:var(--mut)}
+.hm-vorm .hm-v{font:800 12px/24px var(--disp);font-style:normal;width:24px;height:24px;border-radius:7px;text-align:center;background:var(--chip);color:var(--ink)}
+.hm-vorm .hm-v.win{background:var(--acc);color:#1d1d1b}
+.hm-vorm .hm-v.verlies{background:#1d1d1b;color:#fff}
+.hm-volg{margin-left:auto}
+.hm-volg b{color:var(--ink);font-weight:600}
+.hm-s.gelijk{background:var(--chip)}
 .hm-cols{display:grid;gap:14px;grid-template-columns:minmax(0,1fr)}
 @media(min-width:900px){.hm-cols{grid-template-columns:1fr 1fr;align-items:start}}
 .hm-lijst{padding:14px 16px}
@@ -47,6 +56,8 @@
 .hm-bron{margin-top:14px}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .hm-s.verlies{background:#2b3d5a}}
 :root[data-theme="dark"] .hm-s.verlies{background:#2b3d5a}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .hm-vorm .hm-v.verlies{background:#2b3d5a}}
+:root[data-theme="dark"] .hm-vorm .hm-v.verlies{background:#2b3d5a}
 @media (max-width:700px){
  #v_home{padding:12px 12px 20px}
  .hm-welkom{padding:14px 16px;border-radius:16px}
@@ -62,6 +73,10 @@
  .hm-stats b{font-size:20px}
  .hm-stats span{font-size:11.5px;line-height:1.25;display:block}
  .hm-stats i{display:none}
+ .hm-team{grid-template-columns:repeat(auto-fit,minmax(0,1fr))}
+ .hm-uitleg{margin:-4px 0 10px;font-size:12px}
+ .hm-vorm{margin:-2px 0 10px;font-size:12.5px}
+ .hm-volg{margin-left:0;width:100%}
  /* team en vernieuwen op één regel */
  .hm-kop{flex-wrap:nowrap;margin:0 0 10px}
  .hm-kop label{display:none}
