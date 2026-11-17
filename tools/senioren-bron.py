@@ -23,7 +23,7 @@ def pt(v):
 
 Y, SV, LIB, OPP, TR, BL, W = '#ffcc00', '#c084fc', '#34d399', '#f87171', '#2dd4bf', '#fb923c', '#fbbf24'
 
-def ex(i, t, blok, thema, niv, opzet, doel, stappen, aandacht, variatie, spelers, bal, mn=None, door=None):
+def ex(i, t, blok, thema, niv, opzet, doel, stappen, aandacht, variatie, spelers, bal, mn=None, door=None, need=None):
     assert len(stappen) == 4 and len(bal) == 5, t
     ps = []
     for s in spelers:
@@ -34,7 +34,7 @@ def ex(i, t, blok, thema, niv, opzet, doel, stappen, aandacht, variatie, spelers
     return {'id': 'n%d' % i, 't': t, 'blok': blok, 'thema': thema, 'niv': niv,
             'min': mn or {'wu': 10, 'insp': 10, 'tech': 20, 'spel': 20, 'zes': 20, 'eind': 10}[blok],
             'opzet': opzet, 'doel': doel, 'stappen': stappen, 'aandacht': aandacht, 'variatie': variatie,
-            'p': ps, 'bal': [pt(b) for b in bal], **({'door': door} if door else {})}
+            'p': ps, 'bal': [pt(b) for b in bal], **({'door': door} if door else {}), **({'needx': need} if need else {})}
 
 A = [1, 2, 3, 4, 5]; V = [2, 3, 4, 5]; H = [3, 4, 5]; TOP = [4, 5]
 N = []
@@ -494,13 +494,17 @@ N.append(ex(55, 'Dynamische warming-up zonder bal', 'wu', ['warming'], A,
  [['A', Y, (170, 630), (170, 470), (170, 370), (130, 500)], ['B', Y, (250, 630), (250, 470), (250, 370), (130, 560)], ['C', Y, (330, 630), (330, 470), (330, 370), (440, 500)], ['D', Y, (410, 630), (410, 470), (410, 370), (440, 560)]],
  NB, mn=10, door=['A', 'B', 'C', 'D']))
 N.append(ex(56, 'Reactiespel op signaal', 'wu', ['warming', 'verdediging'], A,
- 'Spelers in tweetallen tegenover elkaar op de 3-meterlijnen aan beide kanten van het net. De trainer roept een kleur of steekt een arm omhoog; iedereen reageert zo snel mogelijk.',
+ 'Spelers in tweetallen tegenover elkaar op de 3-meterlijnen aan beide kanten van het net. Met 8 spelers staan er twee tweetallen per kant, verspreid over de hele breedte van het veld; met 4 spelers één tweetal per kant. De trainer roept een richting of steekt een arm omhoog; iedereen reageert zo snel mogelijk.',
  'Reactiesnelheid en een explosieve eerste stap, zonder bal.',
- ['Trainer roept "links": iedereen sprint naar de zijlijn links.', 'Trainer roept "net": bloksprong bij het net.', 'Trainer roept "achter": achteruit naar de achterlijn en laag zakken.', 'Wie het laatst is, doet 3 squats.'],
- ['Klein en laag staan, gewicht op de voorvoeten.', 'Eerst kijken, dan bewegen: niet raden.'],
+ ['Trainer roept "links" of "rechts": iedereen sprint naar die zijlijn.', 'Trainer roept "net": bloksprong bij het net.', 'Trainer roept "achter": achteruit naar de achterlijn en laag zakken.', 'Wie het laatst is, doet 3 squats.'],
+ ['Klein en laag staan, gewicht op de voorvoeten.', 'Eerst kijken, dan bewegen: niet raden.', 'Houd afstand van je buurman zodat je elkaar niet raakt.'],
  'Moeilijker: de trainer wijst in plaats van roept, of doet het omgekeerde van wat hij roept.',
- [['TR', TR, (500, 340)], ['A', Y, (230, 450), (130, 450), (230, 360), (230, 620)], ['B', Y, (330, 450), (130, 470), (330, 360), (330, 620)], ['C', OPP, (230, 230), (130, 230), (230, 320), (230, 60)], ['D', OPP, (330, 230), (130, 210), (330, 320), (330, 60)]],
- NB, mn=10))
+ [['TR', TR, (500, 340)],
+  ['A', Y, (160, 450), (130, 450), (160, 360), (160, 620)], ['B', Y, (240, 450), (150, 470), (240, 360), (240, 620)],
+  ['E', Y, (320, 450), (410, 450), (320, 360), (320, 620)], ['F', Y, (400, 450), (430, 470), (400, 360), (400, 620)],
+  ['C', OPP, (160, 230), (130, 230), (160, 320), (160, 60)], ['D', OPP, (240, 230), (150, 210), (240, 320), (240, 60)],
+  ['G', OPP, (320, 230), (410, 230), (320, 320), (320, 60)], ['H', OPP, (400, 230), (430, 210), (400, 320), (400, 60)]],
+ NB, mn=10, need=4))
 N.append(ex(57, 'Voetenwerkcircuit: blok, verdediging en aanloop', 'wu', ['warming', 'blok', 'aanval'], A,
  'Drie stations zonder bal. Station 1 aan het net: zijwaartse blokpas en bloksprong. Station 2 in het achterveld: verdedigingshouding en uitstappen. Station 3 bij de 3-meterlijn: aanlooppas en afzet. Elke minuut wisselen.',
  'Volleybalspecifieke bewegingen opwarmen voordat de bal erbij komt.',
@@ -802,6 +806,7 @@ OBJ = {'K', 'M', 'M2', 'M1', 'M5', 'M6', 'Z', 'GZ', 'BOX', 'P1', 'P2'}
 for d in sen:
     k = sum(1 for nm, kl, _ in d['p'] if kl != TR and nm not in OBJ and not (nm == 'P' and kl == BL))
     d['need'] = 4 if d['blok'] in ('zes', 'eind') else max(2, min(k, 12))
+    if 'needx' in d: d['need'] = d.pop('needx')  # vast minimum, ook als de animatie meer spelers toont
     d.pop('niv', None)
 f.write_text(head + 'window.SEN=' + json.dumps(sen, ensure_ascii=False, separators=(',', ':')).replace('},{"id"', '},\n{"id"') + ';\n')
 import collections
