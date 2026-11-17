@@ -443,12 +443,15 @@ function formation(F,spec,k,fi){
    if(k<ta+tb){ta=Math.ceil(k/2);tb=k-ta;}
    if(!tb)return formationOld(F,spec,k,fi);
    const posT=(n,u0,u1)=>{const pts=[];if(n===1)pts.push([.5*(u0+u1),.5]);else if(n===2)pts.push([u0+.6*(u1-u0),.3],[u0+.3*(u1-u0),.7]);else if(n===3)pts.push([u0+.7*(u1-u0),.25],[u0+.35*(u1-u0),.5],[u0+.7*(u1-u0),.75]);else{const rows=Math.ceil(n/2);for(let i=0;i<n;i++)pts.push([u0+(i%2?.3:.7)*(u1-u0),.2+.6*(Math.floor(i/2)/Math.max(1,rows-1))]);}return pts.map(p=>P(p[0],p[1]));};
-   const A=posT(ta,.08,.46),B=posT(tb,.92,.54),T=7,bg=fi*.5;
-   const ev=[['B',tb-1,[7,6]],['A',ta>1?1:0,[-7,-5]],['B',0,[6,-6]],['A',0,[0,0]]];
+   // tri: 3 tegen 3 met de driehoek met de punt naar voren (midvoor vooraan, twee spelers achter)
+   const tri=spec.tri&&ta===3&&tb===3&&!!spec.rally;
+   const A=tri?[P(.4,.5),P(.2,.25),P(.2,.75)]:posT(ta,.08,.46),B=tri?[P(.6,.5),P(.8,.25),P(.8,.75)]:posT(tb,.92,.54),T=7,bg=fi*.5;
+   // rally: eigen balverloop [team,index,{u,v}]; start: wie de bal serveert
+   const ev=tri?spec.rally:[['B',tb-1,[7,6]],['A',ta>1?1:0,[-7,-5]],['B',0,[6,-6]],['A',0,[0,0]]];
    const kfs={};const key=(s,i)=>s+i;
-   const bp=[A[0]],bt=[0];
+   const bp=[tri&&spec.start?(spec.start[0]==='A'?A:B)[spec.start[1]]:A[0]],bt=[0];
    ev.forEach((e,n)=>{
-    const base=(e[0]==='A'?A:B)[e[1]],L=[base[0]+e[2][0],base[1]+e[2][1]];
+    const base=(e[0]==='A'?A:B)[e[1]],L=Array.isArray(e[2])?[base[0]+e[2][0],base[1]+e[2][1]]:P(e[2].u,e[2].v);
     const s=n*.25+.04,ar=n*.25+.2,dep=n===3?1:(n+1)*.25+.04;
     bp.push(bp[bp.length-1]);bt.push(s);bp.push(L);bt.push(ar);
     const q=kfs[key(e[0],e[1])]||(kfs[key(e[0],e[1])]={base,p:[base],t:[0]});
@@ -662,6 +665,8 @@ window.SCENE_OVERRIDES={
  // In de kegel: trainer gooit over het net naar 2 spelers
  '019634e5-793d-7613-951a-d149edca6c49':{form:'feed',over:true,trainer:true,action:'throw',objs:[{t:'kar',n:1}]},
  // Speel en go
+ // 3 tegen 3 met bonuspunt: ontvangers in een driehoek met de punt naar voren; serve, pass naar midvoor, set naar rechtsvoor, aanval in drie keer over het net
+ '0196a4b5-9be9-7219-887d-be6420e014f6':{form:'vs',teams:[3,3],action:'overhead',tri:true,start:['B',1],rally:[['A',1,{u:.2,v:.25}],['A',0,{u:.4,v:.5}],['A',2,{u:.4,v:.8}],['B',0,{u:.62,v:.5}]]},
  '019634e5-793d-7613-951a-d149ed333e53':{form:'vs',teams:[1,1],action:'throw'},
  // Om de pylon en pass
  '019634e5-793d-7613-951a-d149ee672fbe':{form:'pairs',over:true,action:'throw',objs:[]},
