@@ -12,7 +12,7 @@ const AANTAL=8;                       // aantal wedstrijden per lijst voordat "M
 // -------------------
 
 const FEED='https://api.nevobo.nl/export/vereniging/'+CLUB+'/';
-const LSK='vvw_home_v1',TEAMK='vvw_home_team',STK='vvw_home_stand_v2';
+const LSK='vvw_home_v1',TEAMK='vvw_home_team',STK='vvw_home_stand_v3';
 // competitiestand: plek van elk team in de poules van onze teams (JSON-API van de Nevobo)
 const API='https://api.nevobo.nl';
 const $=id=>document.getElementById(id);
@@ -74,6 +74,13 @@ async function laadStand(){
  const groepen=[];for(let i=0;i<poules.length;i+=8)groepen.push(poules.slice(i,i+8));
  const leden=(await Promise.all(groepen.map(g=>allePaginas('/competitie/pouleindelingen?'+g.map(p=>'poule[]='+encodeURIComponent(p)).join('&'))))).flat();
  const perPoule={};leden.forEach(m=>{(perPoule[m.poule]=perPoule[m.poule]||[]).push(m);});
+ // naam en laatste wijziging van elke poule, voor de standtabel onderaan
+ const info={};await Promise.all(poules.map(p=>fetch(API+p,{headers:{Accept:'application/ld+json'}}).then(x=>x.ok?x.json():null).then(d=>{if(d)info[p]={naam:d.omschrijving||'',bij:Date.parse(d.laatsteUpdate||'')||0};}).catch(()=>{})));
+ // tabel[eigen team] = stand van de poule die het laatst is bijgewerkt (na de winterstop de nieuwe poule)
+ const tabel={};
+ Object.keys(perPoule).forEach(p=>{const l=perPoule[p].slice().sort((a,b)=>(a.positie||99)-(b.positie||99)),i=info[p]||{naam:'',bij:0};
+  l.filter(m=>isW(m.omschrijving||'')).forEach(o=>{const t=teamVan(o.omschrijving);
+   if(!tabel[t]||i.bij>=tabel[t].bij)tabel[t]={naam:i.naam,bij:i.bij,rij:l.map(m=>[m.positie,m.omschrijving,m.gespeeld,m.punten,m.setsVoor,m.setsTegen])};});});
  // r[eigen team]["naam tegenstander"] = [plek, aantal teams]
  const r={};
  Object.keys(perPoule).forEach(p=>{
@@ -84,7 +91,7 @@ async function laadStand(){
     if(m.positie&&!oud)k[n]=[m.positie,l.length];});
   });
  });
- const data={r,bij:Date.now()};put(STK,data);return data;
+ const data={r,tabel,bij:Date.now()};put(STK,data);return data;
 }
 function plek(team,naam){
  const k=S&&S.r&&S.r[team];if(!k)return null;const n=sleutel(naam);
@@ -95,6 +102,13 @@ function plek(team,naam){
 function rang(w,naam){
  const p=plek(w.team,naam);if(!p)return '';
  return ' <span class="hm-r" title="'+p[0]+'e van '+p[1]+' in de competitie">#'+p[0]+'</span>';
+}
+
+function stand(team){
+ const t=team&&S&&S.tabel&&S.tabel[team];if(!t||!t.rij.length)return '';
+ return '<section class="card hm-stand"><h3>Stand'+(t.naam?' <span>'+esc(t.naam)+'</span>':'')+'</h3><table><thead><tr><th>#</th><th class="hm-sn">Team</th><th title="gespeeld">G</th><th title="punten">P</th><th title="sets voor–tegen">Sets</th></tr></thead><tbody>'
+  +t.rij.map(r=>'<tr'+(isW(r[1]||'')&&teamVan(r[1])===team?' class="eigen"':'')+'><td>'+esc(r[0]||'')+'</td><td class="hm-sn">'+naam(r[1]||'')+'</td><td>'+esc(r[2]??'')+'</td><td><b>'+esc(r[3]??'')+'</b></td><td>'+esc((r[4]??'')+'–'+(r[5]??''))+'</td></tr>').join('')
+  +'</tbody></table></section>';
 }
 
 let S=null,D=null,meerP=false,meerU=false,fout='',tab='p';
@@ -173,6 +187,7 @@ function teken(){
   +'<div class="hm-seg" role="tablist"><button type="button" role="tab" data-t="p" aria-selected="'+(tab==='p')+'">Programma</button><button type="button" role="tab" data-t="u" aria-selected="'+(tab==='u')+'">Uitslagen</button></div>'
   +'<div class="hm-cols" data-tab="'+tab+'"><section class="card hm-lijst hm-p"><h3>Programma</h3>'+(D?programma(f(D.p)):'<p class="hm-leeg">Wedstrijden laden…</p>')+'</section>'
   +'<section class="card hm-lijst hm-u"><h3>Uitslagen</h3>'+(D?uitslagen(f(D.u)):'<p class="hm-leeg">Uitslagen laden…</p>')+'</section></div>'
+  +stand(team)
   +'<p class="note hm-bron">'+((fout||bij)?esc(fout||bij)+'. ':'')+(S?'#3 = huidige plek in de competitiestand. ':'')+'Wedstrijdgegevens: Nevobo (volleybal.nl). Tik op een wedstrijd voor alle details. Meer over de club op <a href="https://www.volleybalwoudenberg.nl" target="_blank" rel="noopener">volleybalwoudenberg.nl</a>.</p>';
  el.querySelectorAll('.hm-snel button').forEach(b=>b.onclick=()=>{setView(b.dataset.v);window.scrollTo(0,0);});
  $('hm_team').onchange=e=>{put(TEAMK,e.target.value);meerP=meerU=false;teken();};
