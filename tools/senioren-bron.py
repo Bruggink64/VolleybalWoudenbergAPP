@@ -922,7 +922,7 @@ N.append(ex(105, '3 tegen 3 over het net met de muur', 'wu', ['warming', 'transi
  'Moeilijker: de bal moet door alle drie de spelers geraakt zijn in een vaste volgorde, of de muur staat verder weg.',
  [['A', Y, (280, 400), (280, 655), (280, 400), (280, 400)], ['B', Y, (165, 400), (165, 400), (165, 655), (165, 400)], ['C', Y, (395, 400), (395, 400), (395, 400), (395, 655)],
   ['D', OPP, (280, 280), (280, 25), (280, 280), (280, 280)], ['E', OPP, (165, 280), (165, 280), (165, 25), (165, 280)], ['F', OPP, (395, 280), (395, 280), (395, 280), (395, 25)]],
- [(280, 400), (165, 400), (395, 400), (280, 300), (165, 280)], mn=10))
+ [(280, 400), (165, 400), (395, 400), (280, 280), (280, 400)], mn=10))
 
 # Titels en niveaus van de oude oefeningen opschonen
 OUD = {
