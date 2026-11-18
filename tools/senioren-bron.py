@@ -900,6 +900,18 @@ N.append(ex(103, 'Rugbypass-loop over de lengte', 'wu', ['warming', 'transitie']
  [['A', Y, (200, 640), (200, 570), (200, 490), (200, 400)], ['B', Y, (280, 640), (280, 575), (280, 495), (280, 405)], ['C', Y, (360, 640), (360, 570), (360, 490), (360, 400)]],
  [(280, 620), (340, 570), (230, 500), (285, 410), (215, 400)], mn=10, need=3))
 
+N.append(ex(104, 'Vangen en gooien over het net', 'wu', ['warming'], A,
+ 'Twee even grote teams, ieder aan een kant van het net. Er wordt met de handen gespeeld: de bal wordt gevangen en gegooid, zonder sprong. Dezelfde regels gelden aan beide kanten.',
+ 'Warmlopen met veel balcontact en bewegen: vangen, mikken en snel terug op je plek zijn.',
+ ['De bal wordt in het veld van één team gegooid. Wie hem vangt, probeert hem zonder te springen zo over het net te gooien dat hij aan de overkant niet gevangen wordt.', 'De speler die gegooid heeft blijft in het veld.', 'De andere spelers van dat team zetten één stap buiten het veld en gaan weer terug naar binnen.', 'Aan de overkant gelden dezelfde regels. Zo gaat het door tot de bal op de grond ligt; dan begint de volgende ronde.'],
+ ['Gooi hoog over het net, niet hard recht vooruit.', 'Roep wie de bal vangt, zodat niet twee spelers dezelfde bal willen.'],
+ 'Moeilijker: de bal mag alleen met één hand gevangen worden, of de gooier mikt op een lege plek in het veld.',
+ [['A', Y, (280, 470), (280, 470), (280, 465), (280, 470)], ['B', Y, (165, 570), (165, 570), (95, 570), (165, 570)], ['C', Y, (395, 570), (395, 570), (465, 570), (395, 570)],
+  ['D', OPP, (280, 200), (280, 200), (280, 205), (280, 200)], ['E', OPP, (165, 110), (165, 110), (165, 110), (165, 110)], ['F', OPP, (395, 110), (395, 110), (395, 110), (395, 110)],
+  ['G', Y, (165, 470), (165, 470), (95, 470), (165, 470)], ['H', Y, (395, 470), (395, 470), (465, 470), (395, 470)], ['I', Y, (280, 620)],
+  ['Q', OPP, (165, 200)], ['R', OPP, (395, 200)], ['U', OPP, (280, 100)]],
+ [(280, 200), (280, 470), (280, 345), (280, 200), (280, 205)], mn=10, need=4))
+
 # Titels en niveaus van de oude oefeningen opschonen
 OUD = {
  's1': ('Vlinder: service, pass en doorlopen', None), 's2': ('Driehoeks-pepper over het net', None),
@@ -994,6 +1006,7 @@ for d in sen:
     d['need'] = 4 if d['blok'] in ('zes', 'eind') else max(2, min(k, 12))
     if 'needx' in d: d['need'] = d.pop('needx')  # vast minimum, ook als de animatie meer spelers toont
     d.pop('niv', None)
+    if d['id'] == 'n104': d['allen'] = True   # iedereen doet mee, twee teams
 # Posities: welke eigen spelers in de animatie een vaste positie hebben (spelverdeler, midden, diagonaal, libero)
 POSRE = [('sv', re.compile(r'^SV$')), ('mid', re.compile(r'^(MID\d?|MB)$')), ('dia', re.compile(r'^DIA$')), ('lib', re.compile(r'^(L|LIB)$'))]
 for d in sen:

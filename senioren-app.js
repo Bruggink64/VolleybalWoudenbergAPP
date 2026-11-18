@@ -55,6 +55,9 @@ function gen(){
 const team=d=>d.blok==='zes'||d.blok==='eind';
 function verdeling(d){
  const n=T.n;
+ // d.vs: vaste verdeling (bijv. 6 tegen 4); d.allen: iedereen doet mee, verdeeld over twee teams aan weerszijden van het net
+ if(d.vs&&n>=d.vs[0]+d.vs[1]){const t=d.vs[0]+d.vs[1];return{team:true,vs:true,a:d.vs[0],b:d.vs[1],rij:n-t,groepen:1,in:t,kort:0};}
+ if(d.allen&&n>=d.need)return{allen:true,rij:0,groepen:1,in:n,kort:0};
  if(team(d)){const a=Math.ceil(n/2);return{team:true,a,b:n-a,rij:0,groepen:1,in:n,kort:0};}
  const k=d.need;
  if(n<k)return{in:n,rij:0,groepen:1,kort:k-n};
@@ -86,7 +89,7 @@ function posNote(d){const o=ontbreekt(d);let t='';
  if(o.hard.length)t+='<p class="sbadge warn">Vraagt '+o.hard.map(k=>ROL[k].toLowerCase()).join(' en ')+(o.hard.includes('sv')?'; zonder spelverdeler zet de trainer op of een passer-loper.':'; die heb je niet in je groep.')+'</p>';
  if(o.zacht.length)t+='<p class="sbadge">Zonder '+o.zacht.map(k=>ROL[k].toLowerCase()).join(' en ')+': een passer-loper neemt die rol over.</p>';
  return t;}
-function badge(d){const v=verdeling(d);return posNote(d)+'<p class="sbadge'+(v.kort?' warn':'')+'">'+(v.team?T.n+' spelers: '+v.a+' tegen '+v.b:v.kort?'Vraagt '+d.need+' spelers, je hebt er '+T.n:T.n+' spelers: '+v.in+' in de oefening'+(v.groepen>1?' ('+v.groepen+' groepen)':'')+(v.rij?', '+v.rij+' in de rij':''))+'</p>';}
+function badge(d){const v=verdeling(d);return posNote(d)+'<p class="sbadge'+(v.kort?' warn':'')+'">'+(v.vs?v.in+' spelers: '+v.a+' tegen '+v.b+(v.rij?', '+v.rij+' reserve':''):v.allen?T.n+' spelers: twee teams, ieder aan een kant van het net':v.team?T.n+' spelers: '+v.a+' tegen '+v.b:v.kort?'Vraagt '+d.need+' spelers, je hebt er '+T.n:T.n+' spelers: '+v.in+' in de oefening'+(v.groepen>1?' ('+v.groepen+' groepen)':'')+(v.rij?', '+v.rij+' in de rij':''))+'</p>';}
 function splitTeams(){
  const A={},B={};let ta=0,tb=0;
  ['sv','mid','dia','lib','pl'].forEach(k=>{for(let i=0;i<T.R[k];i++){const toA=ta<=tb;if(toA){A[k]=(A[k]||0)+1;ta++;}else{B[k]=(B[k]||0)+1;tb++;}}});
@@ -97,6 +100,8 @@ function splitTeams(){
 }
 function plan(d){
  const n=T.n,v=verdeling(d);
+ if(v.vs)return v.in+' spelers: '+v.a+' tegen '+v.b+(v.rij?'. De overige '+v.rij+' speler'+(v.rij>1?'s zijn':' is')+' reserve en wisselen in.':'.');
+ if(v.allen)return n+' spelers: twee teams, ieder aan een kant van het net. Is het aantal oneven, dan speelt één team met een speler meer.';
  if(v.team&&T.pm)return n+' spelers: '+v.a+' tegen '+v.b+'.'+splitTeams();
  if(v.team)return n+' spelers: '+v.a+' tegen '+v.b+(n<12?'. Speel met minder posities: de spelverdeler blijft, de trainer brengt de bal in bij de kant met minder spelers.':' in de 5-1 opstelling.');
  if(v.kort)return 'Deze oefening vraagt '+d.need+' spelers en je hebt er '+n+'. De trainer neemt '+(v.kort>1?v.kort+' rollen':'een rol')+' over, bijvoorbeeld de aangever of de serveerder.';
@@ -178,7 +183,7 @@ function detail(d,open){
   +(d.aandacht.length?'<h4>Aandachtspunten</h4>'+ul(d.aandacht):'')+rolTaken(d)
   +(d.variatie?'<details'+(open?' open':'')+'><summary>Variatie</summary><p>'+esc(d.variatie)+'</p></details>':'')+'</div>';
 }
-function chips(d){const v=verdeling(d);return '<span class="chip">± '+d.min+' min</span><span class="chip'+(v.kort?' warn':'')+'">'+(team(d)?'vanaf 4 spelers':d.need+' spelers per groep')+'</span>'+(d.zb?'<span class="chip">zonder bal</span>':'')+Object.entries(d.rol||{}).map(([k,c])=>'<span class="chip">'+ROL[k].toLowerCase()+(c>1?' ×'+c:'')+'</span>').join('')+d.thema.map(t=>'<span class="chip">'+esc(THEMA[t])+'</span>').join('');}
+function chips(d){const v=verdeling(d);return '<span class="chip">± '+d.min+' min</span><span class="chip'+(v.kort?' warn':'')+'">'+(team(d)?'vanaf 4 spelers':d.allen?'vanaf '+d.need+' spelers':d.need+' spelers per groep')+'</span>'+(d.zb?'<span class="chip">zonder bal</span>':'')+Object.entries(d.rol||{}).map(([k,c])=>'<span class="chip">'+ROL[k].toLowerCase()+(c>1?' ×'+c:'')+'</span>').join('')+d.thema.map(t=>'<span class="chip">'+esc(THEMA[t])+'</span>').join('');}
 function render(){
  let t0=0;
  $('s_out').innerHTML=T.slots.map((items,b)=>{const start=t0,len=BLEN[b],sum=items.reduce((a,d)=>a+d.min,0);t0+=len;
