@@ -440,8 +440,8 @@ N.append(ex(49, 'Tweetallen over het net op doelen', 'insp', ['inspelen', 'servi
  ['A speelt de bal hoog naar de mat aan de overkant.', 'B speelt de bal eerst voor zichzelf.', 'B mikt terug op de mat aan de andere kant.', 'Na 10 ballen wisselen van techniek.'],
  ['Een hoge boog geeft je partner tijd.', 'Draai je heupen naar het doel.'],
  'Moeilijker: alleen in één keer terugspelen.',
- [['A', Y, (200, 520), (200, 520), (210, 560), (200, 520)], ['B', OPP, (360, 160), (360, 160), (360, 150), (360, 160)], ['M', W, (360, 130)], ['M2', W, (200, 570)]],
- [(200, 515), (360, 135), (360, 120), (200, 565), (200, 515)], door=['A', 'B']))
+ [['A', Y, (250, 470), (250, 470), (250, 470), (215, 540)], ['B', OPP, (310, 210), (310, 210), (345, 140), (310, 210)], ['M', W, (360, 95)], ['M2', W, (200, 590)]],
+ [(250, 465), (360, 95), (345, 135), (200, 590), (215, 535)], door=['A', 'B']))
 N.append(ex(50, 'Drietallen in een lijn: de middelste draait', 'insp', ['inspelen', 'sideout'], A,
  'Drie spelers in een lijn op 3 meter afstand van elkaar. De middelste speler speelt de bal terug, draait zich om en speelt naar de andere kant.',
  'Snel draaien, je opnieuw opstellen en een zuivere bal geven: zoals een spelverdeler.',
