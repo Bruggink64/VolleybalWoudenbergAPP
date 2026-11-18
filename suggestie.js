@@ -164,9 +164,6 @@ async function admin(stil){
     PR[m[1]]={number:p.number,url:p.html_url,open:p.state==='open',merged:!!p.merged_at,sha:p.head.sha,tekst:t?t[1].trim():'',body:p.body||'',datum:p.merged_at||p.updated_at};});}catch(e){}
   // live gezet (pull request gemerged) of oude aanpassing: dan staat de suggestie op Verwerkt
   for(const i of items)if((PR[i.id]&&PR[i.id].merged&&BEZIG.includes(i.status))||(AP[i.id]&&i.status==='goedgekeurd')){try{await setStatus(i.id,'verwerkt');i.status='verwerkt';}catch(e){}}
-  // automatisch goedkeuren (aan te zetten onderaan): alleen duidelijke suggesties zonder links; de rest blijft op Nieuw
-  let auto=false;try{auto=localStorage.getItem('sgAuto')==='1';}catch(e){}
-  if(auto)for(const i of items)if(i.status==='nieuw'&&(i.tekst||'').trim().length>=25&&!/https?:|www\./i.test(i.tekst+' '+(i.naam||''))){try{await setStatus(i.id,'goedgekeurd');i.status='goedgekeurd';}catch(e){}}
   const sc=dlg.scrollTop;draw();dlg.scrollTop=sc;if(stil===true)msg('Vernieuwd');}
  catch(e){if(stil){if(stil===true)msg('Vernieuwen lukte niet');return;}if(e.status===403){AUTH.logout();login('Dit Google-account heeft geen toegang tot de suggesties.');}else if(e.status===401){login();}
   else dlg.querySelector('.sgsub').textContent='Laden lukte niet: '+e.message;}
@@ -216,11 +213,10 @@ function draw(){
     +'<div class="sgo2" hidden><label>Wat moet er anders?</label><textarea maxlength="1000"></textarea><div class="sgr" style="margin-top:6px"><button type="button" class="sgo" data-a="opmsend">Versturen</button><button type="button" data-a="opmx">Annuleren</button></div></div>'
     +'<div class="sgr">'+act(i)+'</div></div>').join('')
    :'<p class="sgsub">Geen suggesties in deze lijst.</p>')
-  +'<div class="sgf"><button type="button" class="lnk" data-out>Uitloggen</button><label style="font-size:12px"><input type="checkbox" data-auto> Duidelijke suggesties automatisch goedkeuren</label><button type="button" data-r style="margin-left:auto">Vernieuwen</button></div></div>');
+  +'<div class="sgf"><button type="button" class="lnk" data-out>Uitloggen</button><button type="button" data-r style="margin-left:auto">Vernieuwen</button></div></div>');
  const d=dlg;
  d.querySelector('[data-x]').onclick=close;
  d.querySelector('[data-out]').onclick=async()=>{await AUTH.logout();close();msg('Uitgelogd');};
- {const c=d.querySelector('[data-auto]');try{c.checked=localStorage.getItem('sgAuto')==='1';}catch(e){}c.onchange=()=>{try{localStorage.setItem('sgAuto',c.checked?'1':'0');}catch(e){}if(c.checked)admin(true);};}
  d.querySelector('[data-r]').onclick=()=>admin(true);d.querySelector('[data-rt]').onclick=()=>admin(true);
  d.querySelectorAll('[data-f]').forEach(b=>b.onclick=()=>{filt=b.dataset.f;draw();});
  d.querySelectorAll('[data-a]').forEach(b=>b.onclick=async()=>{
