@@ -12,7 +12,7 @@ const AANTAL=8;                       // aantal wedstrijden per lijst voordat "M
 // -------------------
 
 const FEED='https://api.nevobo.nl/export/vereniging/'+CLUB+'/';
-const LSK='vvw_home_v1',TEAMK='vvw_home_team',STK='vvw_home_stand_v1';
+const LSK='vvw_home_v1',TEAMK='vvw_home_team',STK='vvw_home_stand_v2';
 // competitiestand: plek van elk team in de poules van onze teams (JSON-API van de Nevobo)
 const API='https://api.nevobo.nl';
 const $=id=>document.getElementById(id);
@@ -70,31 +70,31 @@ async function allePaginas(pad){
 }
 async function laadStand(){
  const eigen=await allePaginas('/competitie/pouleindelingen?vereniging=/relatiebeheer/verenigingen/'+CLUB.toLowerCase()+'&seizoen=/seizoenen/'+seizoen());
- const poules=Array.from(new Set(eigen.map(m=>m.poule)));
+ const poules=Array.from(new Set(eigen.map(m=>m.poule))).filter(p=>!/beker/i.test(p)); // alleen de competitie, geen beker
  const groepen=[];for(let i=0;i<poules.length;i+=8)groepen.push(poules.slice(i,i+8));
  const leden=(await Promise.all(groepen.map(g=>allePaginas('/competitie/pouleindelingen?'+g.map(p=>'poule[]='+encodeURIComponent(p)).join('&'))))).flat();
  const perPoule={};leden.forEach(m=>{(perPoule[m.poule]=perPoule[m.poule]||[]).push(m);});
- // r[eigen team]["naam tegenstander"] = [plek, aantal teams, beker?]; de competitie gaat voor de beker
+ // r[eigen team]["naam tegenstander"] = [plek, aantal teams]
  const r={};
  Object.keys(perPoule).forEach(p=>{
-  const l=perPoule[p],beker=/beker/i.test(p)?1:0;
+  const l=perPoule[p];
   l.filter(m=>isW(m.omschrijving||'')).forEach(o=>{
    const t=teamVan(o.omschrijving),k=r[t]=r[t]||{};
    l.forEach(m=>{const n=sleutel(m.omschrijving||''),oud=k[n];
-    if(m.positie&&(!oud||(oud[2]&&!beker)))k[n]=[m.positie,l.length,beker];});
+    if(m.positie&&!oud)k[n]=[m.positie,l.length];});
   });
  });
  const data={r,bij:Date.now()};put(STK,data);return data;
 }
 function plek(team,naam){
- const k=S&&S.r[team];if(!k)return null;const n=sleutel(naam);
+ const k=S&&S.r&&S.r[team];if(!k)return null;const n=sleutel(naam);
  if(k[n])return k[n];
  // naam net anders geschreven (bijv. met of zonder sponsor)
  const alt=Object.keys(k).find(x=>x.endsWith(n)||n.endsWith(x));return alt?k[alt]:null;
 }
 function rang(w,naam){
  const p=plek(w.team,naam);if(!p)return '';
- return ' <span class="hm-r'+(p[2]?' beker':'')+'" title="'+p[0]+'e van '+p[1]+' in de '+(p[2]?'bekerpoule':'competitie')+'">#'+p[0]+'</span>';
+ return ' <span class="hm-r" title="'+p[0]+'e van '+p[1]+' in de competitie">#'+p[0]+'</span>';
 }
 
 let S=null,D=null,meerP=false,meerU=false,fout='',tab='p';
