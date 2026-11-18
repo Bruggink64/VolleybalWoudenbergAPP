@@ -29,7 +29,7 @@ def ex(i, t, blok, thema, niv, opzet, doel, stappen, aandacht, variatie, spelers
     for s in spelers:
         naam, kleur, pos = s[0], s[1], s[2:]
         if len(pos) == 1: pos = pos * 4
-        assert len(pos) in (4, 6), (t, naam)
+        assert len(pos) in (4, 7), (t, naam)
         ps.append([naam, kleur, [pt(p) for p in pos]])
     return {'id': 'n%d' % i, 't': t, 'blok': blok, 'thema': thema, 'niv': niv,
             'min': mn or {'wu': 10, 'insp': 10, 'tech': 20, 'spel': 20, 'zes': 20, 'eind': 10}[blok],
@@ -920,8 +920,12 @@ N.append(ex(105, '3 tegen 3 over het net met de muur', 'wu', ['warming', 'transi
  ['Het team speelt de bal over het net; iedere speler van het team moet de bal één keer raken voordat hij over gaat.', 'Iedereen die de bal heeft aangeraakt rent naar de muur achter zich en tikt die aan, ook bij de tegenpartij aan de overkant.', 'Pas na het aantikken van de muur mag die speler terug het veld in.', 'Er wordt niet gesprongen: alleen bovenhands en onderhands spelen. Een bal buiten de 3-meterlijn is uit.'],
  ['Praat met elkaar: wie neemt de volgende bal terwijl een teamgenoot naar de muur loopt?', 'Speel hoog en rustig over het net, niet hard.'],
  'Moeilijker: de bal moet door alle drie de spelers geraakt zijn in een vaste volgorde, of de muur staat verder weg.',
- [['A', Y, (280, 400), (280, 655), (280, 400), (280, 400), (280, 400), (280, 400)], ['B', Y, (165, 400), (165, 400), (165, 655), (165, 400), (165, 400), (165, 400)], ['C', Y, (395, 400), (395, 400), (395, 400), (395, 655), (395, 400), (395, 400)],
-  ['D', OPP, (280, 280), (280, 280), (280, 280), (280, 280), (280, 25), (280, 280)], ['E', OPP, (165, 280), (165, 280), (165, 280), (165, 280), (165, 280), (165, 25)], ['F', OPP, (395, 280), (395, 280), (395, 280), (395, 280), (395, 280), (395, 25)]],
+ [['A', Y, (280, 400), (280, 655), (280, 400), (280, 400), (280, 400), (280, 400), (280, 400)],
+  ['B', Y, (165, 400), (165, 400), (165, 655), (165, 400), (165, 400), (165, 400), (165, 400)],
+  ['C', Y, (395, 400), (395, 400), (395, 400), (395, 655), (395, 400), (395, 400), (395, 400)],
+  ['D', OPP, (280, 280), (280, 280), (280, 280), (280, 280), (280, 25), (280, 280), (280, 280)],
+  ['E', OPP, (165, 280), (165, 280), (165, 280), (165, 280), (165, 280), (165, 25), (165, 280)],
+  ['F', OPP, (395, 280), (395, 280), (395, 280), (395, 280), (395, 280), (395, 280), (395, 25)]],
  [(280, 400), (165, 400), (395, 400), (280, 280), (165, 280), (395, 280)], mn=10))
 
 # Titels en niveaus van de oude oefeningen opschonen
