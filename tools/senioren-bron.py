@@ -736,7 +736,8 @@ N.append(ex(84, '6 tegen 4: overtal en ondertal', 'zes', ['transitie', 'verdedig
  ['Het team van zes serveert.', 'Het team van vier haalt de side-out over 4 of 2.', 'Het team van zes verdedigt en valt aan.', 'Na 5 punten wisselen twee spelers van team.'],
  ['Kleine team: posities afspreken, iedereen dekt een groter vak.', 'Grote team: speel naar het lege vak.'],
  'Geef het kleine team een punt extra voor elke gewonnen rally van meer dan 3 keer over het net.',
- [['SV', SV, 'sv'], ['A4', Y, (150, 470), (150, 470), (145, 410), 'a4'], ['L', LIB, (230, 570)], ['D', Y, (360, 570)], ['OS', OPP, 'osrv5'], ['OV', OPP, 'o6', 'o6', (300, 110), (300, 110)]],
+ [['SV', SV, 'sv'], ['A4', Y, (150, 470), (150, 470), (145, 410), 'a4'], ['L', LIB, (230, 570)], ['D', Y, (360, 570)], ['OS', OPP, 'osrv5'], ['OV', OPP, 'o6', 'o6', (300, 110), (300, 110)],
+  ['O1', OPP, 'o1'], ['O2', OPP, 'o2'], ['O3', OPP, 'o3'], ['O4', OPP, 'o4']],
  ['osrv5', (230, 565), 'sv', 'a4', (300, 110)]))
 
 N.append(ex(85, 'Bowlen met de service', 'eind', ['service'], A,
@@ -995,6 +996,7 @@ for d in sen:
     d['need'] = 4 if d['blok'] in ('zes', 'eind') else max(2, min(k, 12))
     if 'needx' in d: d['need'] = d.pop('needx')  # vast minimum, ook als de animatie meer spelers toont
     d.pop('niv', None)
+    if d['id'] == 'n84': d['vs'] = [6, 4]       # 6 tegen 4 (geen 6 tegen 6)
 # Posities: welke eigen spelers in de animatie een vaste positie hebben (spelverdeler, midden, diagonaal, libero)
 POSRE = [('sv', re.compile(r'^SV$')), ('mid', re.compile(r'^(MID\d?|MB)$')), ('dia', re.compile(r'^DIA$')), ('lib', re.compile(r'^(L|LIB)$'))]
 for d in sen:
