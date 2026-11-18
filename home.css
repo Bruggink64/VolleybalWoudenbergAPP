@@ -66,6 +66,7 @@
 .hm-stand .hm-sn{text-align:left;white-space:normal;width:100%}
 .hm-stand td:first-child,.hm-stand th:first-child{text-align:center;width:2em}
 .hm-stand tr.eigen td{background:var(--chip)}
+@media (max-width:420px){.hm-stand table{font-size:13px}.hm-stand td,.hm-stand th{padding-left:4px;padding-right:4px}}
 .hm-stand tr.eigen td:first-child{box-shadow:inset 3px 0 0 var(--acc)}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .hm-s.verlies{background:#2b3d5a}}
 :root[data-theme="dark"] .hm-s.verlies{background:#2b3d5a}
