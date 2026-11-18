@@ -15,7 +15,7 @@
 const FB={apiKey:'AIzaSyCrzJ9_EqRrELhFap4Aumte7a4P_Z_eVDY',projectId:'vv-woudenberg-trainersapp'};
 const FORM='https://docs.google.com/forms/d/e/1FAIpQLSfW4r07un-M1WLEXwtFc9mlvhTlo5_dnSGVkD_UVD9D4X4hRA/viewform?usp=pp_url&entry.534773472=OEFENING';
 const ON=!!(FB.apiKey&&FB.projectId);
-const SOORT=['Animatie klopt niet','Tekst aanpassen','Nieuwe oefening','Anders'];
+const SOORT=['Animatie klopt niet','Tekst aanpassen','Nieuwe oefening','Anders','Fout in de app'];
 const ST={nieuw:'Nieuw',goedgekeurd:'Goedgekeurd',aanpassen:'Aanpassing gevraagd',live:'Gaat live',afgewezen:'Afgewezen',verwerkt:'Verwerkt',bezig:'In behandeling'};
 const BEZIG=['goedgekeurd','aanpassen','live'];
 const REPO='Bruggink64/VolleybalWoudenbergAPP';
@@ -131,7 +131,7 @@ function form(oef){
   +'<div class="sgf"><button type="button" class="lnk" data-beheer>Beheer</button><button type="submit" class="sgo">Versturen</button></div></form>');
  const $=s=>d.querySelector(s);
  $('#sg_n').value=LS.get('sug_naam')||'';
- d.querySelectorAll('[data-s]').forEach(b=>b.onclick=()=>{d.querySelectorAll('[data-s]').forEach(x=>{x.classList.toggle('on',x===b);x.setAttribute('aria-checked',x===b);});});
+ d.querySelectorAll('[data-s]').forEach(b=>b.onclick=()=>{d.querySelectorAll('[data-s]').forEach(x=>{x.classList.toggle('on',x===b);x.setAttribute('aria-checked',x===b);});$('#sg_t').placeholder=b.dataset.s==='Fout in de app'?'Wat ging er mis? Wat deed je, wat zag je en wat had je verwacht?':'Wat kan beter, of welke oefening mis je?';});
  $('[data-x]').onclick=close;
  $('[data-beheer]').onclick=admin;
  $('form').onsubmit=async e=>{
