@@ -2,7 +2,7 @@
 // Trainers sturen bij elke oefening (knop "Suggestie") of via de kop ("Idee of suggestie") een idee in.
 // Het formulier staat in de app zelf; inzendingen gaan naar een eigen Firebase-database (Firestore).
 // Werkwijze: Nieuw -> Goedkeuren (= opdracht aan Claude) -> Claude maakt een voorstel als pull request met
-// "<!-- suggestie: id -->" in de beschrijving -> Bekijk voorstel (proefversie) -> Live zetten of Aanpassing doorgeven.
+// "<!-- suggestie: id -->" in de beschrijving -> Bekijk voorstel (proefversie in de app) -> Live zetten of Aanpassing doorgeven.
 // De beheerder opent de lijst via "Beheer" onderaan het formulier of met #beheer achter de link,
 // logt in met Google en keurt suggesties goed of af.
 //
@@ -26,7 +26,8 @@ css.textContent='.sug{font-size:12.5px;padding:5px 9px;background:none}.sugg{mar
 +'dialog.sgd::backdrop{background:rgba(0,0,0,.45)}'
 +'.sgd form,.sgd .sgb{padding:14px 16px 16px}'
 +'.sgd h2{font:800 19px var(--disp);margin:0 0 4px;display:flex;justify-content:space-between;align-items:center;gap:10px}'
-+'.sgd h2 button{font:600 14px var(--disp);padding:6px 12px}'+'.sgd .sgsub{color:var(--mut);font-size:13.5px;margin:0 0 12px}'
++'.sgd h2 button{font:600 14px var(--disp);padding:6px 12px}'+'.sgd.sgp{width:min(980px,98vw);height:92vh;max-height:92vh;overflow:hidden}.sgd.sgp[open]{display:flex;flex-direction:column}.sgp .sgph{padding-bottom:6px}.sgp .sgpf{flex:1;width:100%;border:0;border-top:1px solid var(--line);background:#fff}'
++'.sgd .sgsub{color:var(--mut);font-size:13.5px;margin:0 0 12px}'
 +'.sgd label{display:block;font-size:13px;font-weight:650;margin:12px 0 5px}'
 +'.sgd input,.sgd textarea,.sgd select{font:inherit;width:100%;border:1px solid var(--line);border-radius:8px;padding:8px 10px;background:var(--card);color:var(--ink)}'
 +'.sgd textarea{min-height:110px;resize:vertical}'
@@ -183,7 +184,7 @@ function kader(i){const p=PR[i.id],a=AP[i.id];
  if(!BEZIG.includes(i.status))return '';
  if(!p||!p.open)return '<div class="sgx"><b>Wordt uitgewerkt</b><p>Claude maakt hier een voorstel voor. Binnen het uur staat het hier, met een proefversie om te bekijken.</p></div>';
  let h='<div class="sgx"><b>Voorstel</b><p>'+esc(p.tekst||'Zie de beschrijving van PR #'+p.number)+'</p>'
-  +'<p><a href="https://raw.githack.com/'+REPO+'/'+p.sha+'/index.html" target="_blank" rel="noopener"><b style="display:inline">Bekijk voorstel</b></a> <small>(proefversie, nog niet live)</small></p>';
+  +'<p><button type="button" class="sgo" data-a="prev">Bekijk voorstel</button> <small>(proefversie in de app, nog niet live)</small></p>';
  if(i.status==='live')h+='<p><small>Je hebt op Live zetten gedrukt. Claude zet het binnen het uur live.</small></p>';
  else if(i.status==='aanpassen')h+='<p><small>Jouw aanpassing: '+esc(i.opmerking)+'</small></p>';
  return h+'</div>';}
@@ -213,6 +214,7 @@ function draw(){
  d.querySelectorAll('[data-f]').forEach(b=>b.onclick=()=>{filt=b.dataset.f;draw();});
  d.querySelectorAll('[data-a]').forEach(b=>b.onclick=async()=>{
   const card=b.closest('.sgi'),id=card.dataset.id,a=b.dataset.a,it=items.find(x=>x.id===id),box=card.querySelector('.sgo2');
+  if(a==='prev'){preview(it);return;}
   if(a==='opm'){box.hidden=false;box.querySelector('textarea').focus();return;}
   if(a==='opmx'){box.hidden=true;return;}
   if(a==='weg'&&!(await sure(b)))return;
@@ -226,6 +228,40 @@ function draw(){
    msg(a==='weg'?'Verwijderd':o?'Aanpassing doorgegeven aan Claude':a==='live'?'Claude zet het binnen het uur live':a==='goedgekeurd'?'Claude werkt het uit tot een voorstel':'Op '+ST[a].toLowerCase()+' gezet');}
   catch(e){b.disabled=false;if(e.status===401||e.status===403){login('Log opnieuw in.');}else msg('Opslaan lukte niet');}
  });
+}
+// proefversie: de app uit het voorstel wordt hier in een venster getoond (zonder een andere site te openen)
+let pdlg=null;
+const RAW='https://raw.githubusercontent.com/'+REPO+'/';
+async function bouwProef(sha,oid){
+ const get=f=>fetch(RAW+sha+'/'+f).then(r=>{if(!r.ok)throw new Error(f+' '+r.status);return r.text();});
+ let h=await get('index.html');
+ const skip=/^(https?:)?\/\//,files=new Set();
+ h.replace(/<script\s+src="([^"]+)"[^>]*><\/script>/g,(m,f)=>{if(!skip.test(f))files.add(f);return m;});
+ h.replace(/<link\s+rel="stylesheet"\s+href="([^"]+)"[^>]*>/g,(m,f)=>{if(!skip.test(f))files.add(f);return m;});
+ const txt={};await Promise.all([...files].map(async f=>{txt[f]=await get(f);}));
+ h=h.replace(/<script\s+src="([^"]+)"[^>]*><\/script>/g,(m,f)=>skip.test(f)||f==='suggestie.js'?'':'<script>'+txt[f].replace(/<\/script/gi,'<\\/script')+'<\/script>');
+ h=h.replace(/<link\s+rel="stylesheet"\s+href="([^"]+)"[^>]*>/g,(m,f)=>skip.test(f)?m:'<style>'+txt[f]+'</style>');
+ // bij een Jeugd & Senioren-oefening direct de goede oefening tonen
+ if(oid){const spring=function(id){try{setView('sen');var d=SEN.find(function(x){return x.id===id;});if(!d)return;
+   senPick(['wu','insp','tech','spel','zes','eind'].indexOf(d.blok),-1);senTake(id);
+   setTimeout(function(){var e=document.querySelector('.dr[data-oid="'+id+'"]');if(e){e.scrollIntoView({block:'center'});var x=e.querySelector('.owexp');if(x&&e.classList.contains('closed'))x.click();}},300);}catch(e){}};
+  h=h.replace('</body>',()=>'<script>window.addEventListener("load",function(){('+spring.toString()+')('+JSON.stringify(oid)+');});<\/script></body>');}
+ return h;
+}
+async function preview(it){
+ const p=PR[it.id];if(!p)return;
+ if(!pdlg){pdlg=document.createElement('dialog');pdlg.className='sgd sgp noprint';document.body.appendChild(pdlg);}
+ const oid=(/Jeugd/.test(it.oefening)&&/\[([\w-]{1,8})\]/.exec(it.oefening)||[])[1]||'';
+ pdlg.innerHTML='<div class="sgb"><h2>Voorstel bekijken <button type="button" data-px>Sluiten</button></h2><p class="sgsub">Proefversie laden...</p></div>';
+ if(!pdlg.open)pdlg.showModal();
+ pdlg.querySelector('[data-px]').onclick=()=>pdlg.close();
+ try{
+  const html=await bouwProef(p.sha,oid);
+  pdlg.innerHTML='<div class="sgb sgph"><h2>Voorstel (proefversie, nog niet live) <button type="button" data-px>Sluiten</button></h2>'
+   +'<p class="sgsub">'+esc(p.tekst||'')+'</p></div><iframe class="sgpf" title="Proefversie van het voorstel"></iframe>';
+  const f=pdlg.querySelector('iframe');f.setAttribute('sandbox','allow-scripts');f.srcdoc=html;
+  pdlg.querySelector('[data-px]').onclick=()=>pdlg.close();
+ }catch(e){pdlg.querySelector('.sgsub').textContent='De proefversie laden lukte niet ('+e.message+'). Probeer het later opnieuw.';}
 }
 // verwijderen pas na een tweede tik (geen browservenster)
 function sure(b){return new Promise(res=>{if(b.dataset.sure){res(true);return;}b.dataset.sure='1';b.textContent='Zeker weten?';setTimeout(()=>{if(b.isConnected){delete b.dataset.sure;b.textContent='Verwijderen';}res(false);},3000);});}
