@@ -12,7 +12,7 @@ const AANTAL=8;                       // aantal wedstrijden per lijst voordat "M
 // -------------------
 
 const FEED='https://api.nevobo.nl/export/vereniging/'+CLUB+'/';
-const LSK='vvw_home_v1',TEAMK='vvw_home_team',STK='vvw_home_stand_v4';
+const LSK='vvw_home_v1',TEAMK='vvw_home_team',STK='vvw_home_stand_v5';
 // competitiestand: plek van elk team in de poules van onze teams (JSON-API van de Nevobo)
 const API='https://api.nevobo.nl';
 const $=id=>document.getElementById(id);
@@ -91,8 +91,16 @@ async function laadStand(){
     if(m.positie&&!oud)k[n]=[m.positie,l.length];});
   });
  });
- const data={r,tabel,bij:Date.now()};put(STK,data);return data;
+ // bekerwedstrijden van onze teams herkennen: "tijdstip|team", bijv. "1794756600000|DS 3"
+ const bekerP=Array.from(new Set(eigen.map(m=>m.poule))).filter(p=>/beker/i.test(p));
+ const eigenId={};eigen.forEach(m=>{eigenId[m['@id']]=teamVan(m.omschrijving||'');});
+ const bg=[];for(let i=0;i<bekerP.length;i+=8)bg.push(bekerP.slice(i,i+8));
+ const bw=(await Promise.all(bg.map(g=>allePaginas('/competitie/wedstrijden?'+g.map(p=>'poule[]='+encodeURIComponent(p)).join('&')).catch(()=>[])))).flat();
+ const beker=[];bw.forEach(w=>{const t=Date.parse(w.tijdstip||'');(w.teams||[]).forEach(id=>{if(eigenId[id]&&t)beker.push(t+'|'+eigenId[id]);});});
+ const data={r,tabel,beker,bij:Date.now()};put(STK,data);return data;
 }
+const isBeker=w=>!!(S&&S.beker&&S.beker.indexOf(w.t+'|'+w.team)>=0);
+const bekerTag=w=>isBeker(w)?'<em class="hm-beker">Beker</em>':'';
 function plek(team,naam){
  const k=S&&S.r&&S.r[team];if(!k)return null;const n=sleutel(naam);
  if(k[n])return k[n];
@@ -131,7 +139,7 @@ function programma(lijst){
   const thuis=/woudenberg/i.test(w.plaats||'');
   h+='<a class="hm-w" href="'+esc(w.url)+'" target="_blank" rel="noopener"><span class="hm-t">'+esc(tijd(d))+'</span>'
    +'<span class="hm-m"><span class="hm-ts">'+naam(w.a,w)+' <i>–</i> '+naam(w.b,w)+'</span>'
-   +'<span class="hm-z">'+(thuis?'<em class="hm-thuis">Thuis</em>':'<em class="hm-uit">Uit</em>')+esc([w.zaal,w.plaats].filter(Boolean).join(', '))+'</span></span></a>';});
+   +'<span class="hm-z">'+bekerTag(w)+(thuis?'<em class="hm-thuis">Thuis</em>':'<em class="hm-uit">Uit</em>')+esc([w.zaal,w.plaats].filter(Boolean).join(', '))+'</span></span></a>';});
  if(rest.length>toon.length||meerP)h+='<button type="button" class="hm-meer" data-m="p">'+(meerP?'Minder tonen':'Meer tonen ('+(rest.length-toon.length)+' meer)')+'</button>';
  return h;
 }
@@ -144,7 +152,7 @@ function uitslagen(lijst){
   const res=uitkomst(w);
   h+='<a class="hm-w" href="'+esc(w.url)+'" target="_blank" rel="noopener"><span class="hm-s '+res+'">'+w.sa+'–'+w.sb+'</span>'
    +'<span class="hm-m"><span class="hm-ts">'+naam(w.a,w)+' <i>–</i> '+naam(w.b,w)+'</span>'
-   +(w.sets?'<span class="hm-z">'+esc(w.sets)+'</span>':'')+'</span></a>';});
+   +(w.sets||isBeker(w)?'<span class="hm-z">'+bekerTag(w)+esc(w.sets||'')+'</span>':'')+'</span></a>';});
  if(rest.length>toon.length||meerU)h+='<button type="button" class="hm-meer" data-m="u">'+(meerU?'Minder tonen':'Meer tonen ('+(rest.length-toon.length)+' meer)')+'</button>';
  return h;
 }
