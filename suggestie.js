@@ -1,6 +1,8 @@
 // Suggesties binnen de app.
 // Trainers sturen bij elke oefening (knop "Suggestie") of via de kop ("Idee of suggestie") een idee in.
 // Het formulier staat in de app zelf; inzendingen gaan naar een eigen Firebase-database (Firestore).
+// Werkwijze: Nieuw -> Goedkeuren (= opdracht aan Claude) -> Claude maakt een voorstel als pull request met
+// "<!-- suggestie: id -->" in de beschrijving -> Bekijk voorstel (proefversie) -> Live zetten of Aanpassing doorgeven.
 // De beheerder opent de lijst via "Beheer" onderaan het formulier of met #beheer achter de link,
 // logt in met Google en keurt suggesties goed of af.
 //
@@ -14,7 +16,9 @@ const FB={apiKey:'AIzaSyCrzJ9_EqRrELhFap4Aumte7a4P_Z_eVDY',projectId:'vv-woudenb
 const FORM='https://docs.google.com/forms/d/e/1FAIpQLSfW4r07un-M1WLEXwtFc9mlvhTlo5_dnSGVkD_UVD9D4X4hRA/viewform?usp=pp_url&entry.534773472=OEFENING';
 const ON=!!(FB.apiKey&&FB.projectId);
 const SOORT=['Animatie klopt niet','Tekst aanpassen','Nieuwe oefening','Anders'];
-const ST={nieuw:'Nieuw',goedgekeurd:'Goedgekeurd',afgewezen:'Afgewezen',verwerkt:'Verwerkt'};
+const ST={nieuw:'Nieuw',goedgekeurd:'Goedgekeurd',aanpassen:'Aanpassing gevraagd',live:'Gaat live',afgewezen:'Afgewezen',verwerkt:'Verwerkt',bezig:'In behandeling'};
+const BEZIG=['goedgekeurd','aanpassen','live'];
+const REPO='Bruggink64/VolleybalWoudenbergAPP';
 
 const css=document.createElement('style');
 css.textContent='.sug{font-size:12.5px;padding:5px 9px;background:none}.sugg{margin-left:auto;align-self:center;font-size:13px;padding:6px 12px;margin-bottom:10px;background:#fff}'
@@ -39,7 +43,7 @@ css.textContent='.sug{font-size:12.5px;padding:5px 9px;background:none}.sugg{mar
 +'.sgd .sgi p.t{margin:0 0 8px;white-space:pre-wrap;overflow-wrap:anywhere}'
 +'.sgd .sgi .sgr button{flex:0 1 auto;font-size:13px;padding:6px 10px}'
 +'.sgd .pill{display:inline-block;font-size:11.5px;font-weight:700;border-radius:999px;padding:1px 8px;background:var(--chip);margin-left:6px;vertical-align:1px}'
-+'.sgd .pill.nieuw{background:var(--acc);color:#1d1d1b}'
++'.sgd .pill.nieuw{background:var(--acc);color:#1d1d1b}.sgd .sgx a{color:var(--link)}.sgd .sgx p+p{margin-top:6px}.sgd .sgo2{margin:0 0 8px}.sgd .sgo2 label{margin-top:0}'
 +'.sgd .sgx{border-left:4px solid var(--blue);background:var(--chip);border-radius:8px;padding:8px 10px;margin:0 0 8px}'
 +'.sgd .sgx b{display:block;font-size:12.5px;margin-bottom:2px}.sgd .sgx p{margin:0;white-space:pre-wrap}.sgd .sgx small{color:var(--mut)}';
 document.head.appendChild(css);
@@ -88,11 +92,12 @@ function send(d){
 async function list(){
  let out=[],pt='';
  do{const j=await authed(DB+'/suggesties'+KEY+'&pageSize=300&orderBy='+encodeURIComponent('tijd desc')+(pt?'&pageToken='+encodeURIComponent(pt):''));
-  (j.documents||[]).forEach(d=>{const f=d.fields||{};out.push({id:d.name.split('/').pop(),oefening:val(f.oefening),soort:val(f.soort),tekst:val(f.tekst),naam:val(f.naam),status:val(f.status)||'nieuw',tijd:val(f.tijd)});});
+  (j.documents||[]).forEach(d=>{const f=d.fields||{};out.push({id:d.name.split('/').pop(),oefening:val(f.oefening),soort:val(f.soort),tekst:val(f.tekst),naam:val(f.naam),status:val(f.status)||'nieuw',tijd:val(f.tijd),opmerking:val(f.opmerking)});});
   pt=j.nextPageToken||'';}while(pt&&out.length<3000);
  return out;
 }
-const setStatus=(id,s)=>authed(DB+'/suggesties/'+id+KEY+'&updateMask.fieldPaths=status',{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({fields:{status:str(s)}})});
+const setFields=(id,o)=>authed(DB+'/suggesties/'+id+KEY+Object.keys(o).map(k=>'&updateMask.fieldPaths='+k).join(''),{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({fields:Object.fromEntries(Object.entries(o).map(([k,v])=>[k,str(v)]))})});
+const setStatus=(id,s)=>setFields(id,{status:s});
 const remove=id=>authed(DB+'/suggesties/'+id+KEY,{method:'DELETE'});
 
 // ---------- venster ----------
@@ -135,16 +140,22 @@ function form(oef){
 }
 
 // beheer: inloggen en de lijst
-let filt='nieuw',items=[],AP={};
+let filt='nieuw',items=[],AP={},PR={};
 async function admin(){
  if(!(await AUTH.token()))return login();
  show('<div class="sgb"><h2>Suggesties <button type="button" data-x>Sluiten</button></h2><p class="sgsub">Laden...</p></div>');
  dlg.querySelector('[data-x]').onclick=close;
  try{items=await list();
-  // aanpassingen.json (in de site) zegt welke suggesties Claude heeft verwerkt en wat er is veranderd;
-  // zo'n goedgekeurde suggestie wordt hier vanzelf op Verwerkt gezet
+  // aanpassingen.json: oudere verwerkte suggesties met hun aanpassing
   try{AP=await fetch('aanpassingen.json?t='+Date.now()).then(r=>r.ok?r.json():{});}catch(e){AP={};}
-  for(const i of items)if(AP[i.id]&&i.status==='goedgekeurd'){try{await setStatus(i.id,'verwerkt');i.status='verwerkt';}catch(e){}}
+  // voorstellen van Claude: pull requests op GitHub met '<!-- suggestie: id -->' in de beschrijving
+  PR={};try{const L=await fetch('https://api.github.com/repos/'+REPO+'/pulls?state=all&per_page=60').then(r=>r.ok?r.json():[]);
+   L.forEach(p=>{const m=/<!--\s*suggestie:\s*([\w-]+)\s*-->/.exec(p.body||'');if(!m||(p.state==='closed'&&!p.merged_at))return;
+    if(PR[m[1]]&&PR[m[1]].number>p.number)return;
+    const t=/<!--\s*aanpassing\s*-->([\s\S]*?)<!--\s*\/aanpassing\s*-->/.exec(p.body||'');
+    PR[m[1]]={number:p.number,url:p.html_url,open:p.state==='open',merged:!!p.merged_at,sha:p.head.sha,tekst:t?t[1].trim():'',body:p.body||'',datum:p.merged_at||p.updated_at};});}catch(e){}
+  // live gezet (pull request gemerged) of oude aanpassing: dan staat de suggestie op Verwerkt
+  for(const i of items)if((PR[i.id]&&PR[i.id].merged&&BEZIG.includes(i.status))||(AP[i.id]&&i.status==='goedgekeurd')){try{await setStatus(i.id,'verwerkt');i.status='verwerkt';}catch(e){}}
   draw();}
  catch(e){if(e.status===403){AUTH.logout();login('Dit Google-account heeft geen toegang tot de suggesties.');}else if(e.status===401){login();}
   else dlg.querySelector('.sgsub').textContent='Laden lukte niet: '+e.message;}
@@ -161,21 +172,38 @@ function login(err){
   catch(x){b.disabled=false;$('#sg_e').textContent=/popup-closed|cancelled/.test(x.code||'')?'Inloggen afgebroken.':/popup-blocked/.test(x.code||'')?'De browser blokkeerde het inlogvenster. Sta pop-ups toe en probeer opnieuw.':'Inloggen lukte niet: '+(x.code||x.message);}};
 }
 function when(t){const d=new Date(t);return isNaN(d)?'':d.toLocaleString('nl-NL',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});}
+const inTab=(i,t)=>t==='alles'||(t==='bezig'?BEZIG.includes(i.status):i.status===t);
+function stand(i){const p=PR[i.id];
+ if(i.status==='goedgekeurd')return p&&p.open?'Voorstel klaar':'Wordt uitgewerkt';
+ if(i.status==='aanpassen')return p&&p.open&&i.opmerking&&p.body.includes(i.opmerking.slice(0,60))?'Voorstel bijgewerkt':'Aanpassing gevraagd';
+ return ST[i.status]||i.status;}
+function kader(i){const p=PR[i.id],a=AP[i.id];
+ if(p&&p.merged)return '<div class="sgx"><b>Aanpassing (live)</b><p>'+esc(p.tekst||'Zie PR #'+p.number)+'</p><small>'+esc(when(p.datum))+' · <a href="'+esc(p.url)+'" target="_blank" rel="noopener">PR #'+p.number+'</a></small></div>';
+ if(a)return '<div class="sgx"><b>Aanpassing (live)</b><p>'+esc(a.tekst)+'</p><small>'+esc([a.datum,a.pr?'PR #'+a.pr:''].filter(Boolean).join(' · '))+'</small></div>';
+ if(!BEZIG.includes(i.status))return '';
+ if(!p||!p.open)return '<div class="sgx"><b>Wordt uitgewerkt</b><p>Claude maakt hier een voorstel voor. Binnen het uur staat het hier, met een proefversie om te bekijken.</p></div>';
+ let h='<div class="sgx"><b>Voorstel</b><p>'+esc(p.tekst||'Zie de beschrijving van PR #'+p.number)+'</p>'
+  +'<p><a href="https://raw.githack.com/'+REPO+'/'+p.sha+'/index.html" target="_blank" rel="noopener"><b style="display:inline">Bekijk voorstel</b></a> <small>(proefversie, nog niet live)</small></p>';
+ if(i.status==='live')h+='<p><small>Je hebt op Live zetten gedrukt. Claude zet het binnen het uur live.</small></p>';
+ else if(i.status==='aanpassen')h+='<p><small>Jouw aanpassing: '+esc(i.opmerking)+'</small></p>';
+ return h+'</div>';}
 function draw(){
- const n=s=>items.filter(i=>s==='alles'||i.status===s).length;
- const tabs=['nieuw','goedgekeurd','verwerkt','afgewezen','alles'];
- const rows=items.filter(i=>filt==='alles'||i.status===filt);
- const act=i=>{const b=[];
-  if(i.status!=='goedgekeurd'&&i.status!=='verwerkt')b.push('<button type="button" class="sgo" data-a="goedgekeurd">Goedkeuren</button>');
-  if(i.status!=='afgewezen')b.push('<button type="button" data-a="afgewezen">Afwijzen</button>');
-  if(i.status==='goedgekeurd')b.push('<button type="button" data-a="verwerkt">Verwerkt</button>');
+ const n=s=>items.filter(i=>inTab(i,s)).length;
+ const tabs=['nieuw','bezig','verwerkt','afgewezen','alles'];
+ const rows=items.filter(i=>inTab(i,filt));
+ const act=i=>{const b=[],p=PR[i.id],vs=BEZIG.includes(i.status)&&p&&p.open;
+  if(i.status==='nieuw'||i.status==='afgewezen')b.push('<button type="button" class="sgo" data-a="goedgekeurd" title="Claude werkt de suggestie uit tot een voorstel">Goedkeuren</button>');
+  if(vs&&i.status!=='live')b.push('<button type="button" class="sgo" data-a="live">Live zetten</button><button type="button" data-a="opm">Aanpassing doorgeven</button>');
+  if(i.status!=='afgewezen'&&i.status!=='verwerkt')b.push('<button type="button" data-a="afgewezen">Afwijzen</button>');
   if(i.status!=='nieuw')b.push('<button type="button" data-a="nieuw">Terug naar nieuw</button>');
   b.push('<button type="button" data-a="weg">Verwijderen</button>');return b.join('');};
  show('<div class="sgb"><h2>Suggesties <button type="button" data-x>Sluiten</button></h2>'
   +'<div class="sgtabs">'+tabs.map(t=>'<button type="button" data-f="'+t+'" class="'+(t===filt?'on':'')+'">'+(ST[t]||'Alles')+' ('+n(t)+')</button>').join('')+'</div>'
-  +(rows.length?rows.map(i=>'<div class="sgi" data-id="'+esc(i.id)+'"><h3>'+esc(i.oefening||'Algemeen')+'<span class="pill '+esc(i.status)+'">'+esc(ST[i.status]||i.status)+'</span></h3>'
+  +(rows.length?rows.map(i=>'<div class="sgi" data-id="'+esc(i.id)+'"><h3>'+esc(i.oefening||'Algemeen')+'<span class="pill '+esc(i.status)+'">'+esc(stand(i))+'</span></h3>'
     +'<p class="m">'+esc(i.soort)+' · '+esc(i.naam||'zonder naam')+' · '+esc(when(i.tijd))+'</p>'
-    +'<p class="t">'+esc(i.tekst)+'</p>'+(AP[i.id]?'<div class="sgx"><b>Aanpassing</b><p>'+esc(AP[i.id].tekst)+'</p><small>'+esc([AP[i.id].datum,AP[i.id].pr?'PR #'+AP[i.id].pr:''].filter(Boolean).join(' · '))+'</small></div>':'')+'<div class="sgr">'+act(i)+'</div></div>').join('')
+    +'<p class="t">'+esc(i.tekst)+'</p>'+kader(i)
+    +'<div class="sgo2" hidden><label>Wat moet er anders?</label><textarea maxlength="1000"></textarea><div class="sgr" style="margin-top:6px"><button type="button" class="sgo" data-a="opmsend">Versturen</button><button type="button" data-a="opmx">Annuleren</button></div></div>'
+    +'<div class="sgr">'+act(i)+'</div></div>').join('')
    :'<p class="sgsub">Geen suggesties in deze lijst.</p>')
   +'<div class="sgf"><button type="button" class="lnk" data-out>Uitloggen</button><button type="button" data-r style="margin-left:auto">Vernieuwen</button></div></div>');
  const d=dlg;
@@ -184,11 +212,18 @@ function draw(){
  d.querySelector('[data-r]').onclick=admin;
  d.querySelectorAll('[data-f]').forEach(b=>b.onclick=()=>{filt=b.dataset.f;draw();});
  d.querySelectorAll('[data-a]').forEach(b=>b.onclick=async()=>{
-  const id=b.closest('.sgi').dataset.id,a=b.dataset.a,it=items.find(x=>x.id===id);
+  const card=b.closest('.sgi'),id=card.dataset.id,a=b.dataset.a,it=items.find(x=>x.id===id),box=card.querySelector('.sgo2');
+  if(a==='opm'){box.hidden=false;box.querySelector('textarea').focus();return;}
+  if(a==='opmx'){box.hidden=true;return;}
   if(a==='weg'&&!(await sure(b)))return;
+  let o=null;
+  if(a==='opmsend'){const t=box.querySelector('textarea').value.trim();if(!t){box.querySelector('textarea').focus();return;}o={status:'aanpassen',opmerking:t};}
   b.disabled=true;
-  try{if(a==='weg'){await remove(id);items=items.filter(x=>x.id!==id);}else{await setStatus(id,a);it.status=a;}
-   const sc=d.scrollTop;draw();d.scrollTop=sc;msg(a==='weg'?'Verwijderd':'Op '+ST[a].toLowerCase()+' gezet');}
+  try{if(a==='weg'){await remove(id);items=items.filter(x=>x.id!==id);}
+   else if(o){await setFields(id,o);Object.assign(it,o);}
+   else{await setStatus(id,a);it.status=a;}
+   const sc=d.scrollTop;draw();d.scrollTop=sc;
+   msg(a==='weg'?'Verwijderd':o?'Aanpassing doorgegeven aan Claude':a==='live'?'Claude zet het binnen het uur live':a==='goedgekeurd'?'Claude werkt het uit tot een voorstel':'Op '+ST[a].toLowerCase()+' gezet');}
   catch(e){b.disabled=false;if(e.status===401||e.status===403){login('Log opnieuw in.');}else msg('Opslaan lukte niet');}
  });
 }
@@ -201,13 +236,13 @@ const open=t=>ON?form(t):window.open(FORM.replace('OEFENING',encodeURIComponent(
 function label(dr){
  const h=dr.querySelector('h3');
  const deel=dr.closest('#v_sen')?'Jeugd & Senioren':'Mini’s';
- return deel+': '+(h?h.textContent.trim():'onbekend');
+ return deel+': '+(h?h.textContent.trim():'onbekend')+(dr.dataset.oid&&dr.dataset.oid.length<=8?' ['+dr.dataset.oid+']':'');
 }
 function add(root){
  root.querySelectorAll('.dr .tools').forEach(tl=>{
   if(tl.querySelector('.sug'))return;
   const b=document.createElement('button');b.className='sug';b.type='button';b.textContent='Suggestie';
-  b.title='Stuur een verbetering of idee voor deze oefening';
+  b.title='Suggestie voor deze oefening: stuur een verbetering of idee';
   b.onclick=()=>open(label(tl.closest('.dr')));
   tl.appendChild(b);
  });

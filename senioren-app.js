@@ -183,7 +183,7 @@ function render(){
  let t0=0;
  $('s_out').innerHTML=T.slots.map((items,b)=>{const start=t0,len=BLEN[b],sum=items.reduce((a,d)=>a+d.min,0);t0+=len;
   return '<section class="blk"><div class="tm" title="Start na '+start+' minuten"><div>'+start+'<small>min</small></div></div><div class="bc"><div class="bh"><h2>'+BNAAM[b]+'</h2><span>'+len+' minuten, ingepland ± '+sum+'</span></div><div class="row noprint bth"><label for="th'+b+'">Thema</label><select id="th'+b+'" onchange="senTh('+b+',this.value)">'+THOPT(T.th[b])+'</select></div>'
-  +items.map((d,i)=>{const pinned=T.pins.has(d.id);return '<div class="dr'+(pinned?' pin':'')+'"><div class="dh"><h3>'+esc(d.t)+'</h3><div class="tools noprint">'
+  +items.map((d,i)=>{const pinned=T.pins.has(d.id);return '<div class="dr'+(pinned?' pin':'')+'" data-oid="'+esc(d.id)+'"><div class="dh"><h3>'+esc(d.t)+'</h3><div class="tools noprint">'
    +'<button class="'+(pinned?'on':'')+'" aria-pressed="'+pinned+'" onclick="senPin(\''+d.id+'\')">'+(pinned?'Vastgezet':'Vastzetten')+'</button>'
    +'<button onclick="senSwap('+b+','+i+')">Wissel</button><button onclick="senPick('+b+','+i+')">Kies zelf</button>'
    +'<button aria-label="Verwijder '+esc(d.t)+'" onclick="senDel('+b+','+i+')">Verwijder</button></div></div>'

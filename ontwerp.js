@@ -19,7 +19,8 @@ const I={
  more:'M5 12h.01M12 12h.01M19 12h.01',
  edit:'M4 20h4L19 9l-4-4L4 16z',
  x:'M6 6l12 12M18 6 6 18',
- down:'M6 9l6 6 6-6'
+ down:'M6 9l6 6 6-6',
+ sug:'M21 12a8 8 0 0 1-11.6 7.1L3 21l1.9-6.4A8 8 0 1 1 21 12zM12 8v4M12 16h.01'
 };
 const phone=()=>window.matchMedia('(max-width:700px)').matches;
 // brede schermen (pc, laptop, tablet liggend): drie kolommen, instellingen | lijst | gekozen oefening
@@ -94,8 +95,10 @@ function card(dr){
  setOpen(dr,isOpen(dr));
 }
 // de Suggestie-knop (suggestie.js) komt later bij; verplaats hem naar het menu
+// de Suggestie-knop blijft zichtbaar naast de andere knoppen (als icoon), zodat de suggestie direct bij deze oefening hoort
 function late(){qa('.dr .tools').forEach(tl=>{const list=q('.owlist',tl);if(!list)return;
- qa(':scope>button',tl).forEach(b=>{if(!b.classList.contains('owsw')&&!b.classList.contains('owb'))list.insertBefore(b,list.querySelector('.owdel'));});});}
+ qa(':scope>button,.owlist>.sug',tl).forEach(b=>{if(b.classList.contains('sug')){if(!b.classList.contains('owb')){b.classList.add('owb');b.innerHTML=ic(I.sug);b.setAttribute('aria-label','Suggestie voor deze oefening');}if(b.parentElement!==tl||b.nextElementSibling!==q('.owmenu',tl))tl.insertBefore(b,q('.owmenu',tl));return;}
+  if(!b.classList.contains('owsw')&&!b.classList.contains('owb'))list.insertBefore(b,list.querySelector('.owdel'));});});}
 // sluit een open menu als je ergens anders tikt
 document.addEventListener('click',e=>{qa('details.owmenu[open]').forEach(d=>{if(!d.contains(e.target))d.removeAttribute('open');});});
 

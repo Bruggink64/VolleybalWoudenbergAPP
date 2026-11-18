@@ -14,8 +14,9 @@ service cloud.firestore {
         && request.resource.data.tijd is timestamp
         && request.resource.data.tijd > request.time - duration.value(1, 'h')
         && request.resource.data.tijd < request.time + duration.value(1, 'h');
-      // goedgekeurde suggesties zijn leesbaar zonder inloggen, zodat Claude ze kan oppakken en bouwen
-      allow read: if resource.data.status == 'goedgekeurd';
+      // suggesties in behandeling zijn leesbaar zonder inloggen, zodat Claude ze kan uitwerken:
+      // goedgekeurd (voorstel maken), aanpassen (voorstel bijwerken met de opmerking), live (live zetten)
+      allow read: if resource.data.status in ['goedgekeurd', 'aanpassen', 'live'];
       // lezen, goedkeuren/afwijzen en verwijderen: alleen de beheerder
       allow read, update, delete: if request.auth != null && request.auth.token.email == 'BEHEERDER_EMAIL' && request.auth.token.email_verified == true;
     }
