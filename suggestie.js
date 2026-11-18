@@ -86,6 +86,13 @@ async function authed(url,opt){
  opt=opt||{};opt.headers=Object.assign({'Authorization':'Bearer '+t},opt.headers||{});
  return api(url,opt);
 }
+// mailmelding via Web3Forms (publieke sleutel; het ontvangende adres staat bij Web3Forms, niet hier)
+const MAILKEY='bf125108-ba1e-4acc-a8e0-274d913dd738';
+function meld(d){
+ try{fetch('https://api.web3forms.com/submit',{method:'POST',headers:{'Content-Type':'application/json',Accept:'application/json'},
+  body:JSON.stringify({access_key:MAILKEY,subject:'Nieuwe suggestie: '+String(d.oefening).slice(0,80),from_name:'VolleybalApp',
+   message:'Oefening: '+d.oefening+'\nSoort: '+d.soort+'\nNaam: '+(d.naam||'(geen)')+'\n\n'+d.tekst+'\n\nBeheren: '+location.origin+location.pathname+'#beheer'})}).catch(()=>{});}catch(e){}
+}
 function send(d){
  return api(DB+'/suggesties'+KEY,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({fields:{
   oefening:str(d.oefening),soort:str(d.soort),tekst:str(d.tekst),naam:str(d.naam),status:str('nieuw'),tijd:{timestampValue:new Date().toISOString()}}})});
@@ -134,7 +141,7 @@ function form(oef){
   if($('#sg_w').value){close();return;} // ingevuld door een spambot
   if(Date.now()-last<20000){$('#sg_e').textContent='Even wachten, je hebt net al iets verstuurd.';return;}
   const btn=$('.sgo');btn.disabled=true;btn.textContent='Versturen...';
-  try{await send({oefening:oef,soort,tekst,naam});last=Date.now();LS.set('sug_naam',naam);close();msg('Bedankt! Je suggestie is verstuurd.');}
+  try{await send({oefening:oef,soort,tekst,naam});meld({oefening:oef,soort,tekst,naam});last=Date.now();LS.set('sug_naam',naam);close();msg('Bedankt! Je suggestie is verstuurd.');}
   catch(err){btn.disabled=false;btn.textContent='Versturen';$('#sg_e').textContent='Versturen lukte niet. Controleer je internet en probeer het opnieuw.';}
  };
  setTimeout(()=>{const x=$('#sg_t');if(x)x.focus();},30);
