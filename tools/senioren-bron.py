@@ -341,7 +341,8 @@ N.append(ex(37, 'Setje vanaf 15-15', 'eind', ['sideout', 'service', 'aanval', 't
  ['Beide teams staan in rotatie 1; team A serveert.', 'Speel gewone rally\'s met wedstrijdregels.', 'De trainer let alleen op het thema van vandaag en roept het na een rally.', 'De set gaat tot 25 met twee punten verschil.'],
  ['Na elk punt even samen: wat doen we in de volgende rally?', 'Juich voor goede acties van het thema, niet alleen voor punten.'],
  'Hoger niveau: start op 20-22 achter, zodat één team onder druk moet terugkomen.',
- [['SV', SV, 'sv'], ['A4', Y, (130, 470), (140, 410), 'a4', 'a4'], ['L', LIB, '6'], ['OS', OPP, 'osrv5', 'osrv5', 'osrv5', 'osrv5'], ['OV', OPP, 'o6']],
+ [['SV', SV, 'sv'], ['A4', Y, (130, 470), (140, 410), 'a4', 'a4'], ['L', LIB, '6'], ['P1', Y, '1'], ['P5', Y, '5'], ['P3', Y, '3'],
+  ['OS', OPP, 'osrv5', 'osrv5', 'osrv5', 'osrv5'], ['O2', OPP, 'o2'], ['O3', OPP, 'o3'], ['O4', OPP, 'o4'], ['O5', OPP, 'o5'], ['OV', OPP, 'o6']],
  ['osrv5', (280, 555), 'sv', 'a4', (280, 100)]))
 N.append(ex(38, 'Serveerwedstrijd: raak de zone', 'eind', ['service'], A,
  'Twee teams achter de twee achterlijnen. De trainer noemt een zone (1 t/m 6). Elke service in die zone is een punt. Een fout kost een punt.',
