@@ -253,9 +253,9 @@ async function bouwProef(sha,oid){
    senPick(['wu','insp','tech','spel','zes','eind'].indexOf(d.blok),-1);senTake(id);
    setTimeout(function(){var e=document.querySelector('.dr[data-oid="'+id+'"]');if(!e)return;
     var x=e.querySelector('.owexp');if(x&&e.classList.contains('closed'))x.click();
-    var w=document.createElement('div');w.style.cssText='max-width:900px;margin:0 auto;padding:12px';
-    w.appendChild(e);document.body.appendChild(w);
-    Array.prototype.forEach.call(document.body.children,function(c){if(c!==w&&c.tagName!=='SCRIPT'&&c.tagName!=='STYLE')c.style.display='none';});
+    // de kaart blijft op zijn plek (verplaatsen stopt de animatie); al het andere wordt verborgen
+    for(var n=e;n&&n!==document.body;n=n.parentNode){Array.prototype.forEach.call(n.parentNode.children,function(c){if(c!==n&&c.tagName!=='SCRIPT'&&c.tagName!=='STYLE')c.style.display='none';});if(n!==e){n.style.display='block';n.style.maxWidth='900px';n.style.margin='0 auto';n.style.width='100%';}}
+    var hd=document.querySelector('header');if(hd)hd.style.display='none';
     Array.prototype.forEach.call(e.querySelectorAll('.tools'),function(t){t.style.display='none';});},300);}catch(e){}};
   h=h.replace('</body>',()=>'<script>window.addEventListener("load",function(){('+spring.toString()+')('+JSON.stringify(oid)+');});<\/script></body>');}
  return h;
