@@ -236,13 +236,13 @@ const open=t=>ON?form(t):window.open(FORM.replace('OEFENING',encodeURIComponent(
 function label(dr){
  const h=dr.querySelector('h3');
  const deel=dr.closest('#v_sen')?'Jeugd & Senioren':'Mini’s';
- return deel+': '+(h?h.textContent.trim():'onbekend');
+ return deel+': '+(h?h.textContent.trim():'onbekend')+(dr.dataset.oid&&dr.dataset.oid.length<=8?' ['+dr.dataset.oid+']':'');
 }
 function add(root){
  root.querySelectorAll('.dr .tools').forEach(tl=>{
   if(tl.querySelector('.sug'))return;
   const b=document.createElement('button');b.className='sug';b.type='button';b.textContent='Suggestie';
-  b.title='Stuur een verbetering of idee voor deze oefening';
+  b.title='Suggestie voor deze oefening: stuur een verbetering of idee';
   b.onclick=()=>open(label(tl.closest('.dr')));
   tl.appendChild(b);
  });

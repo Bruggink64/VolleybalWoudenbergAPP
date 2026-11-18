@@ -315,7 +315,7 @@ function render(){
  let t0=0;
  $('out').innerHTML=S.slots.map((items,b)=>{const start=t0,len=SPL[S.dur][b],sum=items.reduce((a,d)=>a+d[2],0);t0+=len;
   return '<section class="blk"><div class="tm" title="Start na '+start+' minuten"><div>'+start+'<small>min</small></div></div><div class="bc"><div class="bh"><h2>'+NAMES[b]+'</h2><span>'+len+' minuten, ingepland ± '+sum+'</span></div>'
-  +items.map((d,i)=>{const p=plan(d[5]),id=d[3],pinned=S.pins.has(id);return '<div class="dr'+(pinned?' pin':'')+'"><div class="dh"><h3>'+esc(d[1])+'</h3><div class="tools noprint">'
+  +items.map((d,i)=>{const p=plan(d[5]),id=d[3],pinned=S.pins.has(id);return '<div class="dr'+(pinned?' pin':'')+'" data-oid="'+esc(id)+'"><div class="dh"><h3>'+esc(d[1])+'</h3><div class="tools noprint">'
    +'<button class="'+(pinned?'on':'')+'" aria-pressed="'+pinned+'" title="Blijft staan bij een nieuwe training" onclick="pin(\''+id+'\')">'+(pinned?'Vastgezet':'Vastzetten')+'</button>'
    +'<button title="Willekeurige andere oefening" onclick="swap('+b+','+i+')">Wissel</button><button onclick="openPick('+b+','+i+')">Kies zelf</button>'
    +'<button aria-label="Eerder in de training" title="Eerder" onclick="mv('+b+','+i+',-1)">↑</button><button aria-label="Later in de training" title="Later" onclick="mv('+b+','+i+',1)">↓</button>'
