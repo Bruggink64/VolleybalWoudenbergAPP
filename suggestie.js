@@ -164,8 +164,9 @@ async function admin(stil){
     PR[m[1]]={number:p.number,url:p.html_url,open:p.state==='open',merged:!!p.merged_at,sha:p.head.sha,tekst:t?t[1].trim():'',body:p.body||'',datum:p.merged_at||p.updated_at};});}catch(e){}
   // live gezet (pull request gemerged) of oude aanpassing: dan staat de suggestie op Verwerkt
   for(const i of items)if((PR[i.id]&&PR[i.id].merged&&BEZIG.includes(i.status))||(AP[i.id]&&i.status==='goedgekeurd')){try{await setStatus(i.id,'verwerkt');i.status='verwerkt';}catch(e){}}
-  const sc=dlg.scrollTop;draw();dlg.scrollTop=sc;if(stil===true)msg('Vernieuwd');}
- catch(e){if(stil){if(stil===true)msg('Vernieuwen lukte niet');return;}if(e.status===403){AUTH.logout();login('Dit Google-account heeft geen toegang tot de suggesties.');}else if(e.status===401){login();}
+  try{localStorage.setItem('sgAdmin','1');}catch(e){}
+  const sc=dlg.scrollTop;draw();dlg.scrollTop=sc;badge();if(stil===true)msg('Vernieuwd');}
+ catch(e){if(stil){if(stil===true)msg('Vernieuwen lukte niet');return;}if(e.status===403){try{localStorage.removeItem('sgAdmin');}catch(x){}AUTH.logout();login('Dit Google-account heeft geen toegang tot de suggesties.');}else if(e.status===401){login();}
   else dlg.querySelector('.sgsub').textContent='Laden lukte niet: '+e.message;}
 }
 function login(err){
@@ -302,6 +303,24 @@ if(hd){const g=document.createElement('button');g.className='sugg noprint';g.typ
 // de app tekent oefeningen telkens opnieuw: knoppen toevoegen zodra er iets verandert
 add(document);
 new MutationObserver(()=>add(document)).observe(document.body,{childList:true,subtree:true});
+// icoon in de kop voor de beheerder: toont hoeveel acties klaarstaan (nieuw, of voorstel dat op jou wacht); alleen zichtbaar als je als beheerder bent ingelogd
+let bb=null;
+async function badge(){
+ try{let ok=false;try{ok=localStorage.getItem('sgAdmin')==='1';}catch(e){}
+  if(!ok||!ON)return;
+  if(!(await AUTH.token())){if(bb)bb.style.display='none';return;}
+  if(!bb){const h=document.querySelector('header');if(!h)return;
+   bb=document.createElement('button');bb.type='button';bb.className='sugg noprint';bb.style.display='none';bb.title='Beheer: acties die op jou wachten';bb.onclick=()=>admin();h.appendChild(bb);}
+  const its=await list();let P={};
+  try{const L=await fetch('https://api.github.com/repos/'+REPO+'/pulls?state=open&per_page=60').then(r=>r.ok?r.json():[]);
+   L.forEach(p=>{const m=/<!--\s*suggestie:\s*([\w-]+)\s*-->/.exec(p.body||'');if(m)P[m[1]]=p.body||'';});}catch(e){}
+  let n=0;for(const i of its){if(i.status==='nieuw')n++;
+   else if(i.status==='goedgekeurd'&&P[i.id]!=null)n++;
+   else if(i.status==='aanpassen'&&P[i.id]!=null&&i.opmerking&&P[i.id].includes(i.opmerking.slice(0,60)))n++;}
+  bb.textContent='\u{1F514} '+n;bb.style.display='';bb.style.background=n>0?'#ffd100':'';
+ }catch(e){if(e&&(e.status===401||e.status===403)&&bb)bb.style.display='none';}
+}
+badge();setInterval(()=>{if(!document.hidden)badge();},60000);
 // de lijst ververst zichzelf elke minuut zolang het beheervenster openstaat (niet tijdens het typen of de proefversie)
 setInterval(()=>{try{if(dlg&&dlg.open&&dlg.querySelector('[data-rt]')&&!dlg.querySelector('.sgo2:not([hidden])')&&!(pdlg&&pdlg.open))admin('auto');}catch(e){}},60000);
 // beheer direct openen met #beheer achter de link
