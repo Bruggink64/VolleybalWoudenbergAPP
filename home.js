@@ -12,7 +12,9 @@ const AANTAL=8;                       // aantal wedstrijden per lijst voordat "M
 // -------------------
 
 const FEED='https://api.nevobo.nl/export/vereniging/'+CLUB+'/';
-const LSK='vvw_home_v1',TEAMK='vvw_home_team';
+const LSK='vvw_home_v1',TEAMK='vvw_home_team',STK='vvw_home_stand_v1';
+// competitiestand: plek van elk team in de poules van onze teams (JSON-API van de Nevobo)
+const API='https://api.nevobo.nl';
 const $=id=>document.getElementById(id);
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const get=(k,d)=>{try{const v=localStorage.getItem(k);return v?JSON.parse(v):d;}catch(e){return d;}};
@@ -53,7 +55,49 @@ async function laad(){
  put(LSK,data);return data;
 }
 
-let D=null,meerP=false,meerU=false,fout='',tab='p';
+// ---- stand ----
+// "Vallei Finance Group Woudenberg DS 1" -> "valleifinancegroupwoudenbergds1"
+const sleutel=s=>String(s).toLowerCase().replace(/[^a-z0-9]/g,'');
+const seizoen=()=>{const n=new Date(),y=n.getFullYear();return n.getMonth()>=6?y+'-'+(y+1):(y-1)+'-'+y;};
+async function allePaginas(pad){
+ const uit=[];let url=API+pad;
+ for(let i=0;url&&i<30;i++){
+  const r=await fetch(url,{headers:{Accept:'application/ld+json'},cache:'no-cache'});if(!r.ok)throw new Error(r.status);
+  const d=await r.json();uit.push(...(d['hydra:member']||[]));
+  const nx=d['hydra:view']&&d['hydra:view']['hydra:next'];url=nx?API+nx:null;
+ }
+ return uit;
+}
+async function laadStand(){
+ const eigen=await allePaginas('/competitie/pouleindelingen?vereniging=/relatiebeheer/verenigingen/'+CLUB.toLowerCase()+'&seizoen=/seizoenen/'+seizoen());
+ const poules=Array.from(new Set(eigen.map(m=>m.poule)));
+ const groepen=[];for(let i=0;i<poules.length;i+=8)groepen.push(poules.slice(i,i+8));
+ const leden=(await Promise.all(groepen.map(g=>allePaginas('/competitie/pouleindelingen?'+g.map(p=>'poule[]='+encodeURIComponent(p)).join('&'))))).flat();
+ const perPoule={};leden.forEach(m=>{(perPoule[m.poule]=perPoule[m.poule]||[]).push(m);});
+ // r[eigen team]["naam tegenstander"] = [plek, aantal teams, beker?]; de competitie gaat voor de beker
+ const r={};
+ Object.keys(perPoule).forEach(p=>{
+  const l=perPoule[p],beker=/beker/i.test(p)?1:0;
+  l.filter(m=>isW(m.omschrijving||'')).forEach(o=>{
+   const t=teamVan(o.omschrijving),k=r[t]=r[t]||{};
+   l.forEach(m=>{const n=sleutel(m.omschrijving||''),oud=k[n];
+    if(m.positie&&(!oud||(oud[2]&&!beker)))k[n]=[m.positie,l.length,beker];});
+  });
+ });
+ const data={r,bij:Date.now()};put(STK,data);return data;
+}
+function plek(team,naam){
+ const k=S&&S.r[team];if(!k)return null;const n=sleutel(naam);
+ if(k[n])return k[n];
+ // naam net anders geschreven (bijv. met of zonder sponsor)
+ const alt=Object.keys(k).find(x=>x.endsWith(n)||n.endsWith(x));return alt?k[alt]:null;
+}
+function rang(w,naam){
+ const p=plek(w.team,naam);if(!p)return '';
+ return ' <span class="hm-r'+(p[2]?' beker':'')+'" title="'+p[0]+'e van '+p[1]+' in de '+(p[2]?'bekerpoule':'competitie')+'">#'+p[0]+'</span>';
+}
+
+let S=null,D=null,meerP=false,meerU=false,fout='',tab='p';
 function teams(){
  const s=new Set();if(D){D.p.forEach(w=>s.add(w.team));D.u.forEach(w=>s.add(w.team));}
  const v=x=>{const m=/^([A-Z]+)\s*(\d*)/.exec(x)||[];return [m[1]||x,+(m[2]||0)];};
@@ -62,7 +106,7 @@ function teams(){
   return (ia<0?99:ia)-(ib<0?99:ib)||String(a[0]).localeCompare(b[0])||a[1]-b[1];});
 }
 // eigen teams zonder sponsornaam: "Vallei Finance Group Woudenberg DS 1" -> "Woudenberg DS 1"
-const naam=(s)=>isW(s)?'<b>Woudenberg '+esc(teamVan(s))+'</b>':esc(s);
+const naam=(s,w)=>(isW(s)?'<b>Woudenberg '+esc(teamVan(s))+'</b>':esc(s))+(w?rang(w,s):'');
 
 function programma(lijst){
  const nu=Date.now()-2*3600e3,rest=lijst.filter(w=>w.t>=nu).sort((a,b)=>a.t-b.t);
@@ -72,7 +116,7 @@ function programma(lijst){
   if(k!==dk){dk=k;h+='<h4 class="hm-dag">'+esc(dag(d))+'</h4>';}
   const thuis=/woudenberg/i.test(w.plaats||'');
   h+='<a class="hm-w" href="'+esc(w.url)+'" target="_blank" rel="noopener"><span class="hm-t">'+esc(tijd(d))+'</span>'
-   +'<span class="hm-m"><span class="hm-ts">'+naam(w.a)+' <i>–</i> '+naam(w.b)+'</span>'
+   +'<span class="hm-m"><span class="hm-ts">'+naam(w.a,w)+' <i>–</i> '+naam(w.b,w)+'</span>'
    +'<span class="hm-z">'+(thuis?'<em class="hm-thuis">Thuis</em>':'<em class="hm-uit">Uit</em>')+esc([w.zaal,w.plaats].filter(Boolean).join(', '))+'</span></span></a>';});
  if(rest.length>toon.length||meerP)h+='<button type="button" class="hm-meer" data-m="p">'+(meerP?'Minder tonen':'Meer tonen ('+(rest.length-toon.length)+' meer)')+'</button>';
  return h;
@@ -85,7 +129,7 @@ function uitslagen(lijst){
   if(k!==dk){dk=k;h+='<h4 class="hm-dag">'+esc(dag(d))+'</h4>';}
   const res=uitkomst(w);
   h+='<a class="hm-w" href="'+esc(w.url)+'" target="_blank" rel="noopener"><span class="hm-s '+res+'">'+w.sa+'–'+w.sb+'</span>'
-   +'<span class="hm-m"><span class="hm-ts">'+naam(w.a)+' <i>–</i> '+naam(w.b)+'</span>'
+   +'<span class="hm-m"><span class="hm-ts">'+naam(w.a,w)+' <i>–</i> '+naam(w.b,w)+'</span>'
    +(w.sets?'<span class="hm-z">'+esc(w.sets)+'</span>':'')+'</span></a>';});
  if(rest.length>toon.length||meerU)h+='<button type="button" class="hm-meer" data-m="u">'+(meerU?'Minder tonen':'Meer tonen ('+(rest.length-toon.length)+' meer)')+'</button>';
  return h;
@@ -129,7 +173,7 @@ function teken(){
   +'<div class="hm-seg" role="tablist"><button type="button" role="tab" data-t="p" aria-selected="'+(tab==='p')+'">Programma</button><button type="button" role="tab" data-t="u" aria-selected="'+(tab==='u')+'">Uitslagen</button></div>'
   +'<div class="hm-cols" data-tab="'+tab+'"><section class="card hm-lijst hm-p"><h3>Programma</h3>'+(D?programma(f(D.p)):'<p class="hm-leeg">Wedstrijden laden…</p>')+'</section>'
   +'<section class="card hm-lijst hm-u"><h3>Uitslagen</h3>'+(D?uitslagen(f(D.u)):'<p class="hm-leeg">Uitslagen laden…</p>')+'</section></div>'
-  +'<p class="note hm-bron">'+((fout||bij)?esc(fout||bij)+'. ':'')+'Wedstrijdgegevens: Nevobo (volleybal.nl). Tik op een wedstrijd voor alle details. Meer over de club op <a href="https://www.volleybalwoudenberg.nl" target="_blank" rel="noopener">volleybalwoudenberg.nl</a>.</p>';
+  +'<p class="note hm-bron">'+((fout||bij)?esc(fout||bij)+'. ':'')+(S?'#3 = huidige plek in de competitiestand. ':'')+'Wedstrijdgegevens: Nevobo (volleybal.nl). Tik op een wedstrijd voor alle details. Meer over de club op <a href="https://www.volleybalwoudenberg.nl" target="_blank" rel="noopener">volleybalwoudenberg.nl</a>.</p>';
  el.querySelectorAll('.hm-snel button').forEach(b=>b.onclick=()=>{setView(b.dataset.v);window.scrollTo(0,0);});
  $('hm_team').onchange=e=>{put(TEAMK,e.target.value);meerP=meerU=false;teken();};
  $('hm_ver').onclick=ververs;
@@ -139,12 +183,13 @@ function teken(){
 let bezig=false;
 async function ververs(){
  if(bezig)return;bezig=true;fout='';const b=$('hm_ver');if(b){b.disabled=true;b.classList.add('laadt');}
+ laadStand().then(x=>{S=x;if(!bezig)teken();}).catch(()=>{});
  try{D=await laad();}
  catch(e){fout=D?'Geen verbinding, dit is de stand van '+new Date(D.bij).toLocaleString('nl-NL',{...TZ,weekday:'short',hour:'2-digit',minute:'2-digit'}):'De wedstrijden konden niet worden geladen. Probeer het later opnieuw';}
  finally{bezig=false;teken();}
 }
 
-D=get(LSK,null);teken();ververs();
+D=get(LSK,null);S=get(STK,null);teken();ververs();
 // zonder gedeelde training in de link start de app op de homepagina
 if(!location.hash.slice(1)&&typeof setView==='function')setView('home');
 })();
