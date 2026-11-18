@@ -56,6 +56,17 @@
 .hm-meer{display:block;width:100%;margin-top:10px;border-radius:10px;padding:9px;font-weight:600;color:var(--link);background:none}
 .hm-leeg{color:var(--mut);margin:8px 0}
 .hm-bron{margin-top:14px}
+/* competitiestand van het gekozen team */
+.hm-stand{margin-top:16px}
+.hm-stand h3{font:800 19px var(--disp);margin:0 0 8px}
+.hm-stand h3 span{font:600 13px var(--disp);color:var(--mut);margin-left:6px}
+.hm-stand table{width:100%;border-collapse:collapse;font-size:14px;font-variant-numeric:tabular-nums}
+.hm-stand th{font:600 11.5px var(--disp);text-transform:uppercase;letter-spacing:.04em;color:var(--mut);text-align:right;padding:4px 6px}
+.hm-stand td{text-align:right;padding:7px 6px;border-top:1px solid var(--line);white-space:nowrap}
+.hm-stand .hm-sn{text-align:left;white-space:normal;width:100%}
+.hm-stand td:first-child,.hm-stand th:first-child{text-align:center;width:2em}
+.hm-stand tr.eigen td{background:var(--chip)}
+.hm-stand tr.eigen td:first-child{box-shadow:inset 3px 0 0 var(--acc)}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .hm-s.verlies{background:#2b3d5a}}
 :root[data-theme="dark"] .hm-s.verlies{background:#2b3d5a}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .hm-vorm .hm-v.verlies{background:#2b3d5a}}
