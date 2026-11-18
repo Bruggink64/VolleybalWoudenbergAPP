@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs><clipPath id="bal"><circle cx="32" cy="32" r="23"/></clipPath></defs>
+  <rect width="64" height="64" rx="14" fill="#1d1d1b"/>
+  <circle cx="32" cy="32" r="23" fill="#ffd100"/>
+  <g clip-path="url(#bal)" fill="none" stroke="#0089fe" stroke-width="4" stroke-linecap="round">
+    <path d="M32 6c-5 9-5 18 0 26"/>
+    <path d="M32 32c8 4 18 3 24 -5"/>
+    <path d="M32 32c-7 4-11 13-10 23"/>
+    <path d="M10 17c9 2 17 7 22 15"/>
+    <path d="M50 54c0-9-6-18-18-22"/>
+  </g>
+  <circle cx="32" cy="32" r="23" fill="none" stroke="#0b2b4f" stroke-width="1.5"/>
+</svg>
