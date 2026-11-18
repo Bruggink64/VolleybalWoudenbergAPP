@@ -39,7 +39,9 @@ css.textContent='.sug{font-size:12.5px;padding:5px 9px;background:none}.sugg{mar
 +'.sgd .sgi p.t{margin:0 0 8px;white-space:pre-wrap;overflow-wrap:anywhere}'
 +'.sgd .sgi .sgr button{flex:0 1 auto;font-size:13px;padding:6px 10px}'
 +'.sgd .pill{display:inline-block;font-size:11.5px;font-weight:700;border-radius:999px;padding:1px 8px;background:var(--chip);margin-left:6px;vertical-align:1px}'
-+'.sgd .pill.nieuw{background:var(--acc);color:#1d1d1b}';
++'.sgd .pill.nieuw{background:var(--acc);color:#1d1d1b}'
++'.sgd .sgx{border-left:4px solid var(--blue);background:var(--chip);border-radius:8px;padding:8px 10px;margin:0 0 8px}'
++'.sgd .sgx b{display:block;font-size:12.5px;margin-bottom:2px}.sgd .sgx p{margin:0;white-space:pre-wrap}.sgd .sgx small{color:var(--mut)}';
 document.head.appendChild(css);
 
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -133,12 +135,17 @@ function form(oef){
 }
 
 // beheer: inloggen en de lijst
-let filt='nieuw',items=[];
+let filt='nieuw',items=[],AP={};
 async function admin(){
  if(!(await AUTH.token()))return login();
  show('<div class="sgb"><h2>Suggesties <button type="button" data-x>Sluiten</button></h2><p class="sgsub">Laden...</p></div>');
  dlg.querySelector('[data-x]').onclick=close;
- try{items=await list();draw();}
+ try{items=await list();
+  // aanpassingen.json (in de site) zegt welke suggesties Claude heeft verwerkt en wat er is veranderd;
+  // zo'n goedgekeurde suggestie wordt hier vanzelf op Verwerkt gezet
+  try{AP=await fetch('aanpassingen.json?t='+Date.now()).then(r=>r.ok?r.json():{});}catch(e){AP={};}
+  for(const i of items)if(AP[i.id]&&i.status==='goedgekeurd'){try{await setStatus(i.id,'verwerkt');i.status='verwerkt';}catch(e){}}
+  draw();}
  catch(e){if(e.status===403){AUTH.logout();login('Dit Google-account heeft geen toegang tot de suggesties.');}else if(e.status===401){login();}
   else dlg.querySelector('.sgsub').textContent='Laden lukte niet: '+e.message;}
 }
@@ -168,7 +175,7 @@ function draw(){
   +'<div class="sgtabs">'+tabs.map(t=>'<button type="button" data-f="'+t+'" class="'+(t===filt?'on':'')+'">'+(ST[t]||'Alles')+' ('+n(t)+')</button>').join('')+'</div>'
   +(rows.length?rows.map(i=>'<div class="sgi" data-id="'+esc(i.id)+'"><h3>'+esc(i.oefening||'Algemeen')+'<span class="pill '+esc(i.status)+'">'+esc(ST[i.status]||i.status)+'</span></h3>'
     +'<p class="m">'+esc(i.soort)+' · '+esc(i.naam||'zonder naam')+' · '+esc(when(i.tijd))+'</p>'
-    +'<p class="t">'+esc(i.tekst)+'</p><div class="sgr">'+act(i)+'</div></div>').join('')
+    +'<p class="t">'+esc(i.tekst)+'</p>'+(AP[i.id]?'<div class="sgx"><b>Aanpassing</b><p>'+esc(AP[i.id].tekst)+'</p><small>'+esc([AP[i.id].datum,AP[i.id].pr?'PR #'+AP[i.id].pr:''].filter(Boolean).join(' · '))+'</small></div>':'')+'<div class="sgr">'+act(i)+'</div></div>').join('')
    :'<p class="sgsub">Geen suggesties in deze lijst.</p>')
   +'<div class="sgf"><button type="button" class="lnk" data-out>Uitloggen</button><button type="button" data-r style="margin-left:auto">Vernieuwen</button></div></div>');
  const d=dlg;
