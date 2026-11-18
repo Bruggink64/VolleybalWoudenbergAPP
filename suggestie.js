@@ -185,7 +185,7 @@ function kader(i){const p=PR[i.id],a=AP[i.id];
  if(!p||!p.open)return '<div class="sgx"><b>Wordt uitgewerkt</b><p>Claude maakt hier een voorstel voor. Binnen het uur staat het hier, met een proefversie om te bekijken.</p></div>';
  let h='<div class="sgx"><b>Voorstel</b><p>'+esc(p.tekst||'Zie de beschrijving van PR #'+p.number)+'</p>'
   +'<p><button type="button" class="sgo" data-a="prev">Bekijk voorstel</button> <small>(proefversie in de app, nog niet live)</small></p>';
- if(i.status==='live')h+='<p><small>Je hebt op Live zetten gedrukt. Claude zet het binnen het uur live.</small></p>';
+ if(i.status==='live')h+='<p><small>Je hebt op Live zetten gedrukt. Wordt binnen een uur verwerkt.</small></p>';
  else if(i.status==='aanpassen')h+='<p><small>Jouw aanpassing: '+esc(i.opmerking)+'</small></p>';
  return h+'</div>';}
 function draw(){
@@ -225,7 +225,7 @@ function draw(){
    else if(o){await setFields(id,o);Object.assign(it,o);}
    else{await setStatus(id,a);it.status=a;}
    const sc=d.scrollTop;draw();d.scrollTop=sc;
-   msg(a==='weg'?'Verwijderd':o?'Aanpassing doorgegeven aan Claude':a==='live'?'Claude zet het binnen het uur live':a==='goedgekeurd'?'Claude werkt het uit tot een voorstel':'Op '+ST[a].toLowerCase()+' gezet');}
+   msg(a==='weg'?'Verwijderd':o?'Aanpassing doorgegeven aan Claude':a==='live'?'Wordt binnen een uur verwerkt':a==='goedgekeurd'?'Claude werkt het uit tot een voorstel':'Op '+ST[a].toLowerCase()+' gezet');}
   catch(e){b.disabled=false;if(e.status===401||e.status===403){login('Log opnieuw in.');}else msg('Opslaan lukte niet');}
  });
 }
@@ -244,7 +244,12 @@ async function bouwProef(sha,oid){
  // bij een Jeugd & Senioren-oefening direct de goede oefening tonen
  if(oid){const spring=function(id){try{setView('sen');var d=SEN.find(function(x){return x.id===id;});if(!d)return;
    senPick(['wu','insp','tech','spel','zes','eind'].indexOf(d.blok),-1);senTake(id);
-   setTimeout(function(){var e=document.querySelector('.dr[data-oid="'+id+'"]');if(e){e.scrollIntoView({block:'center'});var x=e.querySelector('.owexp');if(x&&e.classList.contains('closed'))x.click();}},300);}catch(e){}};
+   setTimeout(function(){var e=document.querySelector('.dr[data-oid="'+id+'"]');if(!e)return;
+    var x=e.querySelector('.owexp');if(x&&e.classList.contains('closed'))x.click();
+    var w=document.createElement('div');w.style.cssText='max-width:900px;margin:0 auto;padding:12px';
+    w.appendChild(e);document.body.appendChild(w);
+    Array.prototype.forEach.call(document.body.children,function(c){if(c!==w&&c.tagName!=='SCRIPT'&&c.tagName!=='STYLE')c.style.display='none';});
+    Array.prototype.forEach.call(e.querySelectorAll('.tools'),function(t){t.style.display='none';});},300);}catch(e){}};
   h=h.replace('</body>',()=>'<script>window.addEventListener("load",function(){('+spring.toString()+')('+JSON.stringify(oid)+');});<\/script></body>');}
  return h;
 }
