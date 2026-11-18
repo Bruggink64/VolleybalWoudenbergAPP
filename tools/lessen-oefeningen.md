@@ -11,3 +11,6 @@ Geleerd van de aanpassingen van Yannick (n34, n84, n104, n105). Toepassen bij el
 7. **Werkwijze**: `senioren.js` alleen genereren met `python3 tools/senioren-bron.py`; één PR per suggestie met markers; commit voor je van branch wisselt; bij conflicten op dezelfde regels main eerst mergen.
 8. **Opmerkingen letterlijk lezen**: is een aanpassing van de trainer dubbelzinnig (bijv. "de bal gaat niet terug"), zeg dan in de melding hoe je het gelezen hebt en vraag kort of dat klopt, in plaats van stil te kiezen.
 9. **Elke aanraking zichtbaar maken**: laat alle aanrakingen tonen (3 tegen 3 = 6) en laat een speler pas naar de muur lopen NA zijn aanraking; de animatie eindigt na de laatste muurloop. Controleer met `svg.pauseAnimations(); setCurrentTime(t)` waar iedereen staat. Senioren-animaties mogen 7 posities per speler en 6 bal-punten hebben (naast 4/5).
+
+## Foutmeldingen (bugs)
+Een suggestie die een fout in de app meldt behandel ik als fix: eerst reproduceren (bij de spelersaantal-bug: 200 trainingen genereren per aantal en tellen hoeveel "Vraagt N spelers" tonen), dan de oorzaak zoeken, verbeteren, dezelfde test opnieuw laten slagen, en als voorstel-PR met `<!-- suggestie: id -->` laten zien. Live pas na akkoord van Yannick.

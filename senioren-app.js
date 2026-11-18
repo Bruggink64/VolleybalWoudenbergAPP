@@ -37,8 +37,8 @@ function pool(b){
  const okN=all.filter(d=>d.need<=T.n),okT=d=>th==='all'||d.thema.includes(th);
  if(T.pm){const a=okN.filter(okR),x=a.filter(okT);if(x.length)return x;if(a.length)return a;}
  const best=okN.filter(okT);if(best.length)return best;
- const t=all.filter(okT);if(t.length)return t;
- return okN.length?okN:all;
+ if(okN.length)return okN;
+ const t=all.filter(okT);return t.length?t:all;
 }
 function fill(b,used,keep){
  const items=keep.slice();let sum=items.reduce((a,d)=>a+d.min,0);
