@@ -12,7 +12,7 @@ const AANTAL=8;                       // aantal wedstrijden per lijst voordat "M
 // -------------------
 
 const FEED='https://api.nevobo.nl/export/vereniging/'+CLUB+'/';
-const LSK='vvw_home_v1',TEAMK='vvw_home_team',STK='vvw_home_stand_v5';
+const LSK='vvw_home_v1',TEAMK='vvw_home_team',STK='vvw_home_stand_v6';
 // competitiestand: plek van elk team in de poules van onze teams (JSON-API van de Nevobo)
 const API='https://api.nevobo.nl';
 const $=id=>document.getElementById(id);
@@ -97,7 +97,7 @@ async function laadStand(){
  const bg=[];for(let i=0;i<bekerP.length;i+=8)bg.push(bekerP.slice(i,i+8));
  const bw=(await Promise.all(bg.map(g=>allePaginas('/competitie/wedstrijden?'+g.map(p=>'poule[]='+encodeURIComponent(p)).join('&')).catch(()=>[])))).flat();
  const beker=[];bw.forEach(w=>{const t=Date.parse(w.tijdstip||'');(w.teams||[]).forEach(id=>{if(eigenId[id]&&t)beker.push(t+'|'+eigenId[id]);});});
- const data={r,tabel,beker,bij:Date.now()};put(STK,data);return data;
+ const data={r,tabel,beker,eigenId,bij:Date.now()};put(STK,data);return data;
 }
 const isBeker=w=>!!(S&&S.beker&&S.beker.indexOf(w.t+'|'+w.team)>=0);
 const bekerTag=w=>isBeker(w)?'<em class="hm-beker">Beker</em>':'';
@@ -130,6 +130,49 @@ function teams(){
 // eigen teams zonder sponsornaam: "Vallei Finance Group Woudenberg DS 1" -> "Woudenberg DS 1"
 const naam=(s,w)=>(isW(s)?'<b>Woudenberg '+esc(teamVan(s))+'</b>':esc(s))+(w?rang(w,s):'');
 
+// ---- live standen ----
+// Tijdens een wedstrijd houdt de teller (DWF) de stand bij; de Nevobo zet die op .../live.
+// Alleen als dat wordt bijgehouden is er iets te zien. Elke 20 seconden opnieuw opvragen.
+let LIVE={},vandaag=null;
+const liveKey=w=>w.t+'|'+w.team;
+async function wedstrijdenVandaag(){
+ const dk=dagKey(new Date());
+ if(vandaag&&vandaag.dag===dk&&Date.now()-vandaag.bij<30*60e3)return vandaag.w;
+ const l=await allePaginas('/competitie/wedstrijden?vereniging=/relatiebeheer/verenigingen/'+CLUB.toLowerCase()+'&datum[after]='+dk+'&datum[before]='+dk+'T23:59:59');
+ vandaag={dag:dk,bij:Date.now(),w:l.map(m=>({id:m['@id'],t:Date.parse(m.tijdstip||''),teams:m.teams||[]}))};return vandaag.w;
+}
+let liveBezig=false;
+async function checkLive(){
+ if(liveBezig||!D||document.hidden)return;
+ const el=$('v_home');if(!el||!el.offsetParent)return;
+ const nu=Date.now(),loopt=t=>t<=nu+5*60e3&&t>=nu-3*3600e3;
+ let nieuw={};
+ if(D.p.some(w=>loopt(w.t))&&S&&S.eigenId){
+  liveBezig=true;
+  try{
+   const l=(await wedstrijdenVandaag()).filter(m=>loopt(m.t));
+   await Promise.all(l.map(async m=>{
+    const team=m.teams.map(id=>S.eigenId[id]).find(Boolean);if(!team)return;
+    const r=await fetch(API+m.id+'/live',{cache:'no-cache'}).catch(()=>null);if(!r||r.status!==200)return;
+    const d=await r.json().catch(()=>null);if(!d||!d.stand)return;
+    nieuw[m.t+'|'+team]={stand:d.stand,sets:(d.sets||[]).filter(x=>x&&(x[0]||x[1]))};
+   }));
+  }catch(e){nieuw=LIVE;}
+  finally{liveBezig=false;}
+ }
+ // wedstrijden waarvan de uitslag al binnen is, niet meer als live tonen
+ Object.keys(nieuw).forEach(k=>{if(D.u.some(w=>liveKey(w)===k))delete nieuw[k];});
+ if(JSON.stringify(nieuw)!==JSON.stringify(LIVE)){LIVE=nieuw;teken();}
+}
+function liveBlok(lijst){
+ const l=lijst.filter(w=>LIVE[liveKey(w)]).sort((a,b)=>a.t-b.t);if(!l.length)return '';
+ return '<section class="card hm-live"><h3><i class="hm-puls"></i>Nu live</h3>'+l.map(w=>{const v=LIVE[liveKey(w)],n=v.sets.length;
+  return '<a class="hm-w" href="'+esc(w.url)+'" target="_blank" rel="noopener"><span class="hm-s hm-ls">'+v.stand[0]+'–'+v.stand[1]+'</span>'
+   +'<span class="hm-m"><span class="hm-ts">'+naam(w.a,w)+' <i>–</i> '+naam(w.b,w)+'</span>'
+   +'<span class="hm-z">'+bekerTag(w)+v.sets.map((x,i)=>i===n-1?'<b>'+x[0]+'-'+x[1]+'</b>':x[0]+'-'+x[1]).join(', ')+'</span></span></a>';}).join('')
+  +'<p class="hm-uitleg">Live stand uit het digitale wedstrijdformulier, ververst elke 20 seconden.</p></section>';
+}
+
 function programma(lijst){
  const nu=Date.now()-2*3600e3,rest=lijst.filter(w=>w.t>=nu).sort((a,b)=>a.t-b.t);
  if(!rest.length)return '<p class="hm-leeg">Geen wedstrijden gepland.</p>';
@@ -139,7 +182,7 @@ function programma(lijst){
   const thuis=/woudenberg/i.test(w.plaats||'');
   h+='<a class="hm-w" href="'+esc(w.url)+'" target="_blank" rel="noopener"><span class="hm-t">'+esc(tijd(d))+'</span>'
    +'<span class="hm-m"><span class="hm-ts">'+naam(w.a,w)+' <i>–</i> '+naam(w.b,w)+'</span>'
-   +'<span class="hm-z">'+bekerTag(w)+(thuis?'<em class="hm-thuis">Thuis</em>':'<em class="hm-uit">Uit</em>')+esc([w.zaal,w.plaats].filter(Boolean).join(', '))+'</span></span></a>';});
+   +'<span class="hm-z">'+(LIVE[liveKey(w)]?'<em class="hm-livetag">Live '+LIVE[liveKey(w)].stand.join('–')+'</em>':'')+bekerTag(w)+(thuis?'<em class="hm-thuis">Thuis</em>':'<em class="hm-uit">Uit</em>')+esc([w.zaal,w.plaats].filter(Boolean).join(', '))+'</span></span></a>';});
  if(rest.length>toon.length||meerP)h+='<button type="button" class="hm-meer" data-m="p">'+(meerP?'Minder tonen':'Meer tonen ('+(rest.length-toon.length)+' meer)')+'</button>';
  return h;
 }
@@ -192,6 +235,7 @@ function teken(){
   +'<button type="button" data-v="rot">5-1 rotaties</button><button type="button" data-v="def">Verdediging</button></div></section>'
   +'<div class="hm-kop"><label for="hm_team">Team</label><select id="hm_team">'+opt+'</select><button type="button" id="hm_ver" class="hm-ver" aria-label="Vernieuwen" title="Vernieuwen"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a9 9 0 1 1-3-6.7M21 4v5h-5"/></svg><span>Vernieuwen</span></button></div>'
   +weekStat(team)
+  +(D?liveBlok(f(D.p)):'')
   +'<div class="hm-seg" role="tablist"><button type="button" role="tab" data-t="p" aria-selected="'+(tab==='p')+'">Programma</button><button type="button" role="tab" data-t="u" aria-selected="'+(tab==='u')+'">Uitslagen</button></div>'
   +'<div class="hm-cols" data-tab="'+tab+'"><section class="card hm-lijst hm-p"><h3>Programma</h3>'+(D?programma(f(D.p)):'<p class="hm-leeg">Wedstrijden laden…</p>')+'</section>'
   +'<section class="card hm-lijst hm-u"><h3>Uitslagen</h3>'+(D?uitslagen(f(D.u)):'<p class="hm-leeg">Uitslagen laden…</p>')+'</section></div>'
@@ -212,7 +256,9 @@ async function ververs(){
  finally{bezig=false;teken();}
 }
 
-D=get(LSK,null);S=get(STK,null);teken();ververs();
+D=get(LSK,null);S=get(STK,null);teken();ververs().then(checkLive);
+setInterval(checkLive,20000);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)checkLive();});
 // zonder gedeelde training in de link start de app op de homepagina
 if(!location.hash.slice(1)&&typeof setView==='function')setView('home');
 })();
