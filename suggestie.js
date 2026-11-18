@@ -2,7 +2,7 @@
 // Trainers sturen bij elke oefening (knop "Suggestie") of via de kop ("Idee of suggestie") een idee in.
 // Het formulier staat in de app zelf; inzendingen gaan naar een eigen Firebase-database (Firestore).
 // Werkwijze: Nieuw -> Goedkeuren (= opdracht aan Claude) -> Claude maakt een voorstel als pull request met
-// "<!-- suggestie: id -->" in de beschrijving -> Bekijk voorstel (proefversie in de app) -> Live zetten of Aanpassing doorgeven.
+// "<!-- suggestie: id -->" (en bij een nieuwe oefening "<!-- oefening: nXX -->") in de beschrijving -> Bekijk voorstel (proefversie in de app) -> Live zetten of Aanpassing doorgeven.
 // De beheerder opent de lijst via "Beheer" onderaan het formulier of met #beheer achter de link,
 // logt in met Google en keurt suggesties goed of af.
 //
@@ -263,7 +263,7 @@ async function bouwProef(sha,oid){
 async function preview(it){
  const p=PR[it.id];if(!p)return;
  if(!pdlg){pdlg=document.createElement('dialog');pdlg.className='sgd sgp noprint';document.body.appendChild(pdlg);}
- const oid=(/Jeugd/.test(it.oefening)&&/\[([\w-]{1,8})\]/.exec(it.oefening)||[])[1]||'';
+ const oid=(/Jeugd/.test(it.oefening)&&/\[([\w-]{1,8})\]/.exec(it.oefening)||[])[1]||(/<!--\s*oefening:\s*([\w-]+)\s*-->/.exec(p.body||'')||[])[1]||'';
  pdlg.innerHTML='<div class="sgb"><h2>Voorstel bekijken <button type="button" data-px>Sluiten</button></h2><p class="sgsub">Proefversie laden...</p></div>';
  if(!pdlg.open)pdlg.showModal();
  pdlg.querySelector('[data-px]').onclick=()=>pdlg.close();
