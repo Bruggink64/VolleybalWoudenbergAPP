@@ -36,7 +36,7 @@ function parse(xml,soort){
   const w={t:Date.parse((it.querySelector('pubDate')||{}).textContent||''),url:(it.querySelector('link')||{}).textContent||'',status:st.trim()};
   if(soort==='p'){
    const m=/^[^:]+:\d\d:\s*(.+?)\s+-\s+(.+)$/.exec(t)||/^(.+?)\s+-\s+(.+)$/.exec(t);
-   if(!m)return null;w.a=m[1].trim();w.b=m[2].trim();
+   if(!m)return null;w.a=m[1].trim();w.b=m[2].replace(/,\s*Uitslag:.*$/,'').trim(); // net gespeeld: uitslag staat al in de titel
    const loc=/Speellocatie:\s*(.+)$/.exec(ds);
    if(loc){const p=loc[1].split(',').map(x=>x.trim());w.zaal=p[0];const pc=/\d{4}\s?[A-Z]{2}\s+(.+)$/.exec(p[p.length-1]);w.plaats=pc?pc[1].trim():'';}
   }else{
