@@ -1,5 +1,5 @@
 // Beveiligingsregels voor de suggesties (Firebase console > Firestore Database > Regels).
-// Vervang BEHEERDER_UID door de User UID van het beheerdersaccount (Authentication > Users).
+// Vervang BEHEERDER_EMAIL door het Google-account van de beheerder (alleen in de Firebase console, niet hier).
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
@@ -17,7 +17,7 @@ service cloud.firestore {
       // goedgekeurde suggesties zijn leesbaar zonder inloggen, zodat Claude ze kan oppakken en bouwen
       allow read: if resource.data.status == 'goedgekeurd';
       // lezen, goedkeuren/afwijzen en verwijderen: alleen de beheerder
-      allow read, update, delete: if request.auth != null && request.auth.uid == 'BEHEERDER_UID';
+      allow read, update, delete: if request.auth != null && request.auth.token.email == 'BEHEERDER_EMAIL' && request.auth.token.email_verified == true;
     }
   }
 }

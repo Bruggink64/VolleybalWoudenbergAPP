@@ -2,7 +2,7 @@
 // Trainers sturen bij elke oefening (knop "Suggestie") of via de kop ("Idee of suggestie") een idee in.
 // Het formulier staat in de app zelf; inzendingen gaan naar een eigen Firebase-database (Firestore).
 // De beheerder opent de lijst via "Beheer" onderaan het formulier of met #beheer achter de link,
-// logt in met e-mail en wachtwoord en keurt suggesties goed of af.
+// logt in met Google en keurt suggesties goed of af.
 //
 // Veiligheid: de apiKey en projectId hieronder zijn geen geheimen (Firebase zet ze altijd in de webpagina).
 // Wie wat mag, regelen de beveiligingsregels in Firebase (zie tools/firestore.rules):
@@ -10,7 +10,7 @@
 //
 // Zolang FB leeg is, opent de knop nog het oude Google Formulier.
 (function(){
-const FB={apiKey:'',projectId:''};
+const FB={apiKey:'AIzaSyCrzJ9_EqRrELhFap4Aumte7a4P_Z_eVDY',projectId:'vv-woudenberg-trainersapp'};
 const FORM='https://docs.google.com/forms/d/e/1FAIpQLSfW4r07un-M1WLEXwtFc9mlvhTlo5_dnSGVkD_UVD9D4X4hRA/viewform?usp=pp_url&entry.534773472=OEFENING';
 const ON=!!(FB.apiKey&&FB.projectId);
 const SOORT=['Animatie klopt niet','Tekst aanpassen','Nieuwe oefening','Anders'];
@@ -56,21 +56,23 @@ async function api(url,opt){
  if(!r.ok){const e=new Error((j.error&&j.error.message)||('HTTP '+r.status));e.status=r.status;throw e;}
  return j;
 }
-// inloggen (Firebase Authentication, e-mail en wachtwoord); de sessie blijft op dit apparaat bewaard
-const AUTH={tok:null,exp:0,
- get rt(){return LS.get('sug_rt');},
- async login(email,pw){
-  const j=await api('https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword'+KEY,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password:pw,returnSecureToken:true})});
-  this.tok=j.idToken;this.exp=Date.now()+(+j.expiresIn-60)*1000;LS.set('sug_rt',j.refreshToken);
- },
- async token(){
-  if(this.tok&&Date.now()<this.exp)return this.tok;
-  if(!this.rt)return null;
-  try{const j=await api('https://securetoken.googleapis.com/v1/token'+KEY,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'grant_type=refresh_token&refresh_token='+encodeURIComponent(this.rt)});
-   this.tok=j.id_token;this.exp=Date.now()+(+j.expires_in-60)*1000;LS.set('sug_rt',j.refresh_token);return this.tok;}
-  catch(e){this.logout();return null;}
- },
- logout(){this.tok=null;this.exp=0;LS.set('sug_rt',null);}
+// inloggen met Google (Firebase Authentication). De Firebase-bibliotheek wordt alleen geladen als iemand
+// de beheerpagina opent; trainers die een suggestie sturen hebben hem niet nodig. Firebase onthoudt de inlog op dit apparaat.
+const SDK='https://www.gstatic.com/firebasejs/10.12.2/';
+let fbp=null;
+function fb(){
+ if(!fbp)fbp=Promise.all([import(SDK+'firebase-app.js'),import(SDK+'firebase-auth.js')]).then(async([A,U])=>{
+  const app=A.initializeApp({apiKey:FB.apiKey,projectId:FB.projectId,authDomain:FB.projectId+'.firebaseapp.com'},'suggesties');
+  const auth=U.getAuth(app);
+  await new Promise(r=>{const off=U.onAuthStateChanged(auth,()=>{off();r();});});
+  return {auth,U};
+ });
+ return fbp;
+}
+const AUTH={
+ async login(){const {auth,U}=await fb();await U.signInWithPopup(auth,new U.GoogleAuthProvider());},
+ async token(){try{const {auth}=await fb();return auth.currentUser?await auth.currentUser.getIdToken():null;}catch(e){return null;}},
+ async logout(){try{const {auth,U}=await fb();await U.signOut(auth);}catch(e){}}
 };
 async function authed(url,opt){
  const t=await AUTH.token();if(!t){const e=new Error('niet ingelogd');e.status=401;throw e;}
@@ -137,22 +139,19 @@ async function admin(){
  show('<div class="sgb"><h2>Suggesties <button type="button" data-x>Sluiten</button></h2><p class="sgsub">Laden...</p></div>');
  dlg.querySelector('[data-x]').onclick=close;
  try{items=await list();draw();}
- catch(e){if(e.status===401||e.status===403){AUTH.logout();login(e.status===403?'Dit account heeft geen toegang tot de suggesties.':'');}
+ catch(e){if(e.status===403){AUTH.logout();login('Dit Google-account heeft geen toegang tot de suggesties.');}else if(e.status===401){login();}
   else dlg.querySelector('.sgsub').textContent='Laden lukte niet: '+e.message;}
 }
 function login(err){
- const d=show('<form><h2>Beheer suggesties <button type="button" data-x>Sluiten</button></h2>'
-  +'<p class="sgsub">Alleen voor de beheerder van de app.</p>'
-  +'<label for="sg_m">E-mail</label><input id="sg_m" type="email" autocomplete="username" required>'
-  +'<label for="sg_p">Wachtwoord</label><input id="sg_p" type="password" autocomplete="current-password" required>'
+ const d=show('<div class="sgb"><h2>Beheer suggesties <button type="button" data-x>Sluiten</button></h2>'
+  +'<p class="sgsub">Alleen voor de beheerder van de app. Log in met je Google-account.</p>'
   +'<p class="err" id="sg_e" role="alert">'+esc(err||'')+'</p>'
-  +'<div class="sgf"><button type="submit" class="sgo">Inloggen</button></div></form>');
+  +'<div class="sgf"><button type="button" class="sgo">Inloggen met Google</button></div></div>');
  const $=s=>d.querySelector(s);
  $('[data-x]').onclick=close;
- $('form').onsubmit=async e=>{e.preventDefault();const b=$('.sgo');b.disabled=true;
-  try{await AUTH.login($('#sg_m').value.trim(),$('#sg_p').value);admin();}
-  catch(x){b.disabled=false;$('#sg_e').textContent=/INVALID|PASSWORD|EMAIL|USER/.test(x.message)?'E-mail of wachtwoord klopt niet.':/TOO_MANY/.test(x.message)?'Te veel pogingen, probeer het later opnieuw.':'Inloggen lukte niet: '+x.message;}};
- setTimeout(()=>{const x=$('#sg_m');if(x)x.focus();},30);
+ $('.sgo').onclick=async()=>{const b=$('.sgo');b.disabled=true;
+  try{await AUTH.login();admin();}
+  catch(x){b.disabled=false;$('#sg_e').textContent=/popup-closed|cancelled/.test(x.code||'')?'Inloggen afgebroken.':/popup-blocked/.test(x.code||'')?'De browser blokkeerde het inlogvenster. Sta pop-ups toe en probeer opnieuw.':'Inloggen lukte niet: '+(x.code||x.message);}};
 }
 function when(t){const d=new Date(t);return isNaN(d)?'':d.toLocaleString('nl-NL',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});}
 function draw(){
@@ -174,7 +173,7 @@ function draw(){
   +'<div class="sgf"><button type="button" class="lnk" data-out>Uitloggen</button><button type="button" data-r style="margin-left:auto">Vernieuwen</button></div></div>');
  const d=dlg;
  d.querySelector('[data-x]').onclick=close;
- d.querySelector('[data-out]').onclick=()=>{AUTH.logout();close();msg('Uitgelogd');};
+ d.querySelector('[data-out]').onclick=async()=>{await AUTH.logout();close();msg('Uitgelogd');};
  d.querySelector('[data-r]').onclick=admin;
  d.querySelectorAll('[data-f]').forEach(b=>b.onclick=()=>{filt=b.dataset.f;draw();});
  d.querySelectorAll('[data-a]').forEach(b=>b.onclick=async()=>{
@@ -183,7 +182,7 @@ function draw(){
   b.disabled=true;
   try{if(a==='weg'){await remove(id);items=items.filter(x=>x.id!==id);}else{await setStatus(id,a);it.status=a;}
    const sc=d.scrollTop;draw();d.scrollTop=sc;msg(a==='weg'?'Verwijderd':'Op '+ST[a].toLowerCase()+' gezet');}
-  catch(e){b.disabled=false;if(e.status===401||e.status===403){AUTH.logout();login('Log opnieuw in.');}else msg('Opslaan lukte niet');}
+  catch(e){b.disabled=false;if(e.status===401||e.status===403){login('Log opnieuw in.');}else msg('Opslaan lukte niet');}
  });
 }
 // verwijderen pas na een tweede tik (geen browservenster)
