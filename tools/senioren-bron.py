@@ -914,6 +914,16 @@ N.append(ex(104, 'Vangen en gooien over het net', 'wu', ['warming'], A,
   ['Q', OPP, (165, 200)], ['R', OPP, (395, 200)], ['U', OPP, (280, 100)]],
  [(280, 200), (280, 470), (280, 345), (280, 200), (280, 205)], mn=10, need=4))
 
+N.append(ex(105, '3 tegen 3 over het net met de muur', 'wu', ['warming', 'transitie'], A,
+ 'Drie tegen drie over het net, met de 3-meterlijn als achterlijn: er wordt alleen in het voorveld gespeeld. Er wordt niet gesprongen en alleen bovenhands of onderhands gespeeld.',
+ 'Warmlopen met veel balcontact in een klein veld, samenwerken en snel terug in het spel zijn.',
+ ['Het team speelt de bal over het net; iedere speler moet de bal één keer raken voordat hij over gaat.', 'Wie de bal geraakt heeft, rent naar de muur achter zich en tikt die aan.', 'Pas na het aantikken van de muur mag die speler terug het veld in.', 'Er wordt niet gesprongen: alleen bovenhands en onderhands spelen. Een bal buiten de 3-meterlijn is uit.'],
+ ['Praat met elkaar: wie neemt de volgende bal terwijl een teamgenoot naar de muur loopt?', 'Speel hoog en rustig over het net, niet hard.'],
+ 'Moeilijker: de bal moet door alle drie de spelers geraakt zijn in een vaste volgorde, of de muur staat verder weg.',
+ [['A', Y, (280, 400), (280, 400), (280, 655), (280, 400)], ['B', Y, (165, 400), (165, 400), (165, 400), (165, 400)], ['C', Y, (395, 400), (395, 400), (395, 400), (395, 400)],
+  ['D', OPP, (280, 280), (280, 280), (280, 280), (280, 280)], ['E', OPP, (165, 280), (165, 280), (165, 280), (165, 280)], ['F', OPP, (395, 280), (395, 280), (395, 280), (395, 280)]],
+ [(280, 400), (280, 300), (165, 280), (165, 380), (280, 400)], mn=10))
+
 # Titels en niveaus van de oude oefeningen opschonen
 OUD = {
  's1': ('Vlinder: service, pass en doorlopen', None), 's2': ('Driehoeks-pepper over het net', None),
@@ -1008,6 +1018,7 @@ for d in sen:
     d['need'] = 4 if d['blok'] in ('zes', 'eind') else max(2, min(k, 12))
     if 'needx' in d: d['need'] = d.pop('needx')  # vast minimum, ook als de animatie meer spelers toont
     d.pop('niv', None)
+    if d['id'] == 'n105': d['vast'] = True    # geen doordraaien: iedereen houdt zijn eigen plek
     if d['id'] == 'n104': d['allen'] = True   # iedereen doet mee, twee teams
     if d['id'] == 'n84': d['vs'] = [6, 4]       # 6 tegen 4 (geen 6 tegen 6)
 # Posities: welke eigen spelers in de animatie een vaste positie hebben (spelverdeler, midden, diagonaal, libero)

@@ -70,7 +70,7 @@ function verdeling(d){
 const OBJ=new Set(['K','M','M1','M2','M5','M6','Z','GZ','BOX']);
 const actors=d=>d.p.filter(p=>p[1]!=='#2dd4bf'&&p[1]!=='#f87171'&&!OBJ.has(p[0])&&!(p[0]==='P'&&p[1]==='#fb923c')).map(p=>p[0]);
 function doorOrder(d){
- if(team(d)||d.allen)return []; // geen doordraaien: iedereen komt op zijn eigen plek terug
+ if(team(d)||d.allen||d.vast)return []; // geen doordraaien: iedereen komt op zijn eigen plek terug
  if(d.door)return d.door;
  return actors(d);
 }
