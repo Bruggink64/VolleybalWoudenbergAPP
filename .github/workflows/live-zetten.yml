@@ -1,0 +1,48 @@
+# Zet goedgekeurde voorstellen automatisch live: zodra Yannick op de beheerpagina "Live zetten" kiest
+# (suggestie krijgt status "live"), voegt deze taak de bijbehorende pull request samen.
+# Alleen PR's van de eigenaar van de repo met <!-- suggestie: ID --> in de beschrijving worden samengevoegd.
+name: Live zetten
+on:
+  schedule:
+    - cron: '*/10 * * * *'
+  workflow_dispatch:
+permissions:
+  contents: write
+  pull-requests: write
+jobs:
+  live:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Voorstellen met status live samenvoegen
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          OWNER: ${{ github.repository_owner }}
+        run: |
+          python3 - <<'PY'
+          import json, os, re, urllib.request
+          KEY = 'AIzaSyCrzJ9_EqRrELhFap4Aumte7a4P_Z_eVDY'
+          q = {"structuredQuery": {"from": [{"collectionId": "suggesties"}], "where": {"fieldFilter": {
+               "field": {"fieldPath": "status"}, "op": "EQUAL", "value": {"stringValue": "live"}}}}}
+          req = urllib.request.Request(
+              'https://firestore.googleapis.com/v1/projects/vv-woudenberg-trainersapp/databases/(default)/documents:runQuery?key=' + KEY,
+              data=json.dumps(q).encode(), headers={'Content-Type': 'application/json'})
+          live = {r['document']['name'].split('/')[-1] for r in json.load(urllib.request.urlopen(req)) if 'document' in r}
+          print('status live:', sorted(live))
+          def gh(path, method='GET', body=None):
+              r = urllib.request.Request('https://api.github.com/repos/' + os.environ['REPO'] + path, method=method,
+                  data=json.dumps(body).encode() if body else None,
+                  headers={'Authorization': 'Bearer ' + os.environ['GH_TOKEN'], 'Accept': 'application/vnd.github+json'})
+              return json.load(urllib.request.urlopen(r))
+          for pr in gh('/pulls?state=open&per_page=50'):
+              m = re.search(r'<!--\s*suggestie:\s*([A-Za-z0-9]+)\s*-->', pr.get('body') or '')
+              if not m or m.group(1) not in live:
+                  continue
+              if pr['user']['login'] != os.environ['OWNER'] or pr['head']['repo']['full_name'] != os.environ['REPO']:
+                  print('overgeslagen (niet van de eigenaar):', pr['number']); continue
+              try:
+                  gh('/pulls/%d/merge' % pr['number'], 'PUT', {'merge_method': 'squash'})
+                  print('samengevoegd: #%d' % pr['number'])
+              except Exception as e:
+                  print('mislukt: #%d %s' % (pr['number'], e))
+          PY
