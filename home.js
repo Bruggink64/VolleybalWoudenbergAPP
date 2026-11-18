@@ -12,7 +12,7 @@ const AANTAL=8;                       // aantal wedstrijden per lijst voordat "M
 // -------------------
 
 const FEED='https://api.nevobo.nl/export/vereniging/'+CLUB+'/';
-const LSK='vvw_home_v1',TEAMK='vvw_home_team',STK='vvw_home_stand_v3';
+const LSK='vvw_home_v1',TEAMK='vvw_home_team',STK='vvw_home_stand_v4';
 // competitiestand: plek van elk team in de poules van onze teams (JSON-API van de Nevobo)
 const API='https://api.nevobo.nl';
 const $=id=>document.getElementById(id);
@@ -80,7 +80,7 @@ async function laadStand(){
  const tabel={};
  Object.keys(perPoule).forEach(p=>{const l=perPoule[p].slice().sort((a,b)=>(a.positie||99)-(b.positie||99)),i=info[p]||{naam:'',bij:0};
   l.filter(m=>isW(m.omschrijving||'')).forEach(o=>{const t=teamVan(o.omschrijving);
-   if(!tabel[t]||i.bij>=tabel[t].bij)tabel[t]={naam:i.naam,bij:i.bij,rij:l.map(m=>[m.positie,m.omschrijving,m.gespeeld,m.punten,m.setsVoor,m.setsTegen])};});});
+   if(!tabel[t]||i.bij>=tabel[t].bij)tabel[t]={naam:i.naam,bij:i.bij,rij:l.map(m=>[m.positie,m.omschrijving,m.gespeeld,m.punten,m.setsVoor,m.setsTegen,m.puntenVoor,m.puntenTegen])};});});
  // r[eigen team]["naam tegenstander"] = [plek, aantal teams]
  const r={};
  Object.keys(perPoule).forEach(p=>{
@@ -106,8 +106,8 @@ function rang(w,naam){
 
 function stand(team){
  const t=team&&S&&S.tabel&&S.tabel[team];if(!t||!t.rij.length)return '';
- return '<section class="card hm-stand"><h3>Stand'+(t.naam?' <span>'+esc(t.naam)+'</span>':'')+'</h3><table><thead><tr><th>#</th><th class="hm-sn">Team</th><th title="gespeeld">G</th><th title="punten">P</th><th title="sets voor–tegen">Sets</th></tr></thead><tbody>'
-  +t.rij.map(r=>'<tr'+(isW(r[1]||'')&&teamVan(r[1])===team?' class="eigen"':'')+'><td>'+esc(r[0]||'')+'</td><td class="hm-sn">'+naam(r[1]||'')+'</td><td>'+esc(r[2]??'')+'</td><td><b>'+esc(r[3]??'')+'</b></td><td>'+esc((r[4]??'')+'–'+(r[5]??''))+'</td></tr>').join('')
+ return '<section class="card hm-stand"><h3>Stand'+(t.naam?' <span>'+esc(t.naam)+'</span>':'')+'</h3><table><thead><tr><th>#</th><th class="hm-sn">Team</th><th title="gespeeld">G</th><th title="punten">P</th><th title="sets voor–tegen">Sets</th><th title="punten voor–tegen (gescoorde ballen)">Ptn</th></tr></thead><tbody>'
+  +t.rij.map(r=>'<tr'+(isW(r[1]||'')&&teamVan(r[1])===team?' class="eigen"':'')+'><td>'+esc(r[0]||'')+'</td><td class="hm-sn">'+naam(r[1]||'')+'</td><td>'+esc(r[2]??'')+'</td><td><b>'+esc(r[3]??'')+'</b></td><td>'+esc((r[4]??'')+'–'+(r[5]??''))+'</td><td>'+(r[6]==null?'':esc(r[6]+'–'+r[7]))+'</td></tr>').join('')
   +'</tbody></table></section>';
 }
 
