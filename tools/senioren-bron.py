@@ -315,7 +315,8 @@ N.append(ex(34, 'Blokpunten tellen dubbel', 'zes', ['blok'], A,
  ['Speel een normale rally.', 'Scoort het blok direct, dan krijgt dat team 2 punten.', 'Slaat de aanvaller via het blok uit, dan krijgt de aanvaller 2 punten.', 'Alle andere punten tellen gewoon.'],
  ['Blok: handen over het net en naar binnen.', 'Aanvaller: kijk naar de buitenste hand van het blok.'],
  'Speel sets naar 15. Hoger niveau: ook een "soft block" (bal hoog in eigen veld) levert een bonuspunt op als de rally gewonnen wordt.',
- [['OSV', OPP, (230, 305)], ['OA', OPP, (400, 200), (400, 285), (400, 300), (400, 300)], ['B2', BL, 'b2', (395, 345), (395, 340), (395, 340)], ['B3', BL, 'b3', (350, 345), (355, 340), (355, 340)], ['L', LIB, '6'], ['V5', Y, '5']],
+ [['OSV', OPP, (230, 305)], ['OA', OPP, (400, 200), (400, 285), (400, 300), (400, 300)], ['B2', BL, 'b2', (395, 345), (395, 340), (395, 340)], ['B3', BL, 'b3', (350, 345), (355, 340), (355, 340)], ['L', LIB, '6'], ['V5', Y, '5'], ['V1', Y, '1'], ['V4', Y, '4'],
+  ['O1', OPP, 'o1'], ['O2', OPP, 'o2'], ['O5', OPP, 'o5'], ['O6', OPP, 'o6']],
  [(230, 305), (395, 290), (395, 330), (395, 330), (380, 200)]))
 N.append(ex(35, 'Aanvallen op zones', 'zes', ['aanval'], V,
  'Gewone 6 tegen 6. De trainer wijst voor elke rally een "goudzone" aan (bijvoorbeeld diep in de hoek bij 1 of kort bij 4). Een aanval die daar scoort is 3 punten.',
@@ -735,7 +736,8 @@ N.append(ex(84, '6 tegen 4: overtal en ondertal', 'zes', ['transitie', 'verdedig
  ['Het team van zes serveert.', 'Het team van vier haalt de side-out over 4 of 2.', 'Het team van zes verdedigt en valt aan.', 'Na 5 punten wisselen twee spelers van team.'],
  ['Kleine team: posities afspreken, iedereen dekt een groter vak.', 'Grote team: speel naar het lege vak.'],
  'Geef het kleine team een punt extra voor elke gewonnen rally van meer dan 3 keer over het net.',
- [['SV', SV, 'sv'], ['A4', Y, (150, 470), (150, 470), (145, 410), 'a4'], ['L', LIB, (230, 570)], ['D', Y, (360, 570)], ['OS', OPP, 'osrv5'], ['OV', OPP, 'o6', 'o6', (300, 110), (300, 110)]],
+ [['SV', SV, 'sv'], ['A4', Y, (150, 470), (150, 470), (145, 410), 'a4'], ['L', LIB, (230, 570)], ['D', Y, (360, 570)], ['OS', OPP, 'osrv5'], ['OV', OPP, 'o6', 'o6', (300, 110), (300, 110)],
+  ['O1', OPP, 'o1'], ['O2', OPP, 'o2'], ['O3', OPP, 'o3'], ['O4', OPP, 'o4']],
  ['osrv5', (230, 565), 'sv', 'a4', (300, 110)]))
 
 N.append(ex(85, 'Bowlen met de service', 'eind', ['service'], A,
@@ -1007,6 +1009,7 @@ for d in sen:
     if 'needx' in d: d['need'] = d.pop('needx')  # vast minimum, ook als de animatie meer spelers toont
     d.pop('niv', None)
     if d['id'] == 'n104': d['allen'] = True   # iedereen doet mee, twee teams
+    if d['id'] == 'n84': d['vs'] = [6, 4]       # 6 tegen 4 (geen 6 tegen 6)
 # Posities: welke eigen spelers in de animatie een vaste positie hebben (spelverdeler, midden, diagonaal, libero)
 POSRE = [('sv', re.compile(r'^SV$')), ('mid', re.compile(r'^(MID\d?|MB)$')), ('dia', re.compile(r'^DIA$')), ('lib', re.compile(r'^(L|LIB)$'))]
 for d in sen:
