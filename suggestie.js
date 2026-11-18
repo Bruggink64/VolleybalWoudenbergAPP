@@ -149,10 +149,10 @@ function form(oef){
 
 // beheer: inloggen en de lijst
 let filt='nieuw',items=[],AP={},PR={};
-async function admin(){
+async function admin(stil){
  if(!(await AUTH.token()))return login();
- show('<div class="sgb"><h2>Suggesties <button type="button" data-x>Sluiten</button></h2><p class="sgsub">Laden...</p></div>');
- dlg.querySelector('[data-x]').onclick=close;
+ if(!stil){show('<div class="sgb"><h2>Suggesties <button type="button" data-x>Sluiten</button></h2><p class="sgsub">Laden...</p></div>');
+ dlg.querySelector('[data-x]').onclick=close;}
  try{items=await list();
   // aanpassingen.json: oudere verwerkte suggesties met hun aanpassing
   try{AP=await fetch('aanpassingen.json?t='+Date.now()).then(r=>r.ok?r.json():{});}catch(e){AP={};}
@@ -164,8 +164,8 @@ async function admin(){
     PR[m[1]]={number:p.number,url:p.html_url,open:p.state==='open',merged:!!p.merged_at,sha:p.head.sha,tekst:t?t[1].trim():'',body:p.body||'',datum:p.merged_at||p.updated_at};});}catch(e){}
   // live gezet (pull request gemerged) of oude aanpassing: dan staat de suggestie op Verwerkt
   for(const i of items)if((PR[i.id]&&PR[i.id].merged&&BEZIG.includes(i.status))||(AP[i.id]&&i.status==='goedgekeurd')){try{await setStatus(i.id,'verwerkt');i.status='verwerkt';}catch(e){}}
-  draw();}
- catch(e){if(e.status===403){AUTH.logout();login('Dit Google-account heeft geen toegang tot de suggesties.');}else if(e.status===401){login();}
+  const sc=dlg.scrollTop;draw();dlg.scrollTop=sc;if(stil===true)msg('Vernieuwd');}
+ catch(e){if(stil){if(stil===true)msg('Vernieuwen lukte niet');return;}if(e.status===403){AUTH.logout();login('Dit Google-account heeft geen toegang tot de suggesties.');}else if(e.status===401){login();}
   else dlg.querySelector('.sgsub').textContent='Laden lukte niet: '+e.message;}
 }
 function login(err){
@@ -205,7 +205,7 @@ function draw(){
   if(i.status!=='afgewezen'&&i.status!=='verwerkt')b.push('<button type="button" data-a="afgewezen">Afwijzen</button>');
   if(i.status!=='nieuw')b.push('<button type="button" data-a="nieuw">Terug naar nieuw</button>');
   b.push('<button type="button" data-a="weg">Verwijderen</button>');return b.join('');};
- show('<div class="sgb"><h2>Suggesties <button type="button" data-x>Sluiten</button></h2>'
+ show('<div class="sgb"><h2>Suggesties <span><button type="button" data-rt>Vernieuwen</button> <button type="button" data-x>Sluiten</button></span></h2>'
   +'<div class="sgtabs">'+tabs.map(t=>'<button type="button" data-f="'+t+'" class="'+(t===filt?'on':'')+'">'+(ST[t]||'Alles')+' ('+n(t)+')</button>').join('')+'</div>'
   +(rows.length?rows.map(i=>'<div class="sgi" data-id="'+esc(i.id)+'"><h3>'+esc(i.oefening||'Algemeen')+'<span class="pill '+esc(i.status)+'">'+esc(stand(i))+'</span></h3>'
     +'<p class="m">'+esc(i.soort)+' · '+esc(i.naam||'zonder naam')+' · '+esc(when(i.tijd))+'</p>'
@@ -217,7 +217,7 @@ function draw(){
  const d=dlg;
  d.querySelector('[data-x]').onclick=close;
  d.querySelector('[data-out]').onclick=async()=>{await AUTH.logout();close();msg('Uitgelogd');};
- d.querySelector('[data-r]').onclick=admin;
+ d.querySelector('[data-r]').onclick=()=>admin(true);d.querySelector('[data-rt]').onclick=()=>admin(true);
  d.querySelectorAll('[data-f]').forEach(b=>b.onclick=()=>{filt=b.dataset.f;draw();});
  d.querySelectorAll('[data-a]').forEach(b=>b.onclick=async()=>{
   const card=b.closest('.sgi'),id=card.dataset.id,a=b.dataset.a,it=items.find(x=>x.id===id),box=card.querySelector('.sgo2');
@@ -302,6 +302,8 @@ if(hd){const g=document.createElement('button');g.className='sugg noprint';g.typ
 // de app tekent oefeningen telkens opnieuw: knoppen toevoegen zodra er iets verandert
 add(document);
 new MutationObserver(()=>add(document)).observe(document.body,{childList:true,subtree:true});
+// de lijst ververst zichzelf elke minuut zolang het beheervenster openstaat (niet tijdens het typen of de proefversie)
+setInterval(()=>{try{if(dlg&&dlg.open&&dlg.querySelector('[data-rt]')&&!dlg.querySelector('.sgo2:not([hidden])')&&!(pdlg&&pdlg.open))admin('auto');}catch(e){}},60000);
 // beheer direct openen met #beheer achter de link
 const hash=()=>{if(ON&&location.hash==='#beheer')admin();};
 window.addEventListener('hashchange',hash);hash();
