@@ -14,3 +14,4 @@ Geleerd van de aanpassingen van Yannick (n34, n84, n104, n105). Toepassen bij el
 
 ## Foutmeldingen (bugs)
 Een suggestie die een fout in de app meldt behandel ik als fix: eerst reproduceren (bij de spelersaantal-bug: 200 trainingen genereren per aantal en tellen hoeveel "Vraagt N spelers" tonen), dan de oorzaak zoeken, verbeteren, dezelfde test opnieuw laten slagen, en als voorstel-PR met `<!-- suggestie: id -->` laten zien. Live pas na akkoord van Yannick.
+10. **Meerdere groepjes naast elkaar**: wil de trainer zien dat een oefening met 6, 9 of 12 spelers in één veld kan, gebruik dan `d.baan` (één groepje tekenen, de app herhaalt het in banen naast elkaar, tot 4). Houd de bewegingen binnen een baan (±35 px van het midden).
