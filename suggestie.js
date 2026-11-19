@@ -264,7 +264,7 @@ async function bouwProef(sha,oid){
 async function preview(it){
  const p=PR[it.id];if(!p)return;
  if(!pdlg){pdlg=document.createElement('dialog');pdlg.className='sgd sgp noprint';document.body.appendChild(pdlg);}
- const oid=(/Jeugd/.test(it.oefening)&&/\[([\w-]{1,8})\]/.exec(it.oefening)||[])[1]||(/<!--\s*oefening:\s*([\w-]+)\s*-->/.exec(p.body||'')||[])[1]||'';
+ const oid=(/<!--\s*oefening:\s*([\w-]+)\s*-->/.exec(p.body||'')||[])[1]||(/Jeugd/.test(it.oefening)&&/\[([\w-]{1,8})\]/.exec(it.oefening)||[])[1]||'';
  pdlg.innerHTML='<div class="sgb"><h2>Voorstel bekijken <button type="button" data-px>Sluiten</button></h2><p class="sgsub">Proefversie laden...</p></div>';
  if(!pdlg.open)pdlg.showModal();
  pdlg.querySelector('[data-px]').onclick=()=>pdlg.close();
