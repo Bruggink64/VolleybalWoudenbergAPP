@@ -928,6 +928,15 @@ N.append(ex(105, '3 tegen 3 over het net met de muur', 'wu', ['warming', 'transi
   ['F', OPP, (395, 280), (395, 280), (395, 280), (395, 280), (395, 280), (395, 280), (395, 25)]],
  [(280, 400), (165, 400), (395, 400), (280, 280), (165, 280), (395, 280)], mn=10))
 
+N.append(ex(106, 'Drietal: achter de bal aan', 'wu', ['warming', 'transitie'], A,
+ 'Drietallen met één bal: twee spelers aan de ene kant van het net, één aan de overkant. Wie de bal gooit, loopt direct achter de bal aan om de netpaal naar de overkant en sluit daar achteraan aan.',
+ 'Warmlopen met veel balcontact, schouders klaarmaken en na het gooien in beweging blijven.',
+ ['Gooi de bal met één hand over het net naar de speler aan de overkant en loop direct achter de bal aan om de netpaal. De ontvanger vangt en gooit door naar de derde speler.', 'Zelfde opdracht met de andere hand.', 'Met twee handen de bal over de grond slaan (stuit), eerst naar de overkant en later onder het net door rollen of stuiten.', 'Laatste stap: gooien met een sprong. Eerst voor jezelf opgooien, springen en dan gooien; loop daarna weer achter de bal aan.'],
+ ['Kijk waar de bal heen gaat en loop in een boog om de netpaal.', 'Gooi met een hoge elleboog; bij de sprong eerst goed landen.'],
+ 'Moeilijker: de bal moet gevangen worden voordat hij de grond raakt, of de drie spelers tikken elkaar na het vangen af.',
+ [['A', Y, (280, 470), (125, 345), (170, 215), (170, 215)], ['B', Y, (280, 215), (280, 215), (440, 345), (330, 480)], ['C', Y, (400, 470), (400, 470), (400, 470), (390, 340)]],
+ [(280, 455), (280, 225), (400, 455), (170, 215), (170, 215)], mn=10))
+
 # Titels en niveaus van de oude oefeningen opschonen
 OUD = {
  's1': ('Vlinder: service, pass en doorlopen', None), 's2': ('Driehoeks-pepper over het net', None),
@@ -1022,7 +1031,7 @@ for d in sen:
     d['need'] = 4 if d['blok'] in ('zes', 'eind') else max(2, min(k, 12))
     if 'needx' in d: d['need'] = d.pop('needx')  # vast minimum, ook als de animatie meer spelers toont
     d.pop('niv', None)
-    if d['id'] == 'n105': d['vast'] = True    # geen doordraaien: iedereen houdt zijn eigen plek
+    if d['id'] in ('n105', 'n106'): d['vast'] = True    # geen doordraaien: iedereen houdt zijn eigen plek
     if d['id'] == 'n104': d['allen'] = True   # iedereen doet mee, twee teams
     if d['id'] == 'n84': d['vs'] = [6, 4]       # 6 tegen 4 (geen 6 tegen 6)
 # Posities: welke eigen spelers in de animatie een vaste positie hebben (spelverdeler, midden, diagonaal, libero)
