@@ -241,7 +241,7 @@ function setsVan(w){const own=isW(w.a);
  return (w.sets||'').split(',').map(x=>/(\d+)\s*-\s*(\d+)/.exec(x)).filter(Boolean).map(m=>own?[+m[1],+m[2]]:[+m[2],+m[1]]);}
 function teamStats(team){
  if(!D)return null;
- const g=D.u.filter(w=>w.team===team&&uitkomst(w)).sort((a,b)=>a.t-b.t);if(!g.length)return null;
+ const g=D.u.filter(w=>w.team===team&&uitkomst(w)&&!isBeker(w)).sort((a,b)=>a.t-b.t);if(!g.length)return null; // alleen competitie, geen beker
  const st={g,n:g.length,W:0,G:0,V:0,sv:0,st:0,pv:0,pt:0,aantalSets:0,vijf:0,vijfW:0,schoon:0,schoonV:0,eerstW:0,eerstWV:0,eerstV:0,eerstVW:0,metSets:0,eerstTel:0,tel:{},thuis:{n:0,W:0,pv:0,pt:0,s:0},uit:{n:0,W:0,pv:0,pt:0,s:0},maand:{}};
  let reeks=0,langst=0,lw=0;
  g.forEach(w=>{const own=isW(w.a),u=uitkomst(w),ons=own?w.sa:w.sb,zij=own?w.sb:w.sa,ss=setsVan(w),k=own?st.thuis:st.uit;
@@ -305,7 +305,7 @@ function statSectie(team,st){
   const v=volgende(team);if(!v)return '<p class="hm-leeg">Geen volgende wedstrijd gepland.</p>';
   const opp=isW(v.a)?v.b:v.a,n=sleutel(opp),p=plek(team,opp),mijn=standRij(team,'woudenberg'+team),zij=standRij(team,opp);
   const eigen=S&&S.tabel&&S.tabel[team]&&S.tabel[team].rij.find(r=>isW(r[1]||'')&&teamVan(r[1])===team);
-  const heen=D.u.filter(w=>w.team===team&&uitkomst(w)&&(sleutelNaam(w)===n||sleutelNaam(w).endsWith(n)||n.endsWith(sleutelNaam(w)))).sort((a,b)=>a.t-b.t)[0];
+  const heen=D.u.filter(w=>w.team===team&&uitkomst(w)&&!isBeker(w)&&(sleutelNaam(w)===n||sleutelNaam(w).endsWith(n)||n.endsWith(sleutelNaam(w)))).sort((a,b)=>a.t-b.t)[0];
   const k=S&&S.vorm&&S.vorm[team],f=k&&(k[n]||k[Object.keys(k).find(x=>x.endsWith(n)||n.endsWith(x))||'']);
   const di=eigen&&zij?(eigen[3]-zij[3]):null;
   const ow=heen?(isW(heen.a)?[heen.sa,heen.sb]:[heen.sb,heen.sa]):null;
