@@ -12,7 +12,7 @@ const AANTAL=8;                       // aantal wedstrijden per lijst voordat "M
 // -------------------
 
 const FEED='https://api.nevobo.nl/export/vereniging/'+CLUB+'/';
-const LSK='vvw_home_v1',TEAMK='vvw_home_team',STK='vvw_home_stand_v6';
+const LSK='vvw_home_v1',TEAMK='vvw_home_team',STK='vvw_home_stand_v7';
 // competitiestand: plek van elk team in de poules van onze teams (JSON-API van de Nevobo)
 const API='https://api.nevobo.nl';
 const $=id=>document.getElementById(id);
@@ -80,7 +80,7 @@ async function laadStand(){
  const tabel={};
  Object.keys(perPoule).forEach(p=>{const l=perPoule[p].slice().sort((a,b)=>(a.positie||99)-(b.positie||99)),i=info[p]||{naam:'',bij:0};
   l.filter(m=>isW(m.omschrijving||'')).forEach(o=>{const t=teamVan(o.omschrijving);
-   if(!tabel[t]||i.bij>=tabel[t].bij)tabel[t]={naam:i.naam,bij:i.bij,rij:l.map(m=>[m.positie,m.omschrijving,m.gespeeld,m.punten,m.setsVoor,m.setsTegen,m.puntenVoor,m.puntenTegen])};});});
+   if(!tabel[t]||i.bij>=tabel[t].bij)tabel[t]={poule:p,naam:i.naam,bij:i.bij,rij:l.map(m=>[m.positie,m.omschrijving,m.gespeeld,m.punten,m.setsVoor,m.setsTegen,m.puntenVoor,m.puntenTegen])};});});
  // r[eigen team]["naam tegenstander"] = [plek, aantal teams]
  const r={};
  Object.keys(perPoule).forEach(p=>{
@@ -97,7 +97,21 @@ async function laadStand(){
  const bg=[];for(let i=0;i<bekerP.length;i+=8)bg.push(bekerP.slice(i,i+8));
  const bw=(await Promise.all(bg.map(g=>allePaginas('/competitie/wedstrijden?'+g.map(p=>'poule[]='+encodeURIComponent(p)).join('&')).catch(()=>[])))).flat();
  const beker=[];bw.forEach(w=>{const t=Date.parse(w.tijdstip||'');(w.teams||[]).forEach(id=>{if(eigenId[id]&&t)beker.push(t+'|'+eigenId[id]);});});
- const data={r,tabel,beker,eigenId,bij:Date.now()};put(STK,data);return data;
+ // vorm van de tegenstanders: laatste 5 uitslagen in de poule van elk eigen team (W/G/V)
+ const vorm={};
+ try{
+  const pp=Array.from(new Set(Object.keys(tabel).map(t=>tabel[t].poule)));
+  const naamVan={};Object.keys(perPoule).forEach(p=>perPoule[p].forEach(m=>{naamVan[m['@id']]=m.omschrijving||'';}));
+  const pg=[];for(let i=0;i<pp.length;i+=8)pg.push(pp.slice(i,i+8));
+  const pw=(await Promise.all(pg.map(g=>allePaginas('/competitie/wedstrijden?status=gespeeld&'+g.map(p=>'poule[]='+encodeURIComponent(p)).join('&')).catch(()=>[])))).flat();
+  const perT={};
+  pw.forEach(w=>{const e=w.eindstand,t=w.teams||[];if(!e||t.length!==2||!w.tijdstip)return;
+   [0,1].forEach(i=>{const n=sleutel(naamVan[t[i]]||'');if(!n)return;const a=e[i],b=e[1-i];
+    (perT[w.poule+'|'+n]=perT[w.poule+'|'+n]||[]).push([Date.parse(w.tijdstip),a>b?'W':a<b?'V':'G']);});});
+  Object.keys(tabel).forEach(t=>{const p=tabel[t].poule,v=vorm[t]={};
+   Object.keys(perT).forEach(k=>{if(k.indexOf(p+'|')===0)v[k.slice(p.length+1)]=perT[k].sort((x,y)=>x[0]-y[0]).slice(-5).map(x=>x[1]).join('');});});
+ }catch(e){}
+ const data={r,tabel,beker,eigenId,vorm,bij:Date.now()};put(STK,data);return data;
 }
 const isBeker=w=>!!(S&&S.beker&&S.beker.indexOf(w.t+'|'+w.team)>=0);
 const bekerTag=w=>isBeker(w)?'<em class="hm-beker">Beker</em>':'';
@@ -214,15 +228,116 @@ function weekStat(team){
   return '<div class="hm-stats">'+tegel(wk.length,'komende 7 dagen','wedstrijden de ')+tegel(thuis,'thuis','daarvan ')+tegel(win+'/'+vorig.length,'gewonnen',null).replace('</span>','<i> afgelopen week</i></span>')+'</div>'
    +'<p class="hm-uitleg">Zonder de mini’s. Kies een team voor de cijfers van het seizoen.</p>';
  }
- // seizoen van één team
- const g=D.u.filter(w=>w.team===team&&uitkomst(w)).sort((a,b)=>b.t-a.t);
- let W=0,G=0,V=0,sv=0,st=0;
- g.forEach(w=>{const u=uitkomst(w);if(u==='win')W++;else if(u==='gelijk')G++;else V++;const wa=isW(w.a);sv+=wa?w.sa:w.sb;st+=wa?w.sb:w.sa;});
- const volg=D.p.filter(w=>w.team===team&&w.t>=nu-2*3600e3).sort((a,b)=>a.t-b.t)[0];
- const vorm=g.slice(0,5).reverse().map(w=>{const u=uitkomst(w);return '<i class="hm-v '+u+'" title="'+esc(w.a+' – '+w.b+': '+w.sa+'-'+w.sb)+'">'+(u==='win'?'W':u==='gelijk'?'G':'V')+'</i>';}).join('');
- return '<div class="hm-stats hm-team">'+tegel(g.length,'gespeeld')+tegel(W,'gewonnen')+(G?tegel(G,'gelijk'):'')+tegel(V,'verloren')+tegel(sv+'–'+st,'sets')+'</div>'
-  +'<div class="hm-vorm">'+(vorm?'<span>Laatste '+Math.min(5,g.length)+'</span>'+vorm:'<span>Nog geen uitslagen dit seizoen</span>')
-  +(volg?'<span class="hm-volg">Volgende: <b>'+esc(dag(new Date(volg.t)))+' '+esc(tijd(new Date(volg.t)))+'</b>, '+(isW(volg.a)?esc(volg.b):esc(volg.a))+(/woudenberg/i.test(volg.plaats||'')?' (thuis)':' (uit)')+'</span>':'')+'</div>';
+// seizoen van één team
+ return teamKaart(team);
+}
+
+// ---- statistieken per team ----
+// Alles wordt bij elke weergave opnieuw berekend uit de uitslagen (D) en de stand (S): niets staat vast in de code.
+const pct=(a,b)=>b?Math.round(100*a/b)+'%':'–';
+const gem=(a,b)=>b?(Math.round(10*a/b)/10).toString().replace('.',','):'';
+const sleutelNaam=w=>sleutel(isW(w.a)?w.b:w.a);
+function setsVan(w){const own=isW(w.a);
+ return (w.sets||'').split(',').map(x=>/(\d+)\s*-\s*(\d+)/.exec(x)).filter(Boolean).map(m=>own?[+m[1],+m[2]]:[+m[2],+m[1]]);}
+function teamStats(team){
+ if(!D)return null;
+ const g=D.u.filter(w=>w.team===team&&uitkomst(w)).sort((a,b)=>a.t-b.t);if(!g.length)return null;
+ const st={g,n:g.length,W:0,G:0,V:0,sv:0,st:0,pv:0,pt:0,aantalSets:0,vijf:0,vijfW:0,schoon:0,schoonV:0,eerstW:0,eerstWV:0,eerstV:0,eerstVW:0,metSets:0,eerstTel:0,tel:{},thuis:{n:0,W:0,pv:0,pt:0,s:0},uit:{n:0,W:0,pv:0,pt:0,s:0},maand:{}};
+ let reeks=0,langst=0,lw=0;
+ g.forEach(w=>{const own=isW(w.a),u=uitkomst(w),ons=own?w.sa:w.sb,zij=own?w.sb:w.sa,ss=setsVan(w),k=own?st.thuis:st.uit;
+  if(u==='win')st.W++;else if(u==='gelijk')st.G++;else st.V++;
+  st.sv+=ons;st.st+=zij;k.n++;if(u==='win')k.W++;
+  if(u==='win'&&zij===0)st.schoon++;if(u==='verlies'&&ons===0)st.schoonV++;
+  if(u==='win'){lw++;if(lw>langst)langst=lw;}else lw=0;
+  if(ss.length){st.metSets++;st.aantalSets+=ss.length;
+   ss.forEach(x=>{st.pv+=x[0];st.pt+=x[1];k.pv+=x[0];k.pt+=x[1];k.s++;const key=x[0]+'-'+x[1];st.tel[key]=(st.tel[key]||0)+1;});
+   if(ss.length>=5){st.vijf++;if(u==='win')st.vijfW++;}
+   st.eerstTel++;const e=ss[0];
+   if(e[0]>e[1]){st.eerstW++;if(u==='verlies')st.eerstWV++;}else{st.eerstV++;if(u==='win')st.eerstVW++;}}
+  const m=new Date(w.t).toLocaleDateString('sv-SE',TZ).slice(0,7),o=st.maand[m]=st.maand[m]||{n:0,W:0};o.n++;if(u==='win')o.W++;});
+ st.langst=langst;
+ // huidige reeks
+ const l=g[g.length-1],lu=uitkomst(l);for(let i=g.length-1;i>=0&&uitkomst(g[i])===lu;i--)reeks++;
+ st.reeks=reeks;st.reeksSoort=lu;
+ const top=Object.keys(st.tel).sort((a,b)=>st.tel[b]-st.tel[a])[0];st.top=top&&st.tel[top]>=2?[top,st.tel[top]]:null;
+ return st;
+}
+const bol=(u,t)=>'<i class="hm-v '+u+'"'+(t?' title="'+esc(t)+'"':'')+'>'+(u==='win'?'W':u==='gelijk'?'G':'V')+'</i>';
+const bolL=x=>x.split('').map(c=>bol(c==='W'?'win':c==='V'?'verlies':'gelijk')).join('');
+function volgende(team){
+ return D.p.filter(w=>w.team===team&&w.t>=Date.now()-2*3600e3).sort((a,b)=>a.t-b.t)[0]||null;
+}
+function standRij(team,naam){
+ const t=S&&S.tabel&&S.tabel[team];if(!t)return null;const n=sleutel(naam);
+ return t.rij.find(r=>sleutel(r[1]||'')===n)||t.rij.find(r=>{const x=sleutel(r[1]||'');return x.endsWith(n)||n.endsWith(x);})||null;
+}
+function volgBlok(team){
+ const v=volgende(team);if(!v)return '';
+ const opp=isW(v.a)?v.b:v.a,p=plek(team,opp),thuis=/woudenberg/i.test(v.plaats||''),k=S&&S.vorm&&S.vorm[team],f=k&&(k[sleutel(opp)]||k[Object.keys(k).find(x=>x.endsWith(sleutel(opp))||sleutel(opp).endsWith(x))||'']);
+ return '<div class="hm-next"><span class="hm-nl">Volgende</span><span class="hm-nt"><b>'+esc(dag(new Date(v.t)))+' '+esc(tijd(new Date(v.t)))+'</b> '+(thuis?'<em class="hm-thuis">Thuis</em>':'<em class="hm-uit">Uit</em>')+'</span>'
+  +'<span class="hm-no">'+esc(opp)+(p?' <span class="hm-r" title="'+p[0]+'e van '+p[1]+'">#'+p[0]+'</span>':'')+'</span>'+(f?'<span class="hm-nf" title="Vorm tegenstander (laatste 5)">'+bolL(f)+'</span>':'')+'</div>';
+}
+const kv=(a,b,t)=>(b===''||b==null)?'':'<div class="hm-kv"'+(t?' title="'+esc(t)+'"':'')+'><span>'+a+'</span><b>'+b+'</b></div>';
+const bar=(p,tekst)=>'<span class="hm-bar"><i style="width:'+p+'%"></i></span><b>'+tekst+'</b>';
+let meerStat=false,statTab='sets';
+const MAANDEN=['jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt','nov','dec'];
+function statSectie(team,st){
+ if(statTab==='sets'){
+  if(!st.metSets)return '<p class="hm-leeg">Geen setstanden beschikbaar.</p>';
+  return '<div class="hm-kvs">'
+   +kv('Gewonnen sets',pct(st.sv,st.sv+st.st)+' <i>('+st.sv+'–'+st.st+')</i>')
+   +kv('5-setters',st.vijf?st.vijf+' <i>('+st.vijfW+' gewonnen)</i>':'0')
+   +kv('Punten per set','<i>gescoord/tegen</i> '+gem(st.pv,st.aantalSets)+' / '+gem(st.pt,st.aantalSets))
+   +kv('Gem. verschil per set',(st.pv>=st.pt?'+':'−')+gem(Math.abs(st.pv-st.pt),st.aantalSets))
+   +(st.top?kv('Vaakst voorkomende setstand',esc(st.top[0])+' <i>('+st.top[1]+'×)</i>'):'')
+   +kv('Winst zonder setverlies',st.schoon)
+   +kv('Verlies zonder setwinst',st.schoonV)
+   +kv('Eerste set gewonnen, wedstrijd verloren',st.eerstWV+' <i>van '+st.eerstW+'</i>')
+   +kv('Eerste set verloren, wedstrijd gewonnen',st.eerstVW+' <i>van '+st.eerstV+'</i>')
+   +kv('Langste winstreeks',st.langst)
+   +'</div>';
+ }
+ if(statTab==='thuis'){
+  const r=(naam,k)=>k.n?'<div class="hm-th"><span>'+naam+'</span>'+bar(Math.round(100*k.W/k.n),pct(k.W,k.n)+' <i>('+k.W+'/'+k.n+')</i>')+(k.s?'<small>'+gem(k.pv,k.s)+' punten per set voor, '+gem(k.pt,k.s)+' tegen</small>':'')+'</div>':'';
+  return r('Thuis gewonnen',st.thuis)+r('Uit gewonnen',st.uit)||'<p class="hm-leeg">Nog niets te laten zien.</p>';
+ }
+ if(statTab==='tegen'){
+  const v=volgende(team);if(!v)return '<p class="hm-leeg">Geen volgende wedstrijd gepland.</p>';
+  const opp=isW(v.a)?v.b:v.a,n=sleutel(opp),p=plek(team,opp),mijn=standRij(team,'woudenberg'+team),zij=standRij(team,opp);
+  const eigen=S&&S.tabel&&S.tabel[team]&&S.tabel[team].rij.find(r=>isW(r[1]||'')&&teamVan(r[1])===team);
+  const heen=D.u.filter(w=>w.team===team&&uitkomst(w)&&(sleutelNaam(w)===n||sleutelNaam(w).endsWith(n)||n.endsWith(sleutelNaam(w)))).sort((a,b)=>a.t-b.t)[0];
+  const k=S&&S.vorm&&S.vorm[team],f=k&&(k[n]||k[Object.keys(k).find(x=>x.endsWith(n)||n.endsWith(x))||'']);
+  const di=eigen&&zij?(eigen[3]-zij[3]):null;
+  const ow=heen?(isW(heen.a)?[heen.sa,heen.sb]:[heen.sb,heen.sa]):null;
+  return '<div class="hm-kvs"><div class="hm-kv hm-kv1"><span>Tegenstander</span><b>'+esc(opp)+'</b></div>'
+   +kv('Plek in de competitie',p?'#'+p[0]+' <i>van '+p[1]+'</i>':'')
+   +kv('Vorm (laatste 5)',f?'<span class="hm-nf">'+bolL(f)+'</span>':'')
+   +kv('Heenronde',ow?(ow[0]>ow[1]?'gewonnen':ow[0]<ow[1]?'verloren':'gelijk')+' <i>'+ow[0]+'–'+ow[1]+(heen.sets?' ('+esc(heen.sets)+')':'')+'</i>':'')
+   +kv('Punten in de stand',di==null?'':(di===0?'gelijk':Math.abs(di)+' punt'+(Math.abs(di)===1?'':'en')+(di>0?' voor':' achter'))+' <i>op de tegenstander</i>')
+   +'</div>';
+ }
+ if(statTab==='verloop'){
+  const ms=Object.keys(st.maand).sort();if(ms.length<2)return '<p class="hm-leeg">Nog te weinig maanden om een verloop te tonen.</p>';
+  return '<p class="hm-uitleg">Percentage gewonnen wedstrijden per maand</p><div class="hm-grafiek">'+ms.map(m=>{const o=st.maand[m],p=Math.round(100*o.W/o.n);
+   return '<div title="'+o.W+' van '+o.n+' gewonnen"><b>'+p+'%</b><span class="hm-st"><i style="height:'+Math.max(p,3)+'%"></i></span><em>'+MAANDEN[+m.slice(5)-1]+'</em><small>'+o.W+'/'+o.n+'</small></div>';}).join('')+'</div>';
+ }
+ // vergelijk met andere Woudenberg-teams
+ const rij=teams().filter(t=>!mini(t)).map(t=>[t,teamStats(t)]).filter(x=>x[1]);
+ rij.sort((a,b)=>b[1].W/b[1].n-a[1].W/a[1].n||b[1].n-a[1].n);
+ return '<p class="hm-uitleg">Percentage gewonnen wedstrijden dit seizoen, zonder de mini’s</p><div class="hm-vgl">'
+  +rij.map(x=>'<div'+(x[0]===team?' class="eigen"':'')+'><span>'+esc(x[0])+'</span>'+bar(Math.round(100*x[1].W/x[1].n),pct(x[1].W,x[1].n)+' <i>('+x[1].W+'/'+x[1].n+')</i>')+'</div>').join('')+'</div>';
+}
+function teamKaart(team){
+ const st=teamStats(team),nu=Date.now();
+ if(!st)return '<div class="hm-vorm"><span>Nog geen uitslagen dit seizoen</span></div>'+(D?volgBlok(team):'');
+ const g=st.g.slice().reverse(),vorm=g.slice(0,5).reverse().map(w=>bol(uitkomst(w),w.a+' – '+w.b+': '+w.sa+'-'+w.sb)).join('');
+ const rs=st.reeks>=2?st.reeks+(st.reeksSoort==='win'?' gewonnen':st.reeksSoort==='verlies'?' verloren':' gelijk')+' op rij':'';
+ const tabs=[['sets','Sets & punten'],['thuis','Thuis & uit'],['tegen','Tegenstander'],['verloop','Verloop'],['teams','Teams']];
+ return '<div class="hm-stats hm-team">'+tegel(st.n,'gespeeld')+tegel(st.W,'gewonnen')+(st.G?tegel(st.G,'gelijk'):'')+tegel(st.V,'verloren')+tegel(st.sv+'–'+st.st,'sets')+(st.metSets?tegel(st.vijf,'5-setters'):'')+'</div>'
+  +'<div class="hm-vorm"><span>Laatste '+Math.min(5,st.n)+'</span>'+vorm+(rs?'<span class="hm-reeks">'+rs+'</span>':'')+'</div>'
+  +volgBlok(team)
+  +'<button type="button" class="hm-meerstat" aria-expanded="'+meerStat+'">'+(meerStat?'Minder statistieken':'Meer statistieken')+'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>'
+  +(meerStat?'<section class="card hm-ms"><div class="hm-stab" role="tablist">'+tabs.map(t=>'<button type="button" role="tab" data-s="'+t[0]+'" aria-selected="'+(statTab===t[0])+'">'+t[1]+'</button>').join('')+'</div>'+statSectie(team,st)+'</section>':'');
 }
 
 function teken(){
@@ -244,6 +359,8 @@ function teken(){
  el.querySelectorAll('.hm-snel button').forEach(b=>b.onclick=()=>{setView(b.dataset.v);window.scrollTo(0,0);});
  $('hm_team').onchange=e=>{put(TEAMK,e.target.value);meerP=meerU=false;teken();};
  $('hm_ver').onclick=ververs;
+ el.querySelectorAll('.hm-meerstat').forEach(b=>b.onclick=()=>{meerStat=!meerStat;teken();});
+ el.querySelectorAll('.hm-stab button').forEach(b=>b.onclick=()=>{statTab=b.dataset.s;teken();});
  el.querySelectorAll('.hm-seg button').forEach(b=>b.onclick=()=>{tab=b.dataset.t;teken();});
  el.querySelectorAll('.hm-meer').forEach(b=>b.onclick=()=>{if(b.dataset.m==='p')meerP=!meerP;else meerU=!meerU;teken();});
 }
@@ -258,7 +375,14 @@ async function ververs(){
 
 D=get(LSK,null);S=get(STK,null);teken();ververs().then(checkLive);
 setInterval(checkLive,20000);
-document.addEventListener('visibilitychange',()=>{if(!document.hidden)checkLive();});
+// uitslagen elke 5 minuten opnieuw ophalen zolang de homepagina open staat; de statistieken worden daarna vanzelf opnieuw berekend
+let stilBezig=false;
+async function stil(){
+ const el=$('v_home');if(stilBezig||bezig||document.hidden||!el||!el.offsetParent||!D||Date.now()-D.bij<5*60e3-5000)return;
+ stilBezig=true;try{D=await laad();fout='';teken();}catch(e){}finally{stilBezig=false;}
+}
+setInterval(stil,60000);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden){checkLive();stil();}});
 // zonder gedeelde training in de link start de app op de homepagina
 if(!location.hash.slice(1)&&typeof setView==='function')setView('home');
 })();
