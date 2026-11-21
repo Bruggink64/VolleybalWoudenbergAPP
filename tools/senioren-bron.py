@@ -283,7 +283,7 @@ N.append(ex(30, '6 tegen 6: drie side-outs per rotatie', 'zes', ['sideout'], A,
  ['Team B serveert op team A.', 'Team A haalt de side-out: pass, inlopende spelverdeler, aanval.', 'Na een side-out een nieuwe service; na drie side-outs draait team A door.', 'Na zes rotaties wisselen de rollen.'],
  ['Voor elke service: weet iedereen zijn plek en zijn looplijn?', 'Spelverdeler roept de aanvallen af voor de service.'],
  'Houd bij in welke rotatie het langst duurt: die rotatie oefen je volgende training apart.',
- [['SV', SV, '1', (360, 440), 'sv', 'sv'], ['P5', Y, '5', (180, 560), '5', '5'], ['L', LIB, '6'], ['A4', Y, (130, 450), (130, 470), (140, 410), 'a4'], ['M3', Y, '3', (280, 450), (290, 410), 'a3'], ['DIA', Y, '2', (440, 470), (430, 410), 'a2'], ['OS', OPP, 'osrv5']],
+ [['SV', SV, '1', (360, 440), 'sv', 'sv'], ['P5', Y, '5', (180, 560), '5', '5'], ['L', LIB, '6'], ['A4', Y, (130, 450), (130, 470), (140, 410), 'a4'], ['MB', Y, '3', (280, 450), (290, 410), 'a3'], ['DIA', Y, '2', (440, 470), (430, 410), 'a2'], ['OS', OPP, 'osrv5']],
  ['osrv5', (180, 555), 'sv', 'a4', (330, 130)]))
 N.append(ex(31, 'Wie de side-out haalt, mag serveren', 'zes', ['service', 'sideout'], A,
  'Gewone wedstrijd 6 tegen 6, maar een punt telt alleen als het ontvangende team de side-out haalt en daarna met de eigen service ook nog een punt wint ("break").',
@@ -332,7 +332,7 @@ N.append(ex(36, 'Rotatiewedstrijd: elke rotatie tot 3', 'zes', ['sideout', 'serv
  ['Speel normale rally\'s met service en side-out.', 'Elk punt telt voor de rotatie waarin het team staat.', 'Bij 3 punten draait het team één rotatie door.', 'Het eerste team dat rotatie 6 afmaakt, wint.'],
  ['Gebruik het tabblad 5-1 rotaties om de opstellingen samen te bekijken.', 'Spelverdeler: noem voor de service de rotatie en de aanvallen.'],
  'Laag niveau: 2 punten per rotatie. Hoger niveau: het andere team mag bepalen in welke rotatie je verder gaat.',
- [['SV', SV, '1', (360, 440), 'sv', 'sv'], ['P5', Y, '5', (180, 560), '5', '5'], ['L', LIB, '6'], ['A4', Y, (130, 450), (130, 470), (140, 410), 'a4'], ['M3', Y, '3', (280, 450), (290, 410), 'a3'], ['DIA', Y, '2', (440, 470), (430, 410), 'a2'], ['OS', OPP, 'osrv1']],
+ [['SV', SV, '1', (360, 440), 'sv', 'sv'], ['P5', Y, '5', (180, 560), '5', '5'], ['L', LIB, '6'], ['A4', Y, (130, 450), (130, 470), (140, 410), 'a4'], ['MB', Y, '3', (280, 450), (290, 410), 'a3'], ['DIA', Y, '2', (440, 470), (430, 410), 'a2'], ['OS', OPP, 'osrv1']],
  ['osrv1', (180, 555), 'sv', 'a3', (250, 120)]))
 
 # ------------------------------------------------------------ EINDSPEL (10 min)
@@ -728,7 +728,7 @@ N.append(ex(83, 'Partij met doordraaien na elke rally', 'zes', ['sideout', 'serv
  ['Speel een rally met service.', 'Na de rally draait het winnende team één plek door.', 'De spelers zeggen hardop hun nieuwe positie.', 'Speel tot iedereen op elke positie heeft gestaan.'],
  ['Bekijk samen de opstelling in het tabblad 5-1 rotaties.', 'De spelverdeler blijft spelverdeler, ook als hij doordraait.'],
  'Met minder dan 12 spelers: 6 tegen 4, waarbij het kleine team een vrije bal krijgt na elke service.',
- [['SV', SV, '1', (360, 440), 'sv', 'sv'], ['P5', Y, '5', (180, 560), '5', '5'], ['L', LIB, '6'], ['A4', Y, (130, 450), (130, 470), (140, 410), 'a4'], ['M3', Y, '3', (280, 450), (290, 410), 'a3'], ['DIA', Y, '2', (440, 470), (430, 410), 'a2'], ['OS', OPP, 'osrv1']],
+ [['SV', SV, '1', (360, 440), 'sv', 'sv'], ['P5', Y, '5', (180, 560), '5', '5'], ['L', LIB, '6'], ['A4', Y, (130, 450), (130, 470), (140, 410), 'a4'], ['MB', Y, '3', (280, 450), (290, 410), 'a3'], ['DIA', Y, '2', (440, 470), (430, 410), 'a2'], ['OS', OPP, 'osrv1']],
  ['osrv1', (180, 555), 'sv', 'a4', (330, 130)]))
 N.append(ex(84, '6 tegen 4: overtal en ondertal', 'zes', ['transitie', 'verdediging'], A,
  'Zes spelers tegen vier. Het team van vier speelt met een vaste spelverdeler en mag alleen op de posities waar het spelers heeft aanvallen. Het team van zes moet het hele veld verdedigen.',
