@@ -937,6 +937,70 @@ N.append(ex(106, 'Drietal: gooien en naar de zijkant', 'wu', ['warming', 'transi
  [['A', Y, (260, 470), (244, 340), (250, 215), (250, 215)], ['B', Y, (280, 215), (280, 215), (316, 340), (300, 470)], ['C', Y, (305, 470), (305, 470), (305, 470), (320, 340)]],
  [(260, 455), (280, 225), (305, 455), (250, 215), (250, 215)], mn=10))
 
+# ------------------------------------------------------------ SIDE-OUT: opslag-/ontvangstopbouw (22-11-2026, voorstel Yannick)
+N.append(ex(107, 'Naad-duel: wie neemt de bal tussen twee passers?', 'tech', ['service', 'sideout'], A,
+ 'Eigen helft: twee passers op positie 5 en 6 en een afvanger op de spelverdelerplek (2/3), gemarkeerd met twee pionnen. Overkant: twee serveerders achter de achterlijn, een achter zone 1 en een achter zone 5. Wie wacht, staat in de rij en haalt ballen terug.',
+ 'Snel communiceren en een duidelijke keuze maken als de service precies tussen twee passers in komt.',
+ ['De serveerder mikt op de naad tussen positie 5 en 6.', 'De passers roepen meteen "ik" of "jij"; de passer die de bal neemt, stapt ernaar toe.', 'Hij passt hoog naar het doel tussen de pionnen op 2/3; de afvanger vangt en legt de bal in de kar.', 'Na 3 services wisselt een passer met de rij; de serveerders wisselen om de beurt.'],
+ ['Roep vroeg, het liefst al als de serveerder de bal raakt en uiterlijk als hij over het net is.', 'Afspraak bij de naad: de passer die de bal voor zich heeft (niet naast zich) neemt hem; de ander draait open en kijkt mee.', 'Armen stil houden en vanuit de benen naar 2/3 sturen.', 'Veelgemaakte fout: naar elkaar kijken en blijven staan, of te laat stappen en uit balans passen.'],
+ 'Makkelijker: de serveerder gooit de bal onderhands over het net vanaf het midden van zijn eigen veldhelft. Moeilijker: een derde passer op positie 1 erbij en een echte spelverdeler die opzet naar een aanvaller op positie 4.',
+ [['S1', OPP, 'osrv5'], ['S2', OPP, 'osrv1'], ['PA', Y, '5', (180, 575), (210, 570), (205, 572)], ['PB', Y, '6', (268, 585), (262, 592), (262, 590)], ['AF', SV, 'sv']],
+ ['osrv5', (300, 340), (212, 565), 'sv', 'kar'], door=['PA', 'PB']))
+
+N.append(ex(108, 'Pass & go: passen en aanvallen op positie 4', 'tech', ['sideout', 'aanval'], A,
+ 'Eigen helft: een buitenaanvaller (voorspeler op positie 4) staat in de ontvangst links in het veld, op ongeveer 5 meter van het net, en een spelverdeler op 2/3. De andere aanvallers wachten in de rij. Overkant: twee serveerders achter de achterlijn en twee verdedigers op positie 1 (lijn) en 5 (diagonaal).',
+ 'Na de pass direct loskomen, ver genoeg naar buiten gaan en met een volledige aanloop aanvallen op positie 4.',
+ ['De overkant serveert op de buitenaanvaller.', 'Hij passt naar de spelverdeler op 2/3 en valt direct af naar buiten, tot naast de zijlijn bij de 3-meterlijn.', 'De spelverdeler zet hoog op naar positie 4.', 'De aanvaller maakt zijn aanloop, slaat naar de verdedigers en sluit achter in de rij aan; de rally wordt niet uitgespeeld.'],
+ ['Maak eerst je pass af en kijk de bal na; pas dan wegsprinten.', 'Ga echt buiten het veld staan, zodat je een lange, explosieve aanloop hebt.', 'Bij een hoge bal begin je je aanloop als de bal de handen van de spelverdeler verlaat.', 'Veelgemaakte fout: al weglopen tijdens de pass (de pass zwaait af) of te dicht bij het net blijven staan.'],
+ 'Makkelijker: de spelverdeler vangt de pass en gooit een rustige bal op naar positie 4. Moeilijker: een blokkeerder op positie 2 aan de overkant en de rally uitspelen na de aanval.',
+ [['S1', OPP, 'osrv5'], ['S2', OPP, 'osrv1'], ['A4', Y, (190, 505), (190, 500), (150, 480), (105, 470), (150, 362), (150, 378), (190, 505)], ['SV', SV, 'sv'],
+  ['V5', OPP, 'o5', 'o5', 'o5', 'o5', 'o5', (388, 112), 'o5'], ['V1', OPP, 'o1']],
+ ['osrv5', (190, 497), 'sv', (235, 370), 'a4', (388, 116)]))
+
+N.append(ex(109, 'Kort of diep: voetenwerk in de ontvangst', 'tech', ['service', 'sideout'], A,
+ 'Eigen helft: drie passers op positie 5, 6 en 1, een afvanger op 2/3 en een lijn tape op 4 meter van het net. Overkant: twee serveerders achter de achterlijn. Met minder spelers serveert de trainer.',
+ 'De lengte van de service vroeg herkennen en de uitgangspositie daarop aanpassen: instappen bij kort, achteruit bij diep.',
+ ['De serveerders wisselen bewust af tussen een korte float (vóór de tape) en een diepe service achter in het veld.', 'Bij een korte bal stapt de passer laag naar voren en passt naar de afvanger.', 'Bij een diepe bal draait de passer en stapt schuin naar achteren, zodat hij achter de bal komt.', 'Na 5 goede passes wisselt het hele trio met de rij.'],
+ ['Sta actief op je voorvoeten, hakken net los van de grond.', 'Lees de armslag en het raakpunt van de serveerder: daar zie je al kort of diep.', 'Bij een korte bal houd je je schouders vóór je knieën en leun je niet achterover.', 'Veelgemaakte fout: op de hakken staan, of bij een korte bal alleen de armen uitsteken in plaats van naar de bal toe te lopen.'],
+ 'Makkelijker: de serveerder geeft vooraf met een handgebaar aan of de bal kort of diep komt. Moeilijker: een spelverdeler in plaats van de afvanger en een middenaanvaller op positie 3 die bij elke goede pass een snelle bal aanvalt.',
+ [['S1', OPP, 'osrv5'], ['S2', OPP, 'osrv1'], ['PA', Y, '5', '5', '5', '5', (185, 618), (185, 618), '5'], ['PB', Y, '6', (285, 478), (285, 478), '6', '6', '6', '6'], ['PC', Y, '1'], ['AF', SV, 'sv']],
+ ['osrv5', (285, 470), 'sv', 'osrv1', (188, 624), 'sv']))
+
+N.append(ex(110, 'Doelwit-service tegen side-out', 'spel', ['service', 'sideout'], V,
+ 'Eigen helft: een complete ontvangst met drie passers op 5, 6 en 1, een spelverdeler op 2/3 en aanvallers op positie 4 en 2. Twee hoepels liggen diep in de hoeken (achter positie 1 en 5). Overkant: serveerders achter de achterlijn (zone 1 en zone 5) en twee verdedigers op positie 5 en 6.',
+ 'De serveerder zet druk op de zwakke zones; het ontvangende team bouwt toch een complete aanval op.',
+ ['De serveerder mikt op een hoepel of op een passer die het lastig heeft.', 'Het eigen team passt naar 2/3, de spelverdeler zet op naar positie 4 of 2 en de aanvaller slaat over het net.', 'De verdedigers aan de overkant proberen de aanval te verdedigen.', 'Score: 1 punt voor het eigen team bij een directe side-out, 2 punten voor de serveerder bij een ace of een service in een hoepel.'],
+ ['Serveerder: steeds dezelfde opgooi en een vlakke baan over het net; niet te hard willen.', 'Passers: een moeilijke bal uit de hoek pass je hoog naar het midden van het veld, met marge van het net.', 'Spelverdeler: kies de aanval die past bij de pass. Na een matige pass een hoge bal naar buiten, geen snelle bal forceren.', 'Veelgemaakte fout: te hard serveren, waardoor het aantal servicefouten stijgt.'],
+ 'Makkelijker: het eigen team krijgt al een punt als de aanval binnen het veld aan de overkant landt, ook als hij verdedigd wordt. Moeilijker: een tweemansblok aan de overkant en de rally helemaal uitspelen.',
+ [['S', OPP, 'osrv1'], ['V5', OPP, 'o5', 'o5', 'o5', 'o5', 'o5', (388, 112), 'o5'], ['V6', OPP, 'o6'],
+  ['Z', W, (430, 630)], ['GZ', W, (130, 630)],
+  ['PA', Y, '5', '5', '5', (190, 470), (190, 460), '5', '5'], ['PB', Y, '6', '6', '6', (250, 470), (250, 455), '6', '6'], ['PC', Y, '1', (388, 596), (388, 596), '1', '1', '1', '1'],
+  ['SV', SV, 'sv'], ['A4', Y, (130, 460), (130, 470), (115, 470), (135, 420), (150, 362), (150, 378), (130, 460)], ['DIA', Y, (440, 470), (440, 470), (440, 470), (430, 420), (430, 420), (440, 470), (440, 470)]],
+ ['osrv1', (388, 592), 'sv', (240, 368), 'a4', (388, 116)]))
+
+N.append(ex(111, 'Noodopbouw: plan B na een slechte pass', 'spel', ['sideout', 'transitie'], V,
+ 'Eigen helft: drie passers op 5, 6 en 1, een spelverdeler op 2/3 en aanvallers op positie 4 en 2. Overkant: de trainer met een ballenkar achter de achterlijn en drie verdedigers.',
+ 'Ook na een slechte pass nog een gecontroleerde aanval of een slimme bal over het net spelen.',
+ ['De trainer slaat of gooit bewust lastige ballen: scherp langs de zijlijn, kort achter het net of diep in de hoek.', 'Kan de spelverdeler de tweede bal niet halen, dan roept hij meteen "help" en neemt de dichtstbijzijnde speler (vaak die van positie 6 of de libero) de tweede bal.', 'Die speler geeft een hoge noodset naar positie 4; de aanvaller slaat gecontroleerd diep in het veld aan de overkant of speelt via het blok uit.', 'Speel de rally uit; na 4 ballen wisselen de spelers van rol.'],
+ ['De spelverdeler zegt direct of hij de tweede bal haalt; twijfel zorgt voor botsingen.', 'Noodset altijd hoog en op 1,5 tot 2 meter van het net.', 'Aanvaller: geduld en controle, niet blind hard slaan.', 'Veelgemaakte fout: twee spelers op dezelfde tweede bal, of een noodset die te laag en te dicht bij het net komt.'],
+ 'Makkelijker: de trainer gooit de bal zelf op een lastige plek in het veld, en de spelverdeler of de helper oefent een set van ver weg. Moeilijker: een hoge bal over het net is niet genoeg; de aanvaller scoort alleen in de achterste 3 meter aan de overkant.',
+ [['TR', TR, (280, 25)], ['V1', OPP, 'o1'], ['V5', OPP, 'o5'], ['V6', OPP, 'o6', 'o6', 'o6', 'o6', 'o6', (322, 78), 'o6'],
+  ['PA', Y, '5', '5', '5', '5', (190, 470), (190, 470), '5'], ['PB', Y, '6', (250, 560), (212, 528), (212, 528), (245, 470), (245, 470), '6'], ['PC', Y, '1', (420, 598), (420, 598), '1', '1', '1', '1'],
+  ['SV', SV, 'sv', 'sv', (315, 400), (315, 400), (300, 410), 'sv', 'sv'], ['A4', Y, (130, 460), (130, 470), (105, 470), (130, 420), (150, 362), (150, 378), (130, 460)], ['DIA', Y, (440, 470)]],
+ [(280, 30), (420, 594), (212, 524), (175, 440), 'a4', (325, 72)]))
+
+N.append(ex(112, 'Side-out koning', 'zes', ['sideout'], A,
+ 'Spelvorm 6 tegen 6 op één veld (met 8 spelers 4 tegen 4). Het ene team ontvangt, het andere team serveert 6 keer achter elkaar. Na 3 services draait het ontvangende team een rotatie door, zodat het in twee rotaties ontvangt. Houd de score bij op een scorebord.',
+ 'Onder wedstrijddruk zoveel mogelijk side-outs halen, het liefst meteen met de eerste aanval.',
+ ['Het serverende team serveert; het ontvangende team bouwt op: pass, set en aanval.', 'Scoort het ontvangende team met de eerste aanval, dan is dat 2 punten; later in de rally 1 punt.', 'Wint het serverende team de rally (een break), dan krijgt dat team 1 punt.', 'Na 6 services wisselen de teams van taak. Welk team haalt de meeste side-outs uit 6 kansen?'],
+ ['Na een fout direct resetten: de volgende bal is een nieuwe kans.', 'Houd de afstanden in de ontvangst scherp, ook als het spannend wordt.', 'Dek je eigen aanvaller af, zodat een geblokte bal niet meteen op de grond valt.', 'Veelgemaakte fout: inzakken na een servicefout van de tegenstander, of de aanvalsdekking vergeten.'],
+ 'Makkelijker: bij een servicefout gooit de trainer meteen een vrije bal in, zodat het team toch opbouwt. Moeilijker: het ontvangende team krijgt pas punten bij 2 side-outs op rij.',
+ [['OS', OPP, 'osrv1', 'osrv1', (165, 60), 'o1', 'o1', 'o1', 'osrv1'], ['O2', OPP, 'o2', 'o2', 'o2', 'o2', (165, 328), 'o2', 'o2'], ['O3', OPP, 'o3', 'o3', 'o3', (220, 300), (200, 328), 'o3', 'o3'],
+  ['O4', OPP, 'o4'], ['O5', OPP, 'o5'], ['O6', OPP, 'o6', 'o6', 'o6', 'o6', 'o6', (300, 135), 'o6'],
+  ['SV', SV, '1', (360, 440), 'sv', 'sv', 'sv', (320, 410), '1'], ['P5', Y, '5', (180, 560), '5', '5', (200, 460), (200, 460), '5'], ['L', LIB, '6', '6', '6', '6', (245, 470), (245, 470), '6'],
+  ['A4', Y, (130, 470), (130, 470), (110, 470), (135, 420), (150, 362), (150, 378), (130, 470)], ['MB', Y, (280, 400), (280, 450), (290, 410), (290, 356), (250, 400), (280, 400), (280, 400)], ['DIA', Y, (440, 470), (440, 470), (440, 470), (430, 420), (430, 420), (440, 470), (440, 470)]],
+ ['osrv1', (180, 555), 'sv', (240, 368), 'a4', (225, 180)]))
+
 # Titels en niveaus van de oude oefeningen opschonen
 OUD = {
  's1': ('Vlinder: service, pass en doorlopen', None), 's2': ('Driehoeks-pepper over het net', None),
@@ -1031,7 +1095,7 @@ for d in sen:
     d['need'] = 4 if d['blok'] in ('zes', 'eind') else max(2, min(k, 12))
     if 'needx' in d: d['need'] = d.pop('needx')  # vast minimum, ook als de animatie meer spelers toont
     d.pop('niv', None)
-    if d['id'] in ('n105', 'n106'): d['vast'] = True
+    if d['id'] in ('n105', 'n106', 'n108', 'n109', 'n110', 'n111'): d['vast'] = True  # n108-n111: actie loopt de hele animatie door
     if d['id'] == 'n106': d['baan'] = True    # groepjes naast elkaar in één veld, ieder in een eigen baan    # geen doordraaien: iedereen houdt zijn eigen plek
     if d['id'] == 'n104': d['allen'] = True   # iedereen doet mee, twee teams
     if d['id'] == 'n84': d['vs'] = [6, 4]       # 6 tegen 4 (geen 6 tegen 6)
