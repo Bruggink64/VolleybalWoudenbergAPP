@@ -341,7 +341,7 @@ function start(model,box,t0){
 function stop(){
  if(!V)return;cancelAnimationFrame(V.raf);if(V.ro)V.ro.disconnect();
  if(V.model.release)V.model.release();
- V.B.dispose();V.renderer.dispose();if(V.renderer.domElement)V.renderer.domElement.remove();V=null;window.__d3=null;
+ V.B.dispose();try{V.renderer.forceContextLoss();}catch(e){}V.renderer.dispose();if(V.renderer.domElement)V.renderer.domElement.remove();V=null;window.__d3=null;
 }
 
 // ---------- ingebouwde 3D: standaard over elke 2D-animatie ----------
@@ -352,7 +352,7 @@ let want3d=store.get()!=='2d',broken=false; // broken: geen WebGL/three.js of te
 const hosts=[],bySvg=new WeakMap();
 let R=null,io=null,ro=null,raf=0,lastTs=0,cost=0,costN=0;
 const on=()=>want3d&&!broken;
-function btns(h){const live=on()&&!!h.B,show=!broken&&(live||!want3d);
+function btns(h){const live=on()&&!!h.B&&!h.err,show=!broken&&(live||!want3d);
  h.bar.style.display=show?'':'none';
  const k=(live?'1':'0')+show;if(h.bk===k)return;h.bk=k;
  h.bar.innerHTML=live?'<button type="button" data-a3="open" aria-label="Draaibaar 3D-venster openen">&#10530; Draaien</button><button type="button" data-a3="mode" aria-label="Toon 2D-animatie">2D</button>':'<button type="button" data-a3="mode" aria-label="Toon 3D-animatie">3D</button>';}
@@ -370,7 +370,9 @@ function frameOf(h){
  if(h.kind==='def')return (typeof dF!=='undefined'?dF:0)/3;
  return 0;
 }
-function sigOf(h){if(h.kind==='rot')return 'r'+rotN;if(h.kind==='def'){const g=getDef();return g.key+dMode+dInsp+dAll;}return '';}
+function sigOf(h){if(h.kind==='rot')return 'r'+rotN;if(h.kind==='def'){const g=getDef();return g.key+dMode+dInsp+dAll;}
+ if(h.kind==='sen'){const st=h.wrap.closest('.stp');return 's'+(st&&st.dataset.senid);}
+ return 'm'+h.svg.getAttribute('aria-label')+h.svg.childElementCount;}
 function addHost(kind,target){
  css();
  let wrap;
@@ -379,6 +381,7 @@ function addHost(kind,target){
  else{const p=target.parentNode;
   if(p&&p.classList&&p.classList.contains('a3w'))wrap=p; // kopie (bijv. groot scherm): opnieuw opbouwen
   else{wrap=document.createElement('div');wrap.className='a3w';p.insertBefore(wrap,target);wrap.appendChild(target);}}
+ hosts.filter(x=>x.wrap===wrap).forEach(drop);
  wrap.querySelectorAll(':scope>canvas.a3c,:scope>.a3b').forEach(n=>n.remove());
  wrap.classList.remove('a3on');
  const cv=document.createElement('canvas');cv.className='a3c';cv.setAttribute('aria-hidden','true');wrap.appendChild(cv);
@@ -404,11 +407,16 @@ function ensure(){
  if(R||broken)return;
  loadThree().then(()=>{
   if(R)return;
-  try{const c=document.createElement('canvas');R=new THREE.WebGLRenderer({canvas:c,antialias:true,preserveDrawingBuffer:false});R.setPixelRatio(1);R.setScissorTest(true);}
+  try{const c=document.createElement('canvas');R=new THREE.WebGLRenderer({canvas:c,antialias:true,preserveDrawingBuffer:false});R.setPixelRatio(1);R.setScissorTest(true);
+   // WebGL kwijt (bijv. door de videokaart): opnieuw beginnen in plaats van een stilstaand beeld te laten staan
+   c.addEventListener('webglcontextlost',e=>{e.preventDefault();lost();},false);}
   catch(e){broken=true;refresh();return;}
   kick();
  }).catch(()=>{/* geen internet: 2D blijft */});
 }
+function lost(){const r=R;R=null;hosts.forEach(h=>{h.B=null;h.sig='';h.wrap.classList.remove('a3on');btns(h);});try{if(r)r.dispose();}catch(e){}
+ if(++losses<=3)setTimeout(ensure,500);else{broken=true;refresh();}}
+let losses=0;
 function kick(){if(!raf&&on()&&hosts.some(h=>h.vis&&!h.small))raf=requestAnimationFrame(loop);}
 function loop(ts){
  raf=0;
@@ -418,7 +426,7 @@ function loop(ts){
  lastTs=ts;
  const t0=performance.now();
  const dpr=Math.min(1.5,window.devicePixelRatio||1);
- for(const h of hosts.slice())if(!h.wrap.isConnected)drop(h);
+ for(const h of hosts.slice())if(!h.wrap.isConnected||(h.svg&&!h.svg.isConnected))drop(h);
  const act=[];
  for(const h of hosts){if(!h.vis||h.small)continue;const s=svgOf(h);if(!s)continue;const r=s.getBoundingClientRect();if(r.width<20||r.height<20)continue;
   const wr=h.wrap.getBoundingClientRect();act.push({h,r,wr,s});}
@@ -426,8 +434,10 @@ function loop(ts){
  const cur=R.getSize(new THREE.Vector2());if(need[0]>cur.x||need[1]>cur.y)R.setSize(Math.max(need[0],cur.x),Math.max(need[1],cur.y),false);
  const H=R.domElement.height;
  for(const a of act){const h=a.h;
+  try{
+  if(h.err)continue;
   const sig=sigOf(h);
-  if(!h.B||h.sig!==sig){if(h.B)h.B.dispose();h.model=modelOf(h);if(!h.model){h.B=null;continue;}h.B=build(h.model);h.sig=sig;
+  if(!h.B||h.sig!==sig){if(h.B)h.B.dispose();h.B=null;h.model=modelOf(h);if(!h.model){h.wrap.classList.remove('a3on');btns(h);continue;}h.B=build(h.model);h.sig=sig;
    h.cam=new THREE.PerspectiveCamera(45,1,.1,200);h.O={r:20,th:0,ph:1.05,tg:new THREE.Vector3(0,.8,0)};h.w=0;h.wrap.classList.add('a3on');btns(h);}
   const w=Math.round(a.r.width*dpr),hh=Math.round(a.r.height*dpr);
   if(h.w!==w||h.hgt!==hh){h.w=w;h.hgt=hh;h.cv.width=w;h.cv.height=hh;h.cam.aspect=w/hh;h.cam.updateProjectionMatrix();aim(h.O,h.model.view||'achter',hh/w,h.model);place(h.O,h.cam);}
@@ -436,11 +446,13 @@ function loop(ts){
   h.B.update(frameOf(h),h.cam);
   R.setViewport(0,0,w,hh);R.setScissor(0,0,w,hh);R.render(h.B.scene,h.cam);
   h.ctx.drawImage(R.domElement,0,H-hh,w,hh,0,0,w,hh);
+  }catch(e){ // deze animatie lukt niet in 3D: toon 2D en ga door met de rest
+   h.err=true;h.B=null;h.wrap.classList.remove('a3on');btns(h);if(window.console)console.warn('3D',e);}
  }
  // te traag? dan terug naar 2D voor deze sessie
  if(act.length){cost=cost*.9+(performance.now()-t0)*.1;costN++;
   if(costN>60&&cost>40){broken=true;refresh();return;}}
- if(act.length)raf=requestAnimationFrame(loop);
+ if(act.length&&R)raf=requestAnimationFrame(loop);
 }
 function init(){
  css();
@@ -459,6 +471,6 @@ window.open3D=open;
 window.d3Sen=id=>{const d=(window.SEN||[]).find(x=>x.id===id);if(!d)return;const h=hosts.find(x=>x.kind==='sen'&&x.wrap.closest('.stp')&&x.wrap.closest('.stp').dataset.senid===id);open(senModel(d),h?frameOf(h)*9:0);};
 window.d3Rot=()=>{if(typeof ROT!=='undefined'&&typeof rotN!=='undefined')open(rotModel(rotN),rotF/3*(3/.48));};
 window.d3Def=()=>{if(typeof getDef==='function')open(defModel(),dF/3*(3/.48));};
-window.__a3={hosts,state:()=>({want3d,broken,ready:!!R})};
+window.__a3={hosts,state:()=>({want3d,broken,ready:!!R}),gl:()=>R,senModel,miniModel,rotModel,defModel,build};
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
