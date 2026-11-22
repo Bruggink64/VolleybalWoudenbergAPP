@@ -281,7 +281,7 @@ function stpLabels(d){const v=verdeling(d),o=doorOrder(d),l=d.stappen.slice(0,4)
  else if(o.length>1||(o.length&&v.rij)){l.push('Doordraaien: iedereen schuift een plek door.');h.push(-1);}
  return {l,h};}
 function stpWrap(d,svg){const {l,h}=stpLabels(d);
- return '<div class="stp" data-l="'+esc(JSON.stringify(l))+'" data-h="'+esc(JSON.stringify(h))+'">'+svg
+ return '<div class="stp" data-senid="'+d.id+'" data-l="'+esc(JSON.stringify(l))+'" data-h="'+esc(JSON.stringify(h))+'">'+svg
   +'<div class="stpbar noprint" role="group" aria-label="Animatie bedienen">'
   +'<button type="button" data-stp="prev" aria-label="Vorige stap">&lsaquo;<span class="stpt"> Vorige</span></button>'
   +'<button type="button" data-stp="play" class="stpp" aria-label="Pauze">&#10074;&#10074;</button>'
