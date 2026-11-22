@@ -287,7 +287,8 @@ function stpWrap(d,svg){const {l,h}=stpLabels(d);
   +'<button type="button" data-stp="play" class="stpp" aria-label="Pauze">&#10074;&#10074;</button>'
   +'<button type="button" data-stp="next" aria-label="Volgende stap">Volgende &rsaquo;</button>'
   +'<button type="button" data-stp="reset" aria-label="Opnieuw vanaf de beginopstelling">&#8634;</button>'
-  +'<button type="button" data-stp="full" aria-label="Groot scherm">&#10530;</button></div>'
+  +'<button type="button" data-stp="full" aria-label="Groot scherm">&#10530;</button>'
+  +'<button type="button" data-sen3d="'+d.id+'" aria-label="Bekijk in 3D">3D</button></div>'
   +'<p class="stpcap noprint" aria-live="polite"></p></div>';}
 (function(){
  const st=el=>{let s=STS.get(el);if(!s){s={mode:'play',step:0,stop:null};STS.set(el,s);}return s;};
