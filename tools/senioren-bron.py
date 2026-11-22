@@ -1265,6 +1265,9 @@ N.append(ex(135, "Pas op de baby's: spelen met extra ballen", 'eind', ['transiti
 # 22-11-2026 tweede ronde: 36 oefeningen uit de keuzelijst (tools/extra-2211.py)
 exec((pathlib.Path(__file__).resolve().parent / 'extra-2211.py').read_text())
 N += NIEUW_2211
+# 22-11-2026 derde ronde: 22 laatste oefeningen (tools/extra-2211b.py)
+exec((pathlib.Path(__file__).resolve().parent / 'extra-2211b.py').read_text())
+N += NIEUW_2211B
 
 # Titels en niveaus van de oude oefeningen opschonen
 OUD = {
@@ -1363,7 +1366,7 @@ for d in sen:
     if d['id'] in ('n105', 'n106', 'n108', 'n109', 'n110', 'n111'): d['vast'] = True  # n108-n111: actie loopt de hele animatie door
     if d['id'] in ('n113', 'n114', 'n115'): d['vast'] = True  # iedereen blijft in zijn eigen rij/groepje
     if d['id'] in ('n122', 'n123', 'n124', 'n125', 'n127', 'n128', 'n129', 'n130', 'n131', 'n132', 'n133', 'n134', 'n135'): d['vast'] = True  # 22-11: geen automatisch doordraaien
-    if d['id'].startswith('n') and 137 <= int(d['id'][1:]) <= 172: d['vast'] = True  # 22-11 tweede ronde: geen automatisch doordraaien
+    if d['id'].startswith('n') and 137 <= int(d['id'][1:]) <= 194: d['vast'] = True  # 22-11 tweede ronde: geen automatisch doordraaien
     if d['id'] == 'n106': d['baan'] = True    # groepjes naast elkaar in één veld, ieder in een eigen baan    # geen doordraaien: iedereen houdt zijn eigen plek
     if d['id'] in ('n104', 'n133', 'n140'): d['allen'] = True   # iedereen doet mee, twee teams
     if d['id'] == 'n136': d['vast'] = True
