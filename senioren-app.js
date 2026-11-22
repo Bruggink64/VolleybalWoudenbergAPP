@@ -281,14 +281,13 @@ function stpLabels(d){const v=verdeling(d),o=doorOrder(d),l=d.stappen.slice(0,4)
  else if(o.length>1||(o.length&&v.rij)){l.push('Doordraaien: iedereen schuift een plek door.');h.push(-1);}
  return {l,h};}
 function stpWrap(d,svg){const {l,h}=stpLabels(d);
- return '<div class="stp" data-l="'+esc(JSON.stringify(l))+'" data-h="'+esc(JSON.stringify(h))+'">'+svg
+ return '<div class="stp" data-senid="'+d.id+'" data-l="'+esc(JSON.stringify(l))+'" data-h="'+esc(JSON.stringify(h))+'">'+svg
   +'<div class="stpbar noprint" role="group" aria-label="Animatie bedienen">'
   +'<button type="button" data-stp="prev" aria-label="Vorige stap">&lsaquo;<span class="stpt"> Vorige</span></button>'
   +'<button type="button" data-stp="play" class="stpp" aria-label="Pauze">&#10074;&#10074;</button>'
   +'<button type="button" data-stp="next" aria-label="Volgende stap">Volgende &rsaquo;</button>'
   +'<button type="button" data-stp="reset" aria-label="Opnieuw vanaf de beginopstelling">&#8634;</button>'
-  +'<button type="button" data-stp="full" aria-label="Groot scherm">&#10530;</button>'
-  +'<button type="button" data-sen3d="'+d.id+'" aria-label="Bekijk in 3D">3D</button></div>'
+  +'<button type="button" data-stp="full" aria-label="Groot scherm">&#10530;</button></div>'
   +'<p class="stpcap noprint" aria-live="polite"></p></div>';}
 (function(){
  const st=el=>{let s=STS.get(el);if(!s){s={mode:'play',step:0,stop:null};STS.set(el,s);}return s;};
