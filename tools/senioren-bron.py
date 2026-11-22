@@ -1101,6 +1101,18 @@ N.append(ex(121, 'Slide-aanval van de middenspeler', 'tech', ['aanval', 'sideout
   ['OB', OPP, (280, 328), (280, 328), (300, 328), (330, 328)]],
  [(280, 200), (280, 575), 'sv', (430, 350), (165, 120)], door=['MID', 'MID2']))
 
+N.append(ex(122, 'Volleybal-tennis 1 tegen 1 met doordraaien', 'wu', ['warming', 'verdediging'], A,
+ 'Eén tegen één over het net. Op elke veldhelft speelt één speler; de anderen staan in een rij achter in het veld. Na elke bal loopt de speler die net speelde naar achteren en sluit achteraan aan; de volgende uit de rij stapt voor. Iedereen blijft altijd aan dezelfde kant van het net. De bal mag één keer stuiteren.',
+ 'Opwarmen met bal, snel verplaatsen en op tijd klaarstaan, met veel spelers tegelijk actief.',
+ ['A speelt de bal over het net; aan de overkant mag hij één keer stuiteren.', 'D speelt de bal na de stuit terug over het net.', 'Direct na zijn aanraking loopt elke speler naar de achterkant van zijn eigen veld en sluit achter de rij aan.', 'De volgende speler uit de rij stapt voor en speelt de bal terug; wie de bal mist, verliest het punt.'],
+ ['Loop direct door na je aanraking, niet blijven kijken.', 'De voorste uit de rij staat klaar voordat de bal komt.'],
+ 'Moeilijker: zonder stuit. De bal mag niet op de grond komen en wordt direct teruggespeeld.',
+ [['A', Y, (250, 480), (280, 520), (320, 585), (320, 630), (320, 630), (320, 630), (320, 630)],
+  ['B', Y, (250, 600), (250, 590), (250, 545), (250, 505), (250, 485), (250, 470), (250, 470)],
+  ['D', OPP, (250, 235), (250, 238), (252, 235), (252, 222), (230, 150), (290, 80), (320, 62)],
+  ['E', OPP, (250, 75), (250, 75), (250, 75), (250, 110), (250, 170), (250, 225), (250, 235)]],
+ [(250, 470), (250, 335), (252, 260), (252, 222), (250, 335), (250, 465)], mn=10, need=4))
+
 # Titels en niveaus van de oude oefeningen opschonen
 OUD = {
  's1': ('Vlinder: service, pass en doorlopen', None), 's2': ('Driehoeks-pepper over het net', None),
@@ -1198,7 +1210,8 @@ for d in sen:
     if d['id'] in ('n105', 'n106', 'n108', 'n109', 'n110', 'n111'): d['vast'] = True  # n108-n111: actie loopt de hele animatie door
     if d['id'] in ('n113', 'n114', 'n115'): d['vast'] = True  # iedereen blijft in zijn eigen rij/groepje
     if d['id'] == 'n106': d['baan'] = True    # groepjes naast elkaar in één veld, ieder in een eigen baan    # geen doordraaien: iedereen houdt zijn eigen plek
-    if d['id'] == 'n104': d['allen'] = True   # iedereen doet mee, twee teams
+    if d['id'] == 'n104': d['allen'] = True
+    if d['id'] == 'n122': d['vast'] = True
     if d['id'] == 'n84': d['vs'] = [6, 4]       # 6 tegen 4 (geen 6 tegen 6)
 # Posities: welke eigen spelers in de animatie een vaste positie hebben (spelverdeler, midden, diagonaal, libero)
 POSRE = [('sv', re.compile(r'^SV$')), ('mid', re.compile(r'^(MID\d?|MB)$')), ('dia', re.compile(r'^DIA$')), ('lib', re.compile(r'^(L|LIB)$'))]
