@@ -111,6 +111,20 @@ function plan(d){
  const o=doorOrder(d);if(o.length>1||(o.length&&v.rij))t+='. Doordraaien: '+o.join(' → ')+(v.rij?' → achteraan in de rij → '+o[0]:' → '+o[0]);
  return t+'.';
 }
+// Zonenummers 1 t/m 6 (eigen veld onder, overkant gespiegeld boven), licht op de achtergrond
+const ZONES=[[4,165,412],[3,280,412],[2,395,412],[5,165,560],[6,280,560],[1,395,560],[2,165,290],[3,280,290],[4,395,290],[1,165,140],[6,280,140],[5,395,140]]
+ .map(([n,x,y])=>'<text x="'+x+'" y="'+y+'" text-anchor="middle" font-size="44" font-weight="800" fill="#fff" fill-opacity=".13">'+n+'</text>').join('');
+// Balbaan: pijl per balbeweging met het nummer van de stap erbij
+function balBaan(d,b){
+ const segs=b.slice(1).map((v,i)=>[b[i],v,i+1]).filter(([a,c])=>Math.hypot(c[0]-a[0],c[1]-a[1])>8);
+ if(!segs.length)return '';
+ let o='<defs><marker id="bp'+d.id+'" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0,0L10,5L0,10z" fill="#fde047"/></marker></defs><g class="bbaan">';
+ segs.forEach(([a,c,n])=>{const L=Math.hypot(c[0]-a[0],c[1]-a[1]),k=Math.min(14,L/3)/L,ex=c[0]-(c[0]-a[0])*k,ey=c[1]-(c[1]-a[1])*k;
+  o+='<line x1="'+a[0]+'" y1="'+a[1]+'" x2="'+ex.toFixed(1)+'" y2="'+ey.toFixed(1)+'" stroke="#fde047" stroke-width="2.5" stroke-dasharray="7 5" opacity=".85" marker-end="url(#bp'+d.id+')"/>';});
+ if(!d.baan)segs.forEach(([a,c,n])=>{const mx=(a[0]+c[0])/2,my=(a[1]+c[1])/2,L=Math.hypot(c[0]-a[0],c[1]-a[1]),ox=-(c[1]-a[1])/L*13,oy=(c[0]-a[0])/L*13;
+  o+='<g><circle cx="'+(mx+ox).toFixed(1)+'" cy="'+(my+oy).toFixed(1)+'" r="10" fill="#1d1d1b" stroke="#fde047" stroke-width="2"/><text x="'+(mx+ox).toFixed(1)+'" y="'+(my+oy+4).toFixed(1)+'" text-anchor="middle" font-size="12" font-weight="900" fill="#fde047">'+n+'</text></g>';});
+ return o+'</g>';
+}
 // Bewegende animatie op een groot veld (viewBox 560x680, net op y=340)
 function anim(d){
  const D=9,kt='0;0.15;0.3;0.45;0.6;0.82;0.96;1',kb='0;0.15;0.3;0.45;0.6;0.7;0.96;1';
@@ -119,7 +133,7 @@ function anim(d){
   +'<line x1="110" y1="230" x2="450" y2="230" stroke="#fff" stroke-opacity=".6" stroke-width="2" stroke-dasharray="6 4"/>'
   +'<line x1="110" y1="450" x2="450" y2="450" stroke="#fff" stroke-opacity=".6" stroke-width="2" stroke-dasharray="6 4"/>'
   +'<line x1="96" y1="340" x2="464" y2="340" stroke="#ffd100" stroke-width="6"/>'
-  +'<text x="122" y="62" fill="#fff" fill-opacity=".7" font-size="14" font-weight="700">overkant</text><text x="122" y="628" fill="#fff" fill-opacity=".7" font-size="14" font-weight="700">eigen veld</text>';
+  +ZONES+'<text x="122" y="62" fill="#fff" fill-opacity=".7" font-size="14" font-weight="700">overkant</text><text x="122" y="628" fill="#fff" fill-opacity=".7" font-size="14" font-weight="700">eigen veld</text>';
  const v=verdeling(d),ord=doorOrder(d),start=nm=>{const p=d.p.find(x=>x[0]===nm);return p?p[2][0]:null;};
  const gap=Math.min(34,240/Math.max(1,v.rij-1)),ry=i=>420+i*gap,RX=55;
  // waar gaat elke speler heen bij het doordraaien?
@@ -147,7 +161,7 @@ function anim(d){
  d.p.filter(isMat).forEach(p=>{const [x,y]=p[2][0];o+='<g><rect x="'+(x-32)+'" y="'+(y-18)+'" width="64" height="36" rx="5" fill="#e2e8f0" fill-opacity=".92" stroke="#1d1d1b" stroke-width="2.5"/><text x="'+x+'" y="'+(y+5)+'" text-anchor="middle" font-size="13" font-weight="800" fill="#1d1d1b">mat</text></g>';});
  const i0=o.length;
  d.p.forEach(p=>{const q=p[2];if(q.some((v,i)=>i&&Math.hypot(v[0]-q[i-1][0],v[1]-q[i-1][1])>4))o+='<polyline points="'+q.map(v=>v.join(',')).join(' ')+'" fill="none" stroke="'+p[1]+'" stroke-width="2.5" stroke-dasharray="6 5" opacity=".8"/>';});
- const b=d.bal;o+='<polyline points="'+b.map(v=>v.join(',')).join(' ')+'" fill="none" stroke="#fde047" stroke-width="2" stroke-dasharray="3 5" opacity=".7"/>';
+ const b=d.bal;o+=balBaan(d,b);
  const rm=rolMap(d);
  d.p.filter(p=>!isMat(p)).forEach(p=>{const q=p[2],to=dest[p[0]]||q[0],vs=q.length===7?[...q,q[6]]:[...q,q[3],to,to,q[0]],vx=vs.map(v=>v[0]).join(';'),vy=vs.map(v=>v[1]).join(';');
   o+='<g><circle r="17" fill="'+p[1]+'" stroke="#1d1d1b" stroke-width="3" cx="'+q[0][0]+'" cy="'+q[0][1]+'"><animate attributeName="cx" values="'+vx+'" keyTimes="'+kt+'" dur="'+D+'s" repeatCount="indefinite"/><animate attributeName="cy" values="'+vy+'" keyTimes="'+kt+'" dur="'+D+'s" repeatCount="indefinite"/></circle>'
@@ -182,7 +196,7 @@ const ul=a=>'<ul>'+a.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul>';
 function detail(d,open){
  return '<div class="dt"><p>'+esc(d.opzet)+'</p>'
   +(d.doel?'<h4>Doel</h4><p>'+esc(d.doel)+'</p>':'')
-  +'<h4>Verloop</h4><ol>'+d.stappen.map(s=>'<li>'+esc(s)+'</li>').join('')+'</ol>'
+  +'<h4>Verloop</h4><ol class="stpol">'+d.stappen.map(s=>'<li>'+esc(s)+'</li>').join('')+'</ol>'
   +(d.aandacht.length?'<h4>Aandachtspunten</h4>'+ul(d.aandacht):'')+rolTaken(d)
   +(d.variatie?'<details'+(open?' open':'')+'><summary>Variatie</summary><p>'+esc(d.variatie)+'</p></details>':'')+'</div>';
 }
@@ -195,7 +209,7 @@ function render(){
    +'<button class="'+(pinned?'on':'')+'" aria-pressed="'+pinned+'" onclick="senPin(\''+d.id+'\')">'+(pinned?'Vastgezet':'Vastzetten')+'</button>'
    +'<button onclick="senSwap('+b+','+i+')">Wissel</button><button onclick="senPick('+b+','+i+')">Kies zelf</button>'
    +'<button aria-label="Verwijder '+esc(d.t)+'" onclick="senDel('+b+','+i+')">Verwijder</button></div></div>'
-   +'<div class="meta">'+chips(d)+'</div><div class="body"><div>'+badge(d)+anim(d)+LEGS+(T.pm?LEGP:'')+'</div><div><p class="plan">'+esc(plan(d))+'</p>'+detail(d,false)+'</div></div></div>';}).join('')
+   +'<div class="meta">'+chips(d)+'</div><div class="body"><div>'+badge(d)+stpWrap(d,anim(d))+LEGS+(T.pm?LEGP:'')+'</div><div><p class="plan">'+esc(plan(d))+'</p>'+detail(d,false)+'</div></div></div>';}).join('')
   +'<button class="noprint add" onclick="senPick('+b+',-1)">Oefening toevoegen aan '+BNAAM[b].toLowerCase()+'</button></div></section>';}).join('');
  $('s_info').textContent=T.n+' spelers • 90 minuten op 1 veld.';
  $('s_lib').innerHTML=BLOK.map((k,b)=>'<h4>'+BNAAM[b]+'</h4><ul>'+SEN.filter(d=>d.blok===k).map(d=>'<li>'+esc(d.t)+' <span class="note">('+d.thema.map(t=>THEMA[t]).join(', ')+')</span></li>').join('')+'</ul>').join('');
@@ -259,4 +273,64 @@ function fit(){const u=new Set(T.slots.flat().map(d=>d.id));
   const p=pool(b).filter(x=>!u.has(x.id)&&x.need<=T.n&&okR(x));if(p.length){const x=rnd(p);u.delete(d.id);u.add(x.id);items[i]=x;}}));}
 window.senGen=gen;window.senAnim=anim;
 window.senView=()=>{if(!T.built)build();};
+// ---------- stap voor stap afspelen (Vorige / Afspelen / Volgende / Opnieuw / Groot) ----------
+// De animatie duurt 9 s; elke stap is één balbeweging. Stapgrenzen in fracties van de looptijd.
+const STB=[0,.15,.3,.45,.6,.82],STD=9,STS=new WeakMap();
+function stpLabels(d){const v=verdeling(d),o=doorOrder(d),l=d.stappen.slice(0,4).map(String),h=l.map((x,i)=>i);
+ if(d.bal.length===6){l.push(d.stappen[d.stappen.length-1]);h.push(h.length-1);}
+ else if(o.length>1||(o.length&&v.rij)){l.push('Doordraaien: iedereen schuift een plek door.');h.push(-1);}
+ return {l,h};}
+function stpWrap(d,svg){const {l,h}=stpLabels(d);
+ return '<div class="stp" data-l="'+esc(JSON.stringify(l))+'" data-h="'+esc(JSON.stringify(h))+'">'+svg
+  +'<div class="stpbar noprint" role="group" aria-label="Animatie bedienen">'
+  +'<button type="button" data-stp="prev" aria-label="Vorige stap">&lsaquo;<span class="stpt"> Vorige</span></button>'
+  +'<button type="button" data-stp="play" class="stpp" aria-label="Pauze">&#10074;&#10074;</button>'
+  +'<button type="button" data-stp="next" aria-label="Volgende stap">Volgende &rsaquo;</button>'
+  +'<button type="button" data-stp="reset" aria-label="Opnieuw vanaf de beginopstelling">&#8634;</button>'
+  +'<button type="button" data-stp="full" aria-label="Groot scherm">&#10530;</button></div>'
+  +'<p class="stpcap noprint" aria-live="polite"></p></div>';}
+(function(){
+ const st=el=>{let s=STS.get(el);if(!s){s={mode:'play',step:0,stop:null};STS.set(el,s);}return s;};
+ const svgOf=el=>el.querySelector('svg.senv'),N=el=>JSON.parse(el.dataset.l||'[]').length;
+ const now=sv=>{try{return sv.getCurrentTime()%STD;}catch(e){return 0;}};
+ const stepAt=(f,n)=>{for(let i=1;i<=n;i++)if(f<STB[i]*STD)return i;return 0;};
+ const setT=(sv,t)=>{try{sv.setCurrentTime(t);}catch(e){}};
+ function playStep(el,i){const sv=svgOf(el),s=st(el);if(!sv)return;s.mode='step';s.step=i;sv.pauseAnimations();
+  if(i<=0){setT(sv,0);s.stop=null;return;}setT(sv,STB[i-1]*STD+.001);s.stop=STB[i]*STD;sv.unpauseAnimations();}
+ function act(el,a){const sv=svgOf(el),s=st(el),n=N(el);if(!sv)return;
+  if(a==='play'){if(s.mode==='play'){sv.pauseAnimations();s.mode='pause';}else{s.mode='play';s.stop=null;sv.unpauseAnimations();}}
+  else if(a==='next'){if(s.mode==='play'||s.mode==='pause'){const c=stepAt(now(sv),n);if(c>0){s.mode='step';s.step=c;s.stop=STB[c]*STD;sv.unpauseAnimations();}else playStep(el,1);}
+   else playStep(el,s.step>=n?1:s.step+1);}
+  else if(a==='prev'){const c=s.mode==='step'?s.step:stepAt(now(sv),n);playStep(el,Math.max(0,c-1));}
+  else if(a==='reset')playStep(el,0);
+  else if(a==='full')full(el);
+  tick();}
+ function full(el){let f=document.getElementById('stpFull');
+  if(!f){f=document.createElement('div');f.id='stpFull';f.className='noprint';f.setAttribute('role','dialog');f.setAttribute('aria-modal','true');f.setAttribute('aria-label','Animatie groot');document.body.appendChild(f);}
+  const box=el.closest('.dr,.owdetail'),t=box?((box.querySelector('h3,h2')||{}).textContent||''):'';
+  f.innerHTML='<div class="stpfh"><b>'+esc(t)+'</b><button type="button" data-stp="close" aria-label="Sluiten">&#10005; Sluiten</button></div>'
+   +el.outerHTML.replace(/\bid="([^"]+)"/g,'id="$1_f"').replace(/url\(#([^)]+)\)/g,'url(#$1_f)');
+  f.style.display='flex';document.body.style.overflow='hidden';const b=f.querySelector('[data-stp=close]');if(b)b.focus();}
+ function close(){const f=document.getElementById('stpFull');if(f){f.style.display='none';f.innerHTML='';document.body.style.overflow='';}}
+ document.addEventListener('click',e=>{
+  const b=e.target.closest('[data-stp]');
+  if(b){e.preventDefault();e.stopPropagation();if(b.dataset.stp==='close')return close();const el=b.closest('.stp');if(el)act(el,b.dataset.stp);return;}
+  const li=e.target.closest('ol.stpol>li');
+  if(li){const body=li.closest('.body'),el=body&&body.querySelector('.stp');if(!el)return;const idx=[...li.parentNode.children].indexOf(li),h=JSON.parse(el.dataset.h||'[]'),i=h.indexOf(idx);if(i>=0)playStep(el,i+1);tick();}
+ },true);
+ document.addEventListener('keydown',e=>{if(e.key==='Escape')close();});
+ function tick(){document.querySelectorAll('.stp').forEach(el=>{if(!el.offsetParent&&!el.closest('#stpFull'))return;const sv=svgOf(el);if(!sv)return;
+  const s=st(el),n=N(el),t=now(sv);
+  if(s.mode==='step'&&s.stop!=null&&(t>=s.stop-.02||t<STB[Math.max(0,s.step-1)]*STD-.05)){sv.pauseAnimations();setT(sv,s.stop);s.stop=null;}
+  const i=s.mode==='step'?s.step:stepAt(t,n),L=JSON.parse(el.dataset.l||'[]'),H=JSON.parse(el.dataset.h||'[]');
+  const cap=i>0?'<b>Stap '+i+' van '+n+'</b> '+esc(L[i-1]||''):(s.mode==='step'?'<b>Beginopstelling</b> Druk op Volgende voor stap 1.':'<b>Terug naar de beginopstelling</b>');
+  const c=el.querySelector('.stpcap');if(c&&c._h!==cap){c._h=cap;c.innerHTML=cap;}
+  const pb=el.querySelector('.stpp'),pl=s.mode==='play';if(pb&&pb._p!==pl){pb._p=pl;pb.innerHTML=pl?'&#10074;&#10074;':'&#9654;';pb.setAttribute('aria-label',pl?'Pauze':'Afspelen');}
+  const pv=el.querySelector('[data-stp=prev]');if(pv){const dis=s.mode==='step'&&s.step===0;if(pv.disabled!==dis)pv.disabled=dis;}
+  const body=el.closest('.body'),ol=body&&body.querySelector('ol.stpol');
+  if(ol){const k=i>0?H[i-1]:-1;[...ol.children].forEach((li,j)=>{const on=j===k;if(li.classList.contains('stpon')!==on)li.classList.toggle('stpon',on);});}
+ });}
+ setInterval(tick,100);
+})();
+
 })();
