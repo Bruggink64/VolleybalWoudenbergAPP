@@ -15,3 +15,10 @@ Geleerd van de aanpassingen van Yannick (n34, n84, n104, n105). Toepassen bij el
 ## Foutmeldingen (bugs)
 Een suggestie die een fout in de app meldt behandel ik als fix: eerst reproduceren (bij de spelersaantal-bug: 200 trainingen genereren per aantal en tellen hoeveel "Vraagt N spelers" tonen), dan de oorzaak zoeken, verbeteren, dezelfde test opnieuw laten slagen, en als voorstel-PR met `<!-- suggestie: id -->` laten zien. Live pas na akkoord van Yannick.
 10. **Meerdere groepjes naast elkaar**: wil de trainer zien dat een oefening met 6, 9 of 12 spelers in één veld kan, gebruik dan `d.baan` (één groepje tekenen, de app herhaalt het in banen naast elkaar, tot 4). Houd de bewegingen binnen een baan (±35 px van het midden).
+
+## Animatie ↔ omschrijving (systematische controle 23-11-2026)
+11. **Controlescripts draaien voor elke PR**: `node tools/controle-animaties.js` (Jeugd & Senioren) en `node tools/controle-minis.js` (mini's, app op localhost:8765). F = tekening spreekt tekst tegen, ? = twijfel (kijk naar het plaatje).
+12. **Materiaal bij naam**: pionnen PN/KG, matten M, hoepels HP, korven KO, box BX, loopladder LAD, lint LINT, doelzone ZN, ballenkar KAR, kaarten KT (zie `senioren-obj.js`). Wat de tekst noemt moet getekend zijn, wat getekend is moet in de tekst staan.
+13. **Oude oefeningen corrigeren** in `tools/fix-animaties.py` (fill/add/rename), nooit met de hand in `senioren.js`.
+14. **Stap ↔ balbeweging**: stap k van de tekst hoort bij beweging k-1→k; de bal mag niet bewegen in een stap die er niets over zegt.
+15. **N tegen M**: beide kanten tekenen (ook "4 tegen 4 waarvan 3 in het veld" = 4-4 getekend).
