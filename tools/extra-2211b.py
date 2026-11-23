@@ -12,7 +12,7 @@ E(ex(173, 'Scoren moet: rechtdoor slaan met z\'n tweeën', 'spel', ['aanval', 's
  [(220, 25), (220, 562), (255, 368), (200, 360), (205, 120)], need=4))
 E(ex(174, 'Libero neemt de set over', 'tech', ['sideout', 'aanval'], V,
  'Aanvallers op positie 2 aan het net en op 1 en 6 voor een aanval achter de 3-meterlijn. De libero start op positie 5. De trainer gooit de bal in op de 3-meterlijn bij positie 5, alsof de spelverdeler zelf de eerste bal heeft gespeeld.',
- 'Als de spelverdeler de eerste bal speelt, neemt de libero de set over. Hij moet weten wat hij mag: achter de 3-meterlijn bovenhands, ervoor alleen onderhands.',
+ 'Als de spelverdeler de eerste bal speelt, neemt de libero de set over. Hij moet weten wat hij mag: achter de 3-meterlijn bovenhands; ervoor onderhands, want een bovenhandse set van de libero vóór de lijn mag niet boven de netrand worden aangevallen.',
  ['De trainer gooit de bal hoog bij de 3-meterlijn op positie 5.', 'De libero roept "ik!" en gaat onder de bal staan.', 'Achter de 3-meterlijn zet hij bovenhands op; staat hij ervoor, dan onderhands.', 'Een van de aanvallers slaat. Na tien ballen wisselt de libero.'],
  ['Libero: kijk bij je eerste stap waar je staat ten opzichte van de 3-meterlijn.', 'Aanvallers: altijd allemaal aanlopen.'],
  'Moeilijker: de trainer gooit soms net voor de 3-meterlijn, zodat de libero moet kiezen. Hoger niveau: met een blok aan de overkant.',
@@ -133,7 +133,7 @@ E(ex(187, 'Downball of vrije bal: lezen en opbouwen', 'spel', ['transitie', 'ver
   ['V5', Y, (165, 560)], ['V6', Y, (280, 580)], ['V1', Y, (395, 560)]],
  [(280, 250), (280, 575), (335, 372), (150, 360), (280, 150)]))
 E(ex(188, '"Los" of "ik" roepen bij de pass', 'tech', ['service', 'sideout'], A,
- 'Twee rijen spelers op linksachter en rechtsachter. Met drie pionnen staat de lijn waar ze moeten starten. Een spelverdeler aan het net. De trainer gooit vanaf de overkant.',
+ 'Twee rijen spelers op linksachter en rechtsachter. Drie pionnen geven de lijn aan waar ze starten. Een spelverdeler aan het net. De trainer gooit vanaf de overkant.',
  'Duidelijk roepen wie de bal neemt, vooral bij een bal tussen twee spelers in, en dan gericht passen.',
  ['De trainer gooit de bal ergens tussen de twee voorste spelers.', 'Eén roept "ik", de ander roept "los" en stapt opzij.', 'De speler die "ik" riep passt naar de spelverdeler.', 'De passer wordt de nieuwe spelverdeler; de spelverdeler legt de bal in de bak en sluit aan.'],
  ['Roep vroeg en hard, niet pas als de bal er is.', 'Wie "los" roept, draait open naar de bal en kijkt mee.'],
@@ -175,7 +175,7 @@ E(ex(192, 'Om de paal en passen: conditie in tweetallen', 'wu', ['warming', 'ver
  [(300, 375), (300, 375), (430, 435), (300, 375), (300, 375)], need=2))
 E(ex(193, 'Slagarm opwarmen met een laag net (jeugd)', 'wu', ['warming', 'aanval'], A,
  'Het net hangt laag (1,10 tot 1,50 meter). Twee teams, ieder aan een kant. Voor de jongste jeugd of als speelse opwarming.',
- 'De slagbeweging aanleren zonder dat de netshoogte in de weg zit: gooien, slaan en vangen.',
+ 'De slagbeweging aanleren zonder dat de nethoogte in de weg zit: gooien, slaan en vangen.',
  ['De bal wordt onderhands over het net gespeeld en na een stuit gevangen.', 'De vanger loopt naar het net en gooit de bal met een slagbeweging over het net.', 'Aan de andere kant wordt de bal na een stuit gevangen.', 'Daarna bovenhands opslaan en zonder stuit vangen.'],
  ['Elleboog hoog bij de werp- en slagbeweging.', 'Na het vangen meteen naar het net.'],
  'Uitbreiding: een pass naar een partner aan het net, die de bal over het net slaat.',
