@@ -91,6 +91,9 @@ function card(dr){
  }
  if(!q(':scope>.owexp',dr)){const e=document.createElement('button');e.type='button';e.className='owexp noprint';e.innerHTML='<span></span>'+ic(I.down);
   e.onclick=ev=>{ev.stopPropagation();if(wide()){select(dr);return;}const o=!dr.classList.contains('open');OPEN.set(keyOf(dr),o);setOpen(dr,o);};dr.appendChild(e);}
+ // knoppen op een kaart (Andere oefening, vastzetten, menu): op de pc wordt die kaart meteen de gekozen oefening,
+ // zodat rechts de nieuwe oefening (en het 3D-beeld) verschijnt in plaats van de eerder gekozen kaart
+ dr.addEventListener('click',ev=>{if(!wide()||!ev.target.closest('.tools button'))return;const l=listOf(dr);if(l)SEL[l.id]={key:'',idx:qa('.dr',l).indexOf(dr)};},true);
  dr.addEventListener('click',ev=>{if(ev.target.closest('button,a,select,input,details,summary'))return;if(wide()){select(dr);return;}if(!dr.classList.contains('closed'))return;OPEN.set(keyOf(dr),true);setOpen(dr,true);});
  setOpen(dr,isOpen(dr));
 }

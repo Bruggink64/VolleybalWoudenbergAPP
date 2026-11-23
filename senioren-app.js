@@ -6,7 +6,7 @@ const THEMA={warming:'Warming-up',inspelen:'Inspelen',sideout:'5-1 side-out',ser
 const BLOK=['wu','insp','tech','spel','zes','eind'];
 const BNAAM=['Warming-up','Inspelen','Techniek','Spelsituatie','6 tegen 6 op het thema','Eindspel'];
 const BLEN=[10,10,20,20,20,10];
-const ROL={sv:'Spelverdeler',dia:'Diagonaal',pl:'Passer-loper',mid:'Midden',lib:'Libero'};
+const ROL={sv:'Spelverdeler',dia:'Diagonaal',pl:'Buitenspeler (passer-loper)',mid:'Midden',lib:'Libero'};
 const AFK={sv:'SV',dia:'DIA',pl:'PL',mid:'MID',lib:'LIB'};
 const ROLV=Object.keys(ROL),ROLMAX={sv:3,dia:3,pl:6,mid:4,lib:2};
 const T={th:['all','all','all','all','all','all'],n:12,slots:[],pins:new Set(),built:false,pm:false,R:{sv:1,dia:1,pl:2,mid:2,lib:1}};
@@ -21,9 +21,14 @@ const rnd=a=>a[Math.floor(Math.random()*a.length)];
 
 // Oefeningen voor blok b: eerst passend bij thema en spelersaantal, anders ruimer
 // Wat ontbreekt er in de groep voor deze oefening? sv en mid zijn vast; diagonaal en libero kan een passer-loper overnemen
+const RQ=new Map();
+function reqOf(d){if(RQ.has(d.id))return RQ.get(d.id);const q=Object.assign({},d.rol||{});
+ const extra=d.p.filter(p=>/^SV\d$/.test(p[0])&&!(d.ro&&d.ro[p[0]])).length;if(extra)q.sv=(q.sv||0)+extra;
+ const r=Object.keys(q).length?q:null;RQ.set(d.id,r);return r;}
 function ontbreekt(d){
- if(!T.pm||!d.rol)return{hard:[],zacht:[]};
- const q=d.rol,R=T.R,hard=[],zacht=[];
+ const q=reqOf(d);
+ if(!T.pm||!q)return{hard:[],zacht:[]};
+ const R=T.R,hard=[],zacht=[];
  if((q.sv||0)>R.sv)hard.push('sv');
  if((q.mid||0)>R.mid)hard.push('mid');
  const md=Math.max(0,(q.dia||0)-R.dia),ml=Math.max(0,(q.lib||0)-R.lib);
@@ -32,12 +37,15 @@ function ontbreekt(d){
  return{hard,zacht};
 }
 const okR=d=>!ontbreekt(d).hard.length;
+// Past de oefening bij het aantal spelers? Niet te veel spelers in de rij: hooguit een derde van de groep (minimaal 2)
+const maxRij=()=>Math.max(2,Math.round(T.n/3));
+const okF=d=>{const v=verdeling(d);return !v.kort&&v.rij<=maxRij();};
 function pool(b){
  const all=SEN.filter(d=>d.blok===BLOK[b]),th=T.th[b];
- const okN=all.filter(d=>d.need<=T.n),okT=d=>th==='all'||d.thema.includes(th);
- if(T.pm){const a=okN.filter(okR),x=a.filter(okT);if(x.length)return x;if(a.length)return a;}
- const best=okN.filter(okT);if(best.length)return best;
- if(okN.length)return okN;
+ const okN=all.filter(d=>d.need<=T.n),okT=d=>th==='all'||d.thema.includes(th),R=d=>!T.pm||okR(d);
+ // van streng naar ruim: posities, thema en aantal spelers; de eerste stap met oefeningen wint
+ const stap=[[R,okT,okF],[R,okT],[R,okF],[R],[okT,okF],[okT],[okF],[]];
+ for(const fs of stap){const x=okN.filter(d=>fs.every(f=>f(d)));if(x.length)return x;}
  const t=all.filter(okT);return t.length?t:all;
 }
 function fill(b,used,keep){
@@ -86,8 +94,8 @@ function rolMap(d){
  return out;
 }
 function posNote(d){const o=ontbreekt(d);let t='';
- if(o.hard.length)t+='<p class="sbadge warn">Vraagt '+o.hard.map(k=>ROL[k].toLowerCase()).join(' en ')+(o.hard.includes('sv')?'; zonder spelverdeler zet de trainer op of een passer-loper.':'; die heb je niet in je groep.')+'</p>';
- if(o.zacht.length)t+='<p class="sbadge">Zonder '+o.zacht.map(k=>ROL[k].toLowerCase()).join(' en ')+': een passer-loper neemt die rol over.</p>';
+ if(o.hard.length)t+='<p class="sbadge warn">Vraagt '+o.hard.map(k=>ROL[k].toLowerCase()).join(' en ')+(o.hard.includes('sv')?'; zonder spelverdeler zet de trainer op of een buitenspeler.':'; die heb je niet in je groep.')+'</p>';
+ if(o.zacht.length)t+='<p class="sbadge">Zonder '+o.zacht.map(k=>ROL[k].toLowerCase()).join(' en ')+': een buitenspeler (passer-loper) neemt die rol over.</p>';
  return t;}
 function badge(d){const v=verdeling(d);return posNote(d)+'<p class="sbadge'+(v.kort?' warn':'')+'">'+(v.vs?v.in+' spelers: '+v.a+' tegen '+v.b+(v.rij?', '+v.rij+' reserve':''):v.allen?T.n+' spelers: twee teams, ieder aan een kant van het net':v.team?T.n+' spelers: '+v.a+' tegen '+v.b:v.kort?'Vraagt '+d.need+' spelers, je hebt er '+T.n:T.n+' spelers: '+v.in+' in de oefening'+(v.groepen>1?' ('+v.groepen+' groepen)':'')+(v.rij?', '+v.rij+' in de rij':''))+'</p>';}
 function splitTeams(){
@@ -95,7 +103,7 @@ function splitTeams(){
  ['sv','mid','dia','lib','pl'].forEach(k=>{for(let i=0;i<T.R[k];i++){const toA=ta<=tb;if(toA){A[k]=(A[k]||0)+1;ta++;}else{B[k]=(B[k]||0)+1;tb++;}}});
  const f=o=>ROLV.filter(k=>o[k]).map(k=>o[k]+' '+AFK[k]).join(', ');
  let t=' Team A: '+f(A)+'. Team B: '+f(B)+'.';
- if(!A.sv||!B.sv)t+=T.R.sv?' Eén team heeft geen spelverdeler: laat een passer-loper opzetten of de trainer.':' Je hebt geen spelverdeler: de trainer zet op, of een passer-loper.';
+ if(!A.sv||!B.sv)t+=T.R.sv?' Eén team heeft geen spelverdeler: laat een buitenspeler opzetten of de trainer.':' Je hebt geen spelverdeler: de trainer zet op, of een buitenspeler.';
  return t;
 }
 function plan(d){
@@ -187,7 +195,7 @@ const ROLT={
  transitie:{sv:'Schakel direct van verdedigen naar opzetten en bied je teamgenoten een goede bal.',dia:'Schakel snel om van blok naar aanval en maak je klaar voor een hoge bal.',pl:'Loop na de verdediging snel aan, pass op de spelverdeler en ga aanvallen.',mid:'Kom na het blok snel naar de aanval en wees aanspeelbaar voor de snelle bal.',lib:'Je stuurt de omschakeling: pass de verdedigde bal hoog naar het net en loop door.'}
 };
 function rolTaken(d){
- const th=d.thema.find(t=>t!=='warming'&&t!=='inspelen')||d.thema[0],rs=T.pm?ROLV.filter(k=>T.R[k]>0):Object.keys(d.rol||{});
+ const th=d.thema.find(t=>t!=='warming'&&t!=='inspelen')||d.thema[0],rs=T.pm?ROLV.filter(k=>T.R[k]>0):Object.keys(reqOf(d)||{});
  if(!rs.length||!ROLT[th])return '';
  return '<h4>Opdracht per positie</h4><ul>'+ROLV.filter(k=>rs.includes(k)).map(k=>'<li><b>'+ROL[k]+':</b> '+esc(ROLT[th][k])+'</li>').join('')+'</ul>';
 }
@@ -200,7 +208,7 @@ function detail(d,open){
   +(d.aandacht.length?'<h4>Aandachtspunten</h4>'+ul(d.aandacht):'')+rolTaken(d)
   +(d.variatie?'<details'+(open?' open':'')+'><summary>Variatie</summary><p>'+esc(d.variatie)+'</p></details>':'')+'</div>';
 }
-function chips(d){const v=verdeling(d);return '<span class="chip">± '+d.min+' min</span><span class="chip'+(v.kort?' warn':'')+'">'+(team(d)?'vanaf 4 spelers':d.allen?'vanaf '+d.need+' spelers':d.need+' spelers per groep')+'</span>'+(d.zb?'<span class="chip">zonder bal</span>':'')+Object.entries(d.rol||{}).map(([k,c])=>'<span class="chip">'+ROL[k].toLowerCase()+(c>1?' ×'+c:'')+'</span>').join('')+d.thema.map(t=>'<span class="chip">'+esc(THEMA[t])+'</span>').join('');}
+function chips(d){const v=verdeling(d);return '<span class="chip">± '+d.min+' min</span><span class="chip'+(v.kort?' warn':'')+'">'+(team(d)?'vanaf 4 spelers':d.allen?'vanaf '+d.need+' spelers':d.need+' spelers per groep')+'</span>'+(d.zb?'<span class="chip">zonder bal</span>':'')+Object.entries(reqOf(d)||{}).map(([k,c])=>'<span class="chip">'+ROL[k].toLowerCase()+(c>1?' ×'+c:'')+'</span>').join('')+d.thema.map(t=>'<span class="chip">'+esc(THEMA[t])+'</span>').join('');}
 function render(){
  let t0=0;
  $('s_out').innerHTML=T.slots.map((items,b)=>{const start=t0,len=BLEN[b],sum=items.reduce((a,d)=>a+d.min,0);t0+=len;
@@ -223,7 +231,7 @@ let PK=null;
 window.senPick=(b,i)=>{PK={b,i};$('s_pq').value='';$('s_pb').value=String(b);senPickList();$('s_pick').showModal();};
 window.senPickList=()=>{const q=$('s_pq').value.trim().toLowerCase(),b=+$('s_pb').value,inT=new Set(T.slots.flat().map(d=>d.id));
  const L=SEN.filter(d=>d.blok===BLOK[b]&&(!q||d.t.toLowerCase().includes(q)));
- $('s_plist').innerHTML=L.length?L.map(d=>'<button '+(inT.has(d.id)?'disabled ':'')+'onclick="senTake(\''+d.id+'\')"><b>'+esc(d.t)+'</b><span>'+(d.zb?'zonder bal, ':'')+esc(d.thema.map(t=>THEMA[t]).join(', '))+', '+(team(d)?'vanaf 4':d.need)+' spelers, ± '+d.min+' min'+(d.rol?', met '+Object.keys(d.rol).map(k=>ROL[k].toLowerCase()).join(', '):'')+(ontbreekt(d).hard.length?', jouw groep mist een positie':'')+(inT.has(d.id)?', staat al in de training':'')+'</span></button>').join(''):'<p class="note">Geen oefening gevonden voor dit blok.</p>';};
+ $('s_plist').innerHTML=L.length?L.map(d=>'<button '+(inT.has(d.id)?'disabled ':'')+'onclick="senTake(\''+d.id+'\')"><b>'+esc(d.t)+'</b><span>'+(d.zb?'zonder bal, ':'')+esc(d.thema.map(t=>THEMA[t]).join(', '))+', '+(team(d)?'vanaf 4':d.need)+' spelers, ± '+d.min+' min'+(reqOf(d)?', met '+Object.keys(reqOf(d)).map(k=>ROL[k].toLowerCase()).join(', '):'')+(ontbreekt(d).hard.length?', jouw groep mist een positie':'')+(inT.has(d.id)?', staat al in de training':'')+'</span></button>').join(''):'<p class="note">Geen oefening gevonden voor dit blok.</p>';};
 window.senTake=id=>{const d=byId.get(id),{b,i}=PK;if(i<0)T.slots[b].push(d);else{T.pins.delete(T.slots[b][i].id);T.slots[b][i]=d;}$('s_pick').close();render();};
 function asText(){let t='Training jeugd/senioren (90 min, '+T.n+' spelers'+(T.pm?': '+ROLV.filter(k=>T.R[k]).map(k=>T.R[k]+' '+ROL[k].toLowerCase()).join(', '):'')+')\n',t0=0;
  T.slots.forEach((items,b)=>{t+='\n'+t0+' min – '+BNAAM[b]+' ('+BLEN[b]+' min'+(T.th[b]==='all'?'':', '+THEMA[T.th[b]])+')\n';t0+=BLEN[b];items.forEach(d=>t+='• '+d.t+'\n');});
@@ -239,15 +247,23 @@ function controls(){
  const same=T.th.every(x=>x===T.th[0]);$('s_th').value=same?T.th[0]:'mix';$('s_n').value=T.n;$('s_nv').textContent=T.n;
  $('s_pm').checked=T.pm;$('s_slw').style.display=T.pm?'none':'';$('s_pos').style.display=T.pm?'':'none';
  $('s_pos').innerHTML=ROLV.map(k=>'<div class="prow"><span>'+ROL[k]+'</span><button aria-label="Minder '+ROL[k].toLowerCase()+'" onclick="senRol(\''+k+'\',-1)"'+(T.R[k]<=0?' disabled':'')+'>−</button><b>'+T.R[k]+'</b><button aria-label="Meer '+ROL[k].toLowerCase()+'" onclick="senRol(\''+k+'\',1)"'+(T.R[k]>=ROLMAX[k]||rsum(T.R)>=NMAX?' disabled':'')+'>+</button></div>').join('')
-  +'<p class="note" style="margin:4px 0 0">Totaal: <b>'+rsum(T.R)+'</b> spelers'+(rsum(T.R)<NMIN?' (minimaal '+NMIN+')':'')+'</p>';
+  +'<p class="note" style="margin:4px 0 0">Totaal: <b>'+rsum(T.R)+'</b> spelers'+(rsum(T.R)<NMIN?' (minimaal '+NMIN+')':'')+'</p>'+geenPos();
 }
+// Wat doet de app als een positie ontbreekt? Kort uitgelegd onder de keuze
+function geenPos(){if(!T.pm)return '';const R=T.R,t=[];
+ if(!R.sv)t.push('Geen spelverdeler: oefeningen met een vaste spelverdeler vallen af. Bij 6 tegen 6 zet de trainer of een buitenspeler op.');
+ if(!R.mid)t.push('Geen midden: oefeningen met een vaste middenspeler vallen af.');
+ const mis=[!R.dia&&'diagonaal',!R.lib&&'libero'].filter(Boolean).join(' en ');
+ if(mis)t.push(R.pl?'Geen '+mis+': een buitenspeler neemt die plek over.':'Geen '+mis+' en geen buitenspelers: oefeningen met een vaste '+mis.replace(' en ',' of ')+' vallen af.');
+ if(!R.pl)t.push('Geen buitenspelers: de andere spelers vullen die plekken in.');
+ return t.length?'<ul class="note geenpos">'+t.map(x=>'<li>'+x+'</li>').join('')+'</ul>':'';}
 // groep per positie: aantal spelers volgt uit de posities
 window.senRol=(k,dl)=>{const v=T.R[k]+dl;if(v<0||v>ROLMAX[k]||(dl>0&&rsum(T.R)>=NMAX))return;T.R[k]=v;T.n=Math.max(NMIN,rsum(T.R));controls();fit();render();};
 window.senPm=on=>{T.pm=on;if(on){T.R=defR(T.n);T.n=Math.max(NMIN,rsum(T.R));}controls();fit();render();};
 // thema van één blok wijzigen: dat blok wordt opnieuw gevuld (vastgezette oefeningen blijven)
 window.senTh=(b,v)=>{T.th[b]=v;const u=new Set(T.slots.flat().map(d=>d.id)),keep=T.slots[b].filter(d=>T.pins.has(d.id));
  T.slots[b].forEach(d=>{if(!T.pins.has(d.id))u.delete(d.id);});T.slots[b]=fill(b,u,keep);controls();render();};
-const CSS='.prow{display:flex;align-items:center;gap:8px;margin:4px 0}.prow span{flex:1}.prow b{min-width:1.5em;text-align:center}.prow button{width:36px;min-height:36px;padding:0}.pmt{display:flex;align-items:center;gap:8px;margin-top:12px}.pmt input{width:auto}';
+const CSS='.prow{display:flex;align-items:center;gap:8px;margin:4px 0}.prow span{flex:1}.prow b{min-width:1.5em;text-align:center}.prow button{width:36px;min-height:36px;padding:0}.pmt{display:flex;align-items:center;gap:8px;margin-top:12px}.pmt input{width:auto}.geenpos{margin:6px 0 0;padding-left:18px}.geenpos li{margin:2px 0}';
 function build(){
  if(!document.getElementById('s_css')){const st=document.createElement('style');st.id='s_css';st.textContent=CSS;document.head.appendChild(st);}
  const v=$('v_sen');
@@ -255,8 +271,8 @@ function build(){
   +'<label class="t" for="s_th">Thema voor alle blokken</label><select id="s_th">'+THOPT('all')+'<option value="mix" disabled>Per blok gekozen</option></select>'
   +'<p class="note" style="margin:4px 0 0">Bij elk blok kun je ook een eigen thema kiezen, zo combineer je thema\'s.</p>'
   +'<div id="s_slw"><label class="t" for="s_n">Aantal spelers: <b id="s_nv">12</b></label><input type="range" id="s_n" min="'+NMIN+'" max="'+NMAX+'" value="12"></div>'
-  +'<label class="t pmt"><input type="checkbox" id="s_pm" onchange="senPm(this.checked)"> Per positie opgeven</label><div id="s_pos" style="display:none"></div>'
-  +'<p class="note" style="margin:4px 0 0">Met posities kiest de app oefeningen die passen bij je spelverdelers, diagonalen, passer-lopers, middens en liberos.</p>'
+  +'<label class="t pmt"><input type="checkbox" id="s_pm" onchange="senPm(this.checked)"> Posities opgeven (wie is er?)</label><div id="s_pos" style="display:none"></div>'
+  +'<p class="note" style="margin:4px 0 0">Met posities kiest de app oefeningen die passen bij wie er is: spelverdeler, midden, buiten, diagonaal en libero. Zet een positie op 0 als die er niet is.</p>'
   +'<button class="go" onclick="senGen()">Nieuwe training</button><button class="quiet" onclick="window.print()">Training printen</button><p class="note" id="s_info"></p><hr>'
   +'<label class="t" for="s_name">Deze training bewaren</label><div class="row"><input type="text" id="s_name" maxlength="40" placeholder="Naam, bijv. dinsdag dames 2"><button onclick="senSave()">Bewaar</button></div><div id="s_saved"></div>'
   +'<label class="t">Delen met een trainer</label><div class="row"><button onclick="senShare()">Kopieer als tekst</button></div><textarea id="s_box" readonly style="display:none" aria-label="Gekopieerde tekst"></textarea></aside>'
@@ -264,14 +280,18 @@ function build(){
   +'<p class="note">Oefeningen voor jeugd en senioren zijn eigen beschrijvingen van VV Woudenberg. De trainer bepaalt zelf of een oefening past bij het niveau van de groep. De animatie toont de opstelling op een heel veld; het eigen team staat onder het net.</p></main>'
   +'<dialog id="s_pick"><div class="pkh"><h2>Kies een oefening <button onclick="this.closest(\'dialog\').close()">Sluiten</button></h2><div class="row"><input type="text" id="s_pq" placeholder="Zoek op naam" oninput="senPickList()" aria-label="Zoek op naam"><select id="s_pb" onchange="senPickList()" aria-label="Blok">'+BNAAM.map((n,i)=>'<option value="'+i+'">'+n+'</option>').join('')+'</select></div></div><div id="s_plist"></div></dialog>';
  $('s_th').onchange=e=>{T.th=BLOK.map(()=>e.target.value);gen();};
- $('s_n').oninput=e=>{T.n=+e.target.value;$('s_nv').textContent=T.n;fit();render();};
+ $('s_n').oninput=e=>{T.n=+e.target.value;$('s_nv').textContent=T.n;};
+ $('s_n').onchange=e=>{T.n=+e.target.value;$('s_nv').textContent=T.n;fit();render();toast('Training aangepast aan '+T.n+' spelers');};
  controls();savedUI();gen();T.built=true;
 }
 // bij minder spelers: niet-vastgezette oefeningen die te veel spelers vragen automatisch vervangen
-function fit(){const u=new Set(T.slots.flat().map(d=>d.id));
- T.slots.forEach((items,b)=>items.forEach((d,i)=>{if(T.pins.has(d.id)||(d.need<=T.n&&okR(d)))return;
-  const p=pool(b).filter(x=>!u.has(x.id)&&x.need<=T.n&&okR(x));if(p.length){const x=rnd(p);u.delete(d.id);u.add(x.id);items[i]=x;}}));}
-window.senGen=gen;window.senAnim=anim;
+// ander aantal spelers of andere posities: niet-vastgezette oefeningen die niet (meer) passen vervangen
+// (te veel spelers nodig, een positie die ontbreekt, of te veel spelers in de rij)
+function fit(){const u=new Set(T.slots.flat().map(d=>d.id)),goed=d=>d.need<=T.n&&okR(d)&&okF(d);
+ T.slots.forEach((items,b)=>items.forEach((d,i)=>{if(T.pins.has(d.id)||goed(d))return;
+  const th=T.th[b],zelfTh=th!=='all'&&d.thema.includes(th);
+  const p=pool(b).filter(x=>!u.has(x.id)&&goed(x)&&(!zelfTh||x.thema.includes(th)));if(p.length){const x=rnd(p);u.delete(d.id);u.add(x.id);items[i]=x;}}));}
+window.senGen=gen;window.senAnim=anim;window.__sen={T,verdeling,okF,ontbreekt,reqOf};
 window.senView=()=>{if(!T.built)build();};
 // ---------- stap voor stap afspelen (Vorige / Afspelen / Volgende / Opnieuw / Groot) ----------
 // De animatie duurt 9 s; elke stap is één balbeweging. Stapgrenzen in fracties van de looptijd.
