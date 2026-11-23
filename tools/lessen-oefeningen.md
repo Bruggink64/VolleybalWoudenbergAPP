@@ -6,7 +6,7 @@ Geleerd van de aanpassingen van Yannick (n34, n84, n104, n105). Toepassen bij el
 2. **Regel letterlijk uitbeelden**: wat de trainer schrijft ("iedereen die de bal raakt rent naar de muur") moet voor elke speler en voor beide teams zichtbaar zijn, niet maar voor één.
 3. **Niet doordraaien**: spelers gaan weg en komen terug op hun eigen plek. Geen automatische rotatie (`allen` / `vast`), tenzij de oefening dat zegt.
 4. **Nieuwe oefening zonder [id]**: zet `<!-- oefening: nXX -->` in de PR zodat de preview alleen die oefening toont.
-5. **Naamkeuze**: gebruik geen gereserveerde spelernamen (K, M, M1 t/m M6, Z, GZ, BOX, P1, P2, L, LIB, P).
+5. **Naamkeuze**: gebruik geen gereserveerde spelernamen (K, M, M1 t/m M6, Z, GZ, BOX, P1, P2, L, LIB, P). **Pionnen** heten PN1, PN2, ... (kegels KG1, KG2, ...): die worden automatisch als pion getekend in 2D en 3D, niet als speler. Matten heten M of M1-M6.
 6. **Testen**: controleer dat de animatie echt beweegt (meerdere screenshots verschillen) en dat de preview alleen de oefeningkaart toont. Verplaats nooit de kaart-node (animatie stopt).
 7. **Werkwijze**: `senioren.js` alleen genereren met `python3 tools/senioren-bron.py`; één PR per suggestie met markers; commit voor je van branch wisselt; bij conflicten op dezelfde regels main eerst mergen.
 8. **Opmerkingen letterlijk lezen**: is een aanpassing van de trainer dubbelzinnig (bijv. "de bal gaat niet terug"), zeg dan in de melding hoe je het gelezen hebt en vraag kort of dat klopt, in plaats van stil te kiezen.
