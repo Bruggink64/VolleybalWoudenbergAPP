@@ -50,6 +50,13 @@ function senModel(d){
  if(bp)for(let i=1;i<b.length;i++){const t=bt[i],nx=bp[i+1];if(!nx||bp[i][2]*nx[2]>=0)continue;
   people.forEach((p,j)=>{const q=kfAt(tracks[j],kt,t);if(Math.hypot(q[0]-b[i][0],q[1]-b[i][1])<45&&Math.abs(q[1]-340)<110){jumps[j].push(t);bp[i][1]=2.7;}});}
  people.forEach((p,j)=>items.push({kind:'player',label:p[0],color:p[1],pos:f=>{const q=kfAt(tracks[j],kt,f);return [MX(q[0]),MZ(q[1])];},lift:f=>jumps[j].reduce((h,t)=>h+bump(f,t,.05,.6),0)}));
+ // een tussenpunt midden op een rechte baan waar niemand staat (bijv. halverwege een set) is alleen voor de timing
+ // in 2D; in 3D zou de bal daar naar de grond zakken en weer omhoog stuiteren. Zo'n punt laten we weg.
+ if(bp){const keep=[];for(let i=0;i<bp.length;i++){let drop=false;
+  if(i>0&&i<b.length-1&&bp[i][1]===1){const a=b[i-1],c=b[i],n=b[i+1],lx=n[0]-a[0],ly=n[1]-a[1],L=Math.hypot(lx,ly)||1,off=Math.abs((c[0]-a[0])*ly-(c[1]-a[1])*lx)/L,al=(c[0]-a[0])*lx+(c[1]-a[1])*ly;
+   if(off<10&&al>0&&al<L*L&&!people.some((p,j)=>{const q=kfAt(tracks[j],kt,bt[i]);return Math.hypot(q[0]-c[0],q[1]-c[1])<45;}))drop=true;}
+  if(!drop)keep.push(i);}
+  bp=keep.map(i=>bp[i]);bt=keep.map(i=>bt[i]);}
  const balls=bp?[{at:f=>(!six&&f>=.96)?null:ballAt(bp,bt,f)}]:[];
  const st=(d.stappen||[]).slice(0,4);
  const cap=f=>{for(let i=1;i<STB.length;i++)if(f<STB[i])return i<=st.length?'Stap '+i+': '+st[i-1]:'';return six?'Stap 5: '+(d.stappen[d.stappen.length-1]||''):'Terug naar de beginopstelling';};
