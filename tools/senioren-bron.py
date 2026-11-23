@@ -1336,6 +1336,8 @@ for d in sen:
     d.pop('zb', None)
     if len(set(map(tuple, d['bal']))) == 1:
         d['zb'] = True
+# 23-11-2026: controle van alle animaties tegen de omschrijving (tools/fix-animaties.py)
+exec((pathlib.Path(__file__).resolve().parent / 'fix-animaties.py').read_text())
 # Inspelen is een eigen blok na de warming-up. Warming-up en Inspelen zijn ook thema's.
 LEN = {'wu': 10, 'insp': 10, 'tech': 20, 'spel': 20, 'zes': 20, 'eind': 10}
 NAAR_INSP = {'s2', 's7', 's11', 'n1'}
@@ -1354,15 +1356,16 @@ for d in sen:
     if d['id'] == 's14':
         for q in d['p']:
             if q[0] == 'TR':
-                q[0], q[1] = 'PAS', OPP
+                q[0], q[1] = ('PAS' if not any(r[0] == 'PAS' for r in d['p']) else 'PAS2'), OPP
     b0 = d['bal'][0]
     if len(set(map(tuple, d['bal']))) > 1 and not any(abs(q[2][0][0] - b0[0]) < 30 and abs(q[2][0][1] - b0[1]) < 30 for q in d['p']):
         d['p'].append(['TR', TR, [list(b0)] * 4])
         print('aangooier toegevoegd:', d['id'], d['t'])
 # Aantal spelers dat een oefening tegelijk nodig heeft (trainer en materiaal tellen niet mee)
 OBJ = {'K', 'M', 'M2', 'M1', 'M5', 'M6', 'Z', 'GZ', 'BOX', 'P1', 'P2'}
+OBJNEW = re.compile(r'^(PN|KG|KE|HP|KO|BX|LAD|LINT|ZN|KAR|KT)\d*$')
 for d in sen:
-    k = sum(1 for nm, kl, _ in d['p'] if kl != TR and nm not in OBJ and not (nm == 'P' and kl == BL))
+    k = sum(1 for nm, kl, _ in d['p'] if kl != TR and nm not in OBJ and not OBJNEW.match(nm) and not (nm == 'P' and kl == BL))
     d['need'] = 4 if d['blok'] in ('zes', 'eind') else max(2, min(k, 12))
     if 'needx' in d: d['need'] = d.pop('needx')  # vast minimum, ook als de animatie meer spelers toont
     d.pop('niv', None)

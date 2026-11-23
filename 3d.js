@@ -35,15 +35,16 @@ const seg3=(a,c,peak)=>u=>[a[0]+(c[0]-a[0])*u,a[1]+(c[1]-a[1])*u+4*peak*u*(1-u),
 
 // ---------- modellen ----------
 // Jeugd & Senioren: spelers met 4 (of 7) posities, bal met 5 (of 6) punten, 9 seconden per ronde (zoals in 2D)
-const SOBJ=new Set(['K','M','M1','M2','M5','M6','Z','GZ','BOX']);
+// materiaal: zelfde indeling als 2D (senioren-obj.js)
+const SKIND={pion:'pylon',mat:'mat',hoepel:'hoepel',korf:'korf',box:'kast',kar:'kar',ladder:'ladder',lint:'lint',zone:'zone',kaarten:'zone'};
 function senModel(d){
  const kt=[0,.15,.3,.45,.6,.82,.96,1],kb=[0,.15,.3,.45,.6,.7,.96,1],STB=[0,.15,.3,.45,.6,.82];
  const b=d.bal||[],six=b.length===6,still=!b.length||b.every(x=>x[0]===b[0][0]&&x[1]===b[0][1]);
  const items=[];
- const pion=p=>typeof window.senPion==='function'&&window.senPion(d,p);
- const people=d.p.filter(p=>!SOBJ.has(p[0])&&!pion(p));
+ const ok=p=>typeof window.senObj==='function'?window.senObj(d,p):null;
+ const people=d.p.filter(p=>!ok(p));
  const tracks=people.map(p=>{const q=p[2];return q.length>=7?[...q.slice(0,7),q[6]]:[...q,q[3],q[0],q[0],q[0]];});
- d.p.forEach(p=>{const pi=pion(p);if(!SOBJ.has(p[0])&&!pi)return;const [x,y]=p[2][0];const P=[MX(x),MZ(y)];items.push({kind:pi||p[0]==='K'?'pylon':/^M\d?$/.test(p[0])?'mat':'kast',pos:()=>P});});
+ d.p.forEach(p=>{const k=ok(p);if(!k)return;const [x,y]=p[2][0];const P=[MX(x),MZ(y)];items.push({kind:SKIND[k]||'kast',pos:()=>P});});
  let bp=null,bt=null;
  if(!still){const bs=six?[...b,b[5],b[5]]:[...b,b[4],b[4],b[0]];bp=bs.map(v=>[MX(v[0]),1,MZ(v[1])]);bt=six?kt:kb;}
  // sprong: een speler dicht bij het net die de bal raakt en de bal gaat daarna over het net
@@ -214,6 +215,9 @@ function build(model){
    case 'muur':B(it.len||6,2.4,.25,'#475569');break;
    case 'koord':{const c=new THREE.Mesh(new THREE.CylinderGeometry(.015,.015,it.len||1.6,6),mat('#e11d48'));c.rotation.x=Math.PI/2;c.position.y=1.3;g.add(c);break;}
    case 'korf':{const p=B(.04,1.6,.04,'#334155');const r=new THREE.Mesh(new THREE.TorusGeometry(.25,.03,8,20),mat('#fb923c'));r.rotation.x=Math.PI/2;r.position.y=1.6;g.add(r);break;}
+   case 'zone':{const z=new THREE.Mesh(new THREE.PlaneGeometry(2.1,1.6),new THREE.MeshBasicMaterial({color:'#fde047',transparent:true,opacity:.35}));z.rotation.x=-Math.PI/2;z.position.y=.012;g.add(z);break;}
+   case 'ladder':{[-.25,.25].forEach(x=>{const p=B(.04,.02,4.7,'#fde047',.012);p.position.x=x;});for(let i=0;i<7;i++){const r=B(.55,.02,.04,'#fde047',.012);r.position.z=-2.35+i*.78;}break;}
+   case 'lint':{B(.06,.5,.06,'#e11d48',2.05);break;}
    case 'hoepel':{const r=new THREE.Mesh(new THREE.TorusGeometry(.35,.025,8,24),mat('#f8fafc'));r.rotation.x=Math.PI/2;r.position.y=.03;g.add(r);break;}
    case 'pylon':{const k=model.mini?1:1.25;B(.34*k,.03,.34*k,'#f97316');const c=new THREE.Mesh(new THREE.ConeGeometry(.14*k,.4*k,18),mat('#f97316'));c.position.y=.2*k+.03;g.add(c);
     const r=new THREE.Mesh(new THREE.CylinderGeometry(.047*k,.066*k,.06*k,18),mat('#ffffff'));r.position.y=.25*k+.03;g.add(r);break;}

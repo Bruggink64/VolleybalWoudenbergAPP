@@ -75,13 +75,11 @@ function verdeling(d){
  return{in:inn,rij:n-inn,groepen,kort:0};
 }
 // Volgorde van doordraaien: eigen opgave (d.door) of alle eigen spelers in volgorde, daarna de rij
-const OBJ=new Set(['K','M','M1','M2','M5','M6','Z','GZ','BOX']);
-// Pionnen (kegels): PN1, PN2.. en KG1, KG2.. (en KE) zijn altijd pionnen. Oudere oefeningen gebruiken M, P of K
-// voor een pion; die staan per oefening in PIONX. Pionnen worden als pion getekend (2D en 3D), niet als speler.
-const PIONX={n5:['P'],n58:['P1','P2'],n60:['M'],n62:['M','M2'],n68:['P1','P2'],n85:['M','M2'],n90:['P1','P2'],n93:['M1','M2','M5','M6'],n96:['M1','M2','M5','M6'],n101:['M1','M2'],n115:['K'],n116:['K']};
-const isPion=(d,p)=>/^(PN|KG)\d*$|^KE$/.test(p[0])||!!(PIONX[d.id]&&PIONX[d.id].includes(p[0]));
-window.senPion=isPion;
-const actors=d=>d.p.filter(p=>p[1]!=='#2dd4bf'&&p[1]!=='#f87171'&&!OBJ.has(p[0])&&!isPion(d,p)&&!(p[0]==='P'&&p[1]==='#fb923c')).map(p=>p[0]);
+// Materiaal (pion, mat, hoepel, korf, box, ladder, lint, doelzone, ballenkar) staat tussen de spelers in d.p;
+// welk naam welk materiaal is, staat in senioren-obj.js (window.senObj). Materiaal wordt nooit als speler getekend.
+const objOf=(d,p)=>window.senObj?window.senObj(d,p):null;
+const isPion=(d,p)=>objOf(d,p)==='pion';
+const actors=d=>d.p.filter(p=>p[1]!=='#2dd4bf'&&p[1]!=='#f87171'&&!objOf(d,p)&&!(p[0]==='P'&&p[1]==='#fb923c')).map(p=>p[0]);
 function doorOrder(d){
  if(team(d)||d.allen||d.vast)return []; // geen doordraaien: iedereen komt op zijn eigen plek terug
  if(d.door)return d.door;
@@ -138,6 +136,23 @@ function balBaan(d,b){
   o+='<g><circle cx="'+(mx+ox).toFixed(1)+'" cy="'+(my+oy).toFixed(1)+'" r="10" fill="#1d1d1b" stroke="#fde047" stroke-width="2"/><text x="'+(mx+ox).toFixed(1)+'" y="'+(my+oy+4).toFixed(1)+'" text-anchor="middle" font-size="12" font-weight="900" fill="#fde047">'+n+'</text></g>';});
  return o+'</g>';
 }
+// tekening per soort materiaal (veld 560x680)
+function objSvg(k,x,y){
+ const t=(tx,yy)=>'<text x="'+x+'" y="'+(yy==null?y+5:yy)+'" text-anchor="middle" font-size="12" font-weight="800" fill="#1d1d1b">'+tx+'</text>';
+ switch(k){
+  case 'mat':return '<g><rect x="'+(x-32)+'" y="'+(y-18)+'" width="64" height="36" rx="5" fill="#e2e8f0" fill-opacity=".92" stroke="#1d1d1b" stroke-width="2.5"/>'+t('mat')+'</g>';
+  case 'pion':return '<g class="pion"><ellipse cx="'+x+'" cy="'+(y+9)+'" rx="13" ry="5" fill="#000" fill-opacity=".28"/><path d="M'+(x-12)+' '+(y+9)+' L'+x+' '+(y-14)+' L'+(x+12)+' '+(y+9)+' Z" fill="#f97316" stroke="#7c2d12" stroke-width="2" stroke-linejoin="round"/><path d="M'+(x-6.5)+' '+(y-1)+' L'+(x+6.5)+' '+(y-1)+' L'+(x+8)+' '+(y+2.5)+' L'+(x-8)+' '+(y+2.5)+' Z" fill="#fff"/></g>';
+  case 'hoepel':return '<g class="hoepel"><circle cx="'+x+'" cy="'+y+'" r="22" fill="none" stroke="#f8fafc" stroke-width="5"/><circle cx="'+x+'" cy="'+y+'" r="22" fill="none" stroke="#e11d48" stroke-width="2" stroke-dasharray="6 6"/></g>';
+  case 'korf':return '<g class="korf"><circle cx="'+x+'" cy="'+y+'" r="17" fill="#fb923c" fill-opacity=".25" stroke="#fb923c" stroke-width="4"/><path d="M'+(x-10)+' '+(y-6)+' L'+(x+10)+' '+(y+6)+' M'+(x+10)+' '+(y-6)+' L'+(x-10)+' '+(y+6)+'" stroke="#fb923c" stroke-width="2"/>'+t('korf',y+34).replace('#1d1d1b','#fff')+'</g>';
+  case 'box':return '<g class="box"><rect x="'+(x-26)+'" y="'+(y-18)+'" width="52" height="36" rx="3" fill="#92400e" stroke="#fde68a" stroke-width="2.5"/><text x="'+x+'" y="'+(y+5)+'" text-anchor="middle" font-size="12" font-weight="800" fill="#fde68a">box</text></g>';
+  case 'kar':return '<g class="kar"><rect x="'+(x-20)+'" y="'+(y-14)+'" width="40" height="28" rx="4" fill="#64748b" stroke="#fff" stroke-width="2"/><circle cx="'+(x-8)+'" cy="'+(y-3)+'" r="6" fill="#fde047"/><circle cx="'+(x+6)+'" cy="'+(y+4)+'" r="6" fill="#fde047"/><circle cx="'+(x+8)+'" cy="'+(y-6)+'" r="5" fill="#fde047"/></g>';
+  case 'ladder':{let r='<g class="ladder"><rect x="'+(x-22)+'" y="'+(y-90)+'" width="44" height="180" fill="none" stroke="#fde047" stroke-width="3"/>';for(let i=1;i<6;i++)r+='<line x1="'+(x-22)+'" y1="'+(y-90+i*30)+'" x2="'+(x+22)+'" y2="'+(y-90+i*30)+'" stroke="#fde047" stroke-width="3"/>';return r+'</g>';}
+  case 'lint':return '<g class="lint"><rect x="'+(x-5)+'" y="'+(y-22)+'" width="10" height="44" rx="3" fill="#e11d48" stroke="#fff" stroke-width="1.5"/></g>';
+  case 'kaarten':return '<g class="kaarten"><rect x="'+(x-12)+'" y="'+(y-16)+'" width="24" height="32" rx="3" fill="#fff" stroke="#1d1d1b" stroke-width="2" transform="rotate(-8 '+x+' '+y+')"/><rect x="'+(x-12)+'" y="'+(y-16)+'" width="24" height="32" rx="3" fill="#fecaca" stroke="#1d1d1b" stroke-width="2" transform="rotate(8 '+x+' '+y+')"/></g>';
+  case 'zone':return '<g class="zone"><rect x="'+(x-40)+'" y="'+(y-30)+'" width="80" height="60" rx="6" fill="#fde047" fill-opacity=".22" stroke="#fde047" stroke-width="3" stroke-dasharray="8 5"/><text x="'+x+'" y="'+(y+5)+'" text-anchor="middle" font-size="12" font-weight="800" fill="#fde047">doel</text></g>';
+ }
+ return '';
+}
 // Bewegende animatie op een groot veld (viewBox 560x680, net op y=340)
 function anim(d){
  const D=9,kt='0;0.15;0.3;0.45;0.6;0.82;0.96;1',kb='0;0.15;0.3;0.45;0.6;0.7;0.96;1';
@@ -167,18 +182,16 @@ function anim(d){
   o+='<circle cx="'+RX+'" cy="'+y+'" r="13" fill="#ffcc00" fill-opacity=".6" stroke="#1d1d1b" stroke-width="2">'+(ord.length?'<animate attributeName="cx" values="'+xs+'" keyTimes="'+kt+'" dur="'+D+'s" repeatCount="indefinite"/><animate attributeName="cy" values="'+ys+'" keyTimes="'+kt+'" dur="'+D+'s" repeatCount="indefinite"/>':'')+'</circle>';}
  if(v.rij)o+='<text x="55" y="404" text-anchor="middle" font-size="13" font-weight="800" fill="#fff" fill-opacity=".85">rij</text>';
  // label 'N× groep' alleen als de tekening minder spelers toont dan er meedoen
- const getekend=d.p.filter(p=>p[1]!=='#2dd4bf'&&!OBJ.has(p[0])&&!isPion(d,p)).length;
+ const getekend=d.p.filter(p=>p[1]!=='#2dd4bf'&&!objOf(d,p)).length;
  if(v.groepen>(d.baan?4:1)&&getekend<v.in)o+='<text x="505" y="404" text-anchor="middle" font-size="13" font-weight="800" fill="#fff">'+v.groepen+'×</text><text x="505" y="422" text-anchor="middle" font-size="11" fill="#fff" fill-opacity=".85">groep</text>';
- // matten (M, M1, M2...) als platte mat onder de spelers tekenen, niet als speler
- const pion=p=>isPion(d,p),isMat=p=>/^M\d?$/.test(p[0])&&!pion(p);
- d.p.filter(isMat).forEach(p=>{const [x,y]=p[2][0];o+='<g><rect x="'+(x-32)+'" y="'+(y-18)+'" width="64" height="36" rx="5" fill="#e2e8f0" fill-opacity=".92" stroke="#1d1d1b" stroke-width="2.5"/><text x="'+x+'" y="'+(y+5)+'" text-anchor="middle" font-size="13" font-weight="800" fill="#1d1d1b">mat</text></g>';});
- // pionnen als oranje pion (van boven/schuin gezien), onder de spelers
- d.p.filter(pion).forEach(p=>{const [x,y]=p[2][0];o+='<g class="pion"><ellipse cx="'+x+'" cy="'+(y+9)+'" rx="13" ry="5" fill="#000" fill-opacity=".28"/><path d="M'+(x-12)+' '+(y+9)+' L'+x+' '+(y-14)+' L'+(x+12)+' '+(y+9)+' Z" fill="#f97316" stroke="#7c2d12" stroke-width="2" stroke-linejoin="round"/><path d="M'+(x-6.5)+' '+(y-1)+' L'+(x+6.5)+' '+(y-1)+' L'+(x+8)+' '+(y+2.5)+' L'+(x-8)+' '+(y+2.5)+' Z" fill="#fff"/></g>';});
+ // materiaal onder de spelers tekenen (mat, pion, hoepel, korf, box, ladder, lint, doelzone, ballenkar)
+ const isObj=p=>!!objOf(d,p);
+ d.p.filter(isObj).forEach(p=>{o+=objSvg(objOf(d,p),p[2][0][0],p[2][0][1]);});
  const i0=o.length;
  d.p.forEach(p=>{const q=p[2];if(q.some((v,i)=>i&&Math.hypot(v[0]-q[i-1][0],v[1]-q[i-1][1])>4))o+='<polyline points="'+q.map(v=>v.join(',')).join(' ')+'" fill="none" stroke="'+p[1]+'" stroke-width="2.5" stroke-dasharray="6 5" opacity=".8"/>';});
  const b=d.bal;o+=balBaan(d,b);
  const rm=rolMap(d);
- d.p.filter(p=>!isMat(p)&&!pion(p)).forEach(p=>{const q=p[2],to=dest[p[0]]||q[0],vs=q.length===7?[...q,q[6]]:[...q,q[3],to,to,q[0]],vx=vs.map(v=>v[0]).join(';'),vy=vs.map(v=>v[1]).join(';');
+ d.p.filter(p=>!isObj(p)).forEach(p=>{const q=p[2],to=dest[p[0]]||q[0],vs=q.length===7?[...q,q[6]]:[...q,q[3],to,to,q[0]],vx=vs.map(v=>v[0]).join(';'),vy=vs.map(v=>v[1]).join(';');
   o+='<g><circle r="17" fill="'+p[1]+'" stroke="#1d1d1b" stroke-width="3" cx="'+q[0][0]+'" cy="'+q[0][1]+'"><animate attributeName="cx" values="'+vx+'" keyTimes="'+kt+'" dur="'+D+'s" repeatCount="indefinite"/><animate attributeName="cy" values="'+vy+'" keyTimes="'+kt+'" dur="'+D+'s" repeatCount="indefinite"/></circle>'
    +'<text font-size="11" font-weight="900" text-anchor="middle" fill="#1d1d1b" x="'+q[0][0]+'" y="'+(q[0][1]+4)+'"><animate attributeName="x" values="'+vx+'" keyTimes="'+kt+'" dur="'+D+'s" repeatCount="indefinite"/><animate attributeName="y" values="'+vs.map(v=>v[1]+4).join(';')+'" keyTimes="'+kt+'" dur="'+D+'s" repeatCount="indefinite"/>'+esc(p[0])+'</text>'
    +(rm[p[0]]?'<text font-size="18" font-weight="900" text-anchor="middle" fill="#fff" stroke="#1d1d1b" stroke-width="6" stroke-linejoin="round" paint-order="stroke" x="'+q[0][0]+'" y="'+(q[0][1]+40)+'"><animate attributeName="x" values="'+vx+'" keyTimes="'+kt+'" dur="'+D+'s" repeatCount="indefinite"/><animate attributeName="y" values="'+vs.map(v=>v[1]+40).join(';')+'" keyTimes="'+kt+'" dur="'+D+'s" repeatCount="indefinite"/>'+rm[p[0]]+'</text>':'')+'</g>';});

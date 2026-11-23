@@ -1088,7 +1088,7 @@ window.SCENE_OVERRIDES={
  // Tennisbalpylon
  '0196a4a1-7ee9-7779-8fc2-6b16c93759c6':{form:'vs',teams:[2,2],action:'throw',net:true,objs:[]},
  // Chaosbal
- '0196a4aa-a974-73ee-908d-7a2733ed581d':{serve:true,form:'vs',teams:[3,3],action:'throw',net:true},
+ '0196a4aa-a974-73ee-908d-7a2733ed581d':{serve:true,form:'vs',teams:[4,4],action:'throw',net:true},
  // King of the court
  '0196a4aa-a974-73ee-908d-7a27343c2cab':{serve:true,form:'vs',teams:[2,2],action:'smash',net:true},
  // 1 tegen 1 King of the Court
