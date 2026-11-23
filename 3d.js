@@ -40,9 +40,10 @@ function senModel(d){
  const kt=[0,.15,.3,.45,.6,.82,.96,1],kb=[0,.15,.3,.45,.6,.7,.96,1],STB=[0,.15,.3,.45,.6,.82];
  const b=d.bal||[],six=b.length===6,still=!b.length||b.every(x=>x[0]===b[0][0]&&x[1]===b[0][1]);
  const items=[];
- const people=d.p.filter(p=>!SOBJ.has(p[0]));
+ const pion=p=>typeof window.senPion==='function'&&window.senPion(d,p);
+ const people=d.p.filter(p=>!SOBJ.has(p[0])&&!pion(p));
  const tracks=people.map(p=>{const q=p[2];return q.length>=7?[...q.slice(0,7),q[6]]:[...q,q[3],q[0],q[0],q[0]];});
- d.p.forEach(p=>{if(!SOBJ.has(p[0]))return;const [x,y]=p[2][0];const P=[MX(x),MZ(y)];items.push({kind:/^M\d?$/.test(p[0])?'mat':p[0]==='K'?'pylon':'kast',pos:()=>P});});
+ d.p.forEach(p=>{const pi=pion(p);if(!SOBJ.has(p[0])&&!pi)return;const [x,y]=p[2][0];const P=[MX(x),MZ(y)];items.push({kind:pi||p[0]==='K'?'pylon':/^M\d?$/.test(p[0])?'mat':'kast',pos:()=>P});});
  let bp=null,bt=null;
  if(!still){const bs=six?[...b,b[5],b[5]]:[...b,b[4],b[4],b[0]];bp=bs.map(v=>[MX(v[0]),1,MZ(v[1])]);bt=six?kt:kb;}
  // sprong: een speler dicht bij het net die de bal raakt en de bal gaat daarna over het net
@@ -214,7 +215,8 @@ function build(model){
    case 'koord':{const c=new THREE.Mesh(new THREE.CylinderGeometry(.015,.015,it.len||1.6,6),mat('#e11d48'));c.rotation.x=Math.PI/2;c.position.y=1.3;g.add(c);break;}
    case 'korf':{const p=B(.04,1.6,.04,'#334155');const r=new THREE.Mesh(new THREE.TorusGeometry(.25,.03,8,20),mat('#fb923c'));r.rotation.x=Math.PI/2;r.position.y=1.6;g.add(r);break;}
    case 'hoepel':{const r=new THREE.Mesh(new THREE.TorusGeometry(.35,.025,8,24),mat('#f8fafc'));r.rotation.x=Math.PI/2;r.position.y=.03;g.add(r);break;}
-   case 'pylon':{const c=new THREE.Mesh(new THREE.ConeGeometry(.15,.35,14),mat('#f97316'));c.position.y=.175;g.add(c);break;}
+   case 'pylon':{const k=model.mini?1:1.25;B(.34*k,.03,.34*k,'#f97316');const c=new THREE.Mesh(new THREE.ConeGeometry(.14*k,.4*k,18),mat('#f97316'));c.position.y=.2*k+.03;g.add(c);
+    const r=new THREE.Mesh(new THREE.CylinderGeometry(.047*k,.066*k,.06*k,18),mat('#ffffff'));r.position.y=.25*k+.03;g.add(r);break;}
    default:return null;}
   return g;};
  model.items.forEach(it=>{

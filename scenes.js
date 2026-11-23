@@ -11,7 +11,7 @@ const C={line:'#fff',net:'#ffcc00',navy:'#001a33',skin:'#d9a066',ball:'#fde047',
 // ---------- tekst -> scene-specificatie ----------
 const flat=s=>Array.isArray(s)?s[0]+' '+s[1]:s;
 const textOf=x=>[x.t,x.i,...x.u.map(flat),...x.a.map(flat)].join(' ').toLowerCase();
-const OBJ=[[/hoepel/,'hoepel'],[/pylon|hoedje|dopje|kegel|blokje/,'pylon'],[/dikke mat/,'dikkemat'],[/\bmat/,'mat'],[/kast|bok\b/,'kast'],[/korf|korv|basket/,'korf'],[/bank/,'bank'],[/ballenkar|emmer|bak\b/,'kar'],[/wandrek|muur|wand\b/,'muur'],[/doel/,'doel'],[/stoel/,'stoel'],[/lint|koord|elastiek|touw/,'koord']];
+const OBJ=[[/hoepel/,'hoepel'],[/pylon|pion|hoedje|dopje|kegel|blokje/,'pylon'],[/dikke mat/,'dikkemat'],[/\bmat/,'mat'],[/kast|bok\b/,'kast'],[/korf|korv|basket/,'korf'],[/bank/,'bank'],[/ballenkar|emmer|bak\b/,'kar'],[/wandrek|muur|wand\b/,'muur'],[/doel/,'doel'],[/stoel/,'stoel'],[/lint|koord|elastiek|touw/,'koord']];
 function objects(x){
  const o=[];
  for(const b of x.b){
