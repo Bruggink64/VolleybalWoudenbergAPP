@@ -1252,7 +1252,7 @@ N.append(ex(134, 'Spelverdeler: na de set meteen de volgende bal', 'tech', ['sid
   ['A4', Y, (130, 480), (140, 430), (150, 365), (150, 380), (140, 450), (130, 480), (130, 480)],
   ['A2', Y, (440, 480), (440, 480), (440, 470), (435, 430), (425, 400), (420, 365), (440, 480)], ['AF', OPP, (280, 150)]],
  [(165, 555), (300, 370), (150, 358), (395, 555), (305, 370), (420, 358)]))
-N.append(ex(135, "Spelen met extra ballen: de gewone bal over, de extra ballen binnen het team", 'eind', ['transitie', 'verdediging'], A,
+N.append(ex(135, "Spelen met extra ballen", 'eind', ['transitie', 'verdediging'], A,
  "Twee teams van drie, ieder aan een kant van het net. Elk team heeft drie ballen: één gewone bal en twee extra ballen die er anders uitzien (bijvoorbeeld een andere kleur). De gewone bal gaat in drie keer over het net. De extra ballen blijven in je eigen team: wie de gewone bal moet spelen, gooit eerst zijn extra bal naar de teamgenoot die de gewone bal net gespeeld heeft. Bij de start heeft de speler achterin geen extra bal, de andere twee hebben er elk één.",
  'Overzicht houden, praten en snel beslissen: wie speelt de gewone bal, en naar wie gooi je je extra bal zodat je je handen vrij hebt.',
  ['De speler zonder extra bal passt de gewone bal naar de spelverdeler.', 'De spelverdeler gooit eerst zijn extra bal naar de passer en zet dan op naar de derde speler.', "De derde speler gooit zijn extra bal naar de spelverdeler en speelt de gewone bal over het net. Elke speler raakt de gewone bal maar één keer.", "Valt de gewone bal of een extra bal op de grond, dan krijgt de andere ploeg een punt."],
