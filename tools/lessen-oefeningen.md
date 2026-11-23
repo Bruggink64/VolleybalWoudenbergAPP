@@ -22,3 +22,5 @@ Een suggestie die een fout in de app meldt behandel ik als fix: eerst reproducer
 13. **Oude oefeningen corrigeren** in `tools/fix-animaties.py` (fill/add/rename), nooit met de hand in `senioren.js`.
 14. **Stap ↔ balbeweging**: stap k van de tekst hoort bij beweging k-1→k; de bal mag niet bewegen in een stap die er niets over zegt.
 15. **N tegen M**: beide kanten tekenen (ook "4 tegen 4 waarvan 3 in het veld" = 4-4 getekend).
+16. **Trainer bij de tekst**: noemt de tekst de trainer, dan staat er een trainer (`TR`, trainerkleur) in de tekening; tweetallen/teams ook echt met alle spelers tekenen (ploegen van drie = drie per rij).
+17. **5-1 rotaties**: de basisposities volgen de draaivolgorde (pos 1→6→5→4→3→2). Labels als "Pos 4" in de tekst moeten daarmee kloppen; een afwijkende passlijn-opstelling expliciet als "passlijn" benoemen.

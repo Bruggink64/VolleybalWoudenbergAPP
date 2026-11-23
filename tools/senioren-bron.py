@@ -1356,7 +1356,7 @@ for d in sen:
     if d['id'] == 's14':
         for q in d['p']:
             if q[0] == 'TR':
-                q[0], q[1] = 'PAS', OPP
+                q[0], q[1] = ('PAS' if not any(r[0] == 'PAS' for r in d['p']) else 'PAS2'), OPP
     b0 = d['bal'][0]
     if len(set(map(tuple, d['bal']))) > 1 and not any(abs(q[2][0][0] - b0[0]) < 30 and abs(q[2][0][1] - b0[1]) < 30 for q in d['p']):
         d['p'].append(['TR', TR, [list(b0)] * 4])

@@ -123,3 +123,25 @@ for d in sen:
     if KARRE.search(txt) and not any(re.match(r'^KAR\d*$', p[0]) for p in d['p']):
         x, y = trs[0][2][0]
         add(d['id'], 'KAR1', W, (min(x + 32, 520), y + 22 if y < 600 else y - 22)); print('kar bij trainer:', d['id'])
+
+# ---------------------------------------------------------------- tweede ronde (23-11): ploegen en trainers
+add('n97', 'C', Y, (190, 668)); add('n97', 'F', Y, (370, 668))      # ploegen van drie
+add('n93', 'F', OPP, (280, 80))                                       # zes spelers
+add('n7', 'SL2', TR, (365, 300)); add('n7', 'BX2', W, (365, 300))    # twee slagmannen op de box
+add('n38', 'S3', Y, (425, 660)); add('n38', 'S4', OPP, (135, 20))   # meerdere serveerders per team
+add('n85', 'S3', Y, (425, 660)); add('n85', 'S4', OPP, (135, 20))
+add('n81', 'R2', Y, (250, 640)); add('n81', 'R3', Y, (280, 640))    # team rood bestaat ook uit drie
+add('s4', 'BX1', W, (422, 312))                                       # de trainer staat op een box
+# algemeen: noemt de tekst de trainer en is er geen getekend, zet er een bij het net
+TRRE = re.compile(r'\b(trainer|coach)\b')
+for d in sen:
+    if d['id'][0] != 'n':
+        continue
+    txt = ' '.join([d['opzet']] + d['stappen']).lower()
+    if TRRE.search(txt) and not any(p[1] == TR or p[0] == 'TRN' for p in d['p']) \
+            and not re.search(r'trainer (noemt|wijst|roept|fluit|geeft het signaal|telt)', txt):
+        add(d['id'], 'TR', TR, (500, 335)); print('trainer toegevoegd:', d['id'])
+# dubbele namen (zelfde speler twee keer getekend) weghalen
+for d in sen:
+    seen = set()
+    d['p'] = [p for p in d['p'] if not (p[0] in seen or seen.add(p[0]))]
