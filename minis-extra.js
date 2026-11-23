@@ -1,4 +1,4 @@
-// minis-extra.js – extra mini-oefeningen (m1-m41), in eigen woorden geschreven met yoursportplanner.com
+// minis-extra.js – extra mini-oefeningen (m1-m44), in eigen woorden geschreven met yoursportplanner.com
 // (niveaus CMV 1-5) als inspiratie. Gecontroleerd tegen de VolleyWijzer-oefeningen in data.js: geen dubbelen.
 // Wordt na data.js en scenes.js geladen; de app voegt elk item uit window.VWX vanzelf toe aan de lijst.
 (function(){
@@ -12,7 +12,7 @@ const STAP={
  serveren:{2:'Stap 2: Met één hand onderhands gooien met verschillende snelheden en richtingen.',4:'Stap 4: Bovenhands serveren.',5:'Stap 5: Bovenhands serveren met verschillende snelheden: topspin (uit stand) en float serve.'},
  verdedigen:{1:'Stap 1: Balgevoel en balbaan inschatten.',2:'Stap 2: Vloervrij bewegen: opvangen, liggen en opstaan.'},
  tactiek_ind:{2:'Stap 2: Inschatten van de balbaan (kort en diep) met twee spelers in het veld.',5:'Stap 5: Meerdere taken uitvoeren (voor – tijdens – na) bij passen en setuppen met drie spelers.'},
- tactiek_team:{5:'Level 5: Aanvallen met drie spelers in het veld (transitie).'}
+ tactiek_team:{2:'Level 2: Opbouwen van een aanval met twee spelers in het veld.',3:'Level 3: Het verdedigen met twee spelers in het veld.',5:'Level 5: Aanvallen met drie spelers in het veld (transitie).'}
 };
 const E=[
 // ===== Warming-up =====
@@ -221,7 +221,22 @@ const E=[
  ['Elk team krijgt 3 of 4 pylonen. Zet ze samen op de plekken waar jullie in de wedstrijd moeten staan.','Bespreek: waarom staan ze zo? De trainer helpt tot iedereen goed staat.','Ga bij je pylon staan. De trainer gooit ballen op verschillende plekken: wie neemt deze bal? Alleen die speler pakt hem.','De anderen bewegen mee voor de tweede bal. Die wordt gevangen en naar de trainer gerold.'],
  ['Eerst alleen aanwijzen wie de bal neemt, zonder spelen.'],
  ['De bal moet in drie keer over het net.','De trainer gooit ballen tussen twee spelers in: wie roept "ik"?'],
- ['Begrijpen is belangrijker dan snel.','Roep "ik" of "los" voordat je de bal speelt.']]
+ ['Begrijpen is belangrijker dan snel.','Roep "ik" of "los" voordat je de bal speelt.']],
+['m42','tactiek_team',2,10,STAP.tactiek_team[2],'Flipperkast',[['Volleyballen','2-3'],['Kasten of pylonen','2-4 als hindernis'],['Net of lijn','1']],
+ ['Twee teams van 3 of 4 spelers, met een net of lijn ertussen. Op elke speelhelft staan een of twee kasten als hindernis.','Het ene team gooit de bal over het net. De bal mag één keer stuiteren, ook tegen een kast aan.','Het andere team vangt de bal en speelt hem met drie aanrakingen terug: gooien, vangen, gooien.','Een punt als de bal bij de tegenstander op de grond valt of niet terugkomt. Na elk punt wisselt de worp.'],
+ ['Bal mag twee keer stuiteren.','Minder of geen hindernissen.'],
+ ['Meerdere ballen tegelijk in het spel.','Bal moet in drie aanrakingen over, waarvan één bovenhands.'],
+ ['Praat met je team: wie neemt de bal?','Kijk waar de kast staat en gebruik die slim.']],
+['m43','tactiek_team',3,10,STAP.tactiek_team[3],'Team king',[['Volleyballen','1 per groep']],
+ ['Groepjes van 3 tot 5 spelers staan in een kring met een bal.','De bal gaat bovenhands van speler naar speler. Tel hardop hoe vaak jullie de bal zonder vallen rondspelen.','Valt de bal, dan begint de telling opnieuw. Elk groepje probeert zijn eigen record te verbeteren.','Na vijf minuten: welk groepje heeft het record? Dat is de team king.'],
+ ['Bal mag één keer stuiteren.','Kleinere kring.'],
+ ['Elke speler speelt de bal naar iemand die niet naast hem staat.','Eerst bovenhands, dan onderarms, dan wisselen.'],
+ ['Roep de naam van de speler naar wie je speelt.','Zorg voor een mooie hoge bal.']],
+['m44','aanvallen',3,10,STAP.aanvallen[3],'Aanvallen op de mat',[['Mat','1'],['Volleyballen','6-8'],['Net','1, eventueel verlaagd']],
+ ['Een mat ligt aan de andere kant van het net. De trainer staat bij het net als spelverdeler.','De speler gooit de bal naar de trainer, die hem hoog langs het net aanbiedt.','De speler slaat de bal over het net en probeert de mat te raken.','Wie de mat raakt, gaat zelf op de mat staan. Wie op de mat stond, pakt de bal en gaat achteraan in de rij.'],
+ ['Net lager of aangooien van dichterbij.','Mat dichter bij het net.'],
+ ['Met aanloop aanvallen.','Mat kleiner maken of twee matten.'],
+ ['Kijk waar de mat ligt voordat je slaat.','Sla de bal van boven naar beneden.']]
 ];
 const V=window.VWX||(window.VWX={});
 E.forEach(e=>{const [id,c,l,min,i,t,b,u,m,h,a]=e;V[id]={c,t,l,min,i,b,u,m,h,a,bron:'yoursportplanner'};});
@@ -269,6 +284,9 @@ Object.assign(O,{
  m38:{form:'serve',objs:[{t:'stoel',at:[[0.25,0.35],[0.75,0.65]]}]},
  m39:{form:'feed',over:true,trainer:true,action:'forearm',recv:3,objs:[]},
  m40:{form:'pairs',action:'throw',over:true,net:true,objs:[]},
- m41:{form:'vs',teams:[3,3],action:'throw',net:true,objs:[{t:'pylon',at:[[0.15,0.25],[0.3,0.5],[0.15,0.75]]}]}
+ m41:{form:'vs',teams:[3,3],action:'throw',net:true,objs:[{t:'pylon',at:[[0.15,0.25],[0.3,0.5],[0.15,0.75]]}]},
+ m42:{form:'vs',teams:[3,3],action:'throw',net:true,objs:[{t:'kast',at:[[0.3,0.3],[0.7,0.7]]}]},
+ m43:{trainer:false,form:'circle',action:'overhead',net:false,objs:[]},
+ m44:{form:'queue',action:'smash',trainer:true,over:true,objs:[{t:'mat',at:[[0.8,0.5]]}]}
 });
 })();

@@ -1268,6 +1268,9 @@ N += NIEUW_2211
 # 22-11-2026 derde ronde: 22 laatste oefeningen (tools/extra-2211b.py)
 exec((pathlib.Path(__file__).resolve().parent / 'extra-2211b.py').read_text())
 N += NIEUW_2211B
+# 23-11-2026: 8 oefeningen uit de wekelijkse zoektocht (tools/extra-2311.py)
+exec((pathlib.Path(__file__).resolve().parent / 'extra-2311.py').read_text())
+N += NIEUW_2311
 
 # Titels en niveaus van de oude oefeningen opschonen
 OUD = {
