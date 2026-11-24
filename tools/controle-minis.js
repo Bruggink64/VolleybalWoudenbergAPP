@@ -44,7 +44,7 @@ function check(x){
  for(const [k,re] of Object.entries(kinds)){
   const inB=(x.b||[]).some(b=>re.test(lc(Array.isArray(b)?b[0]:b)));
   const inU=re.test(u);
-  if(inB&&!have.has(k)&&!(k==='muur'&&form==='wall'))Q.push('benodigd: '+k+', niet getekend');
+  if(inB&&!have.has(k)&&!(k==='muur'&&form==='wall')&&!(k==='hoepel'&&form==='hoopcatch'))Q.push('benodigd: '+k+', niet getekend');
   if(!inB&&inU&&!have.has(k)&&k!=='doel')Q.push('tekst noemt '+k+', niet in benodigdheden en niet getekend');
   if(have.has(k)&&!inB&&!inU)F.push('tekening heeft '+k+', tekst en benodigdheden niet');
  }

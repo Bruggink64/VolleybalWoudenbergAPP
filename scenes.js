@@ -579,6 +579,39 @@ function formation(F,spec,k,fi){
    if(extra)o+='<text x="'+n2(P(1.02,0)[0])+'" y="'+n2(P(0,.12)[1])+'" fill="#fff" font-size="6" font-weight="800">hotseat</text>';
    break;
   }
+  case 'hoopcatch':{ // Lopen en vangen: tweetallen lopen door de zaal; de een gooit de bal recht omhoog, de ander legt de hoepel waar de bal stuitert; na 3 keer wisselen ze van rol
+   const pairs=Math.max(1,Math.min(5,Math.floor(k/2))),rest=k-pairs*2,vsl=vspread(pairs,.2,.8),T=26,X=u=>P(u,0)[0],d=X(.22)-X(.14);
+   for(let i=0;i<pairs;i++){
+    const Y=P(0,vsl[i])[1],bg=n2(i*.45),pa=[],pb=[],bl=[],hp=[],br=[[0,2.8]];
+    const add=(a,t,x,y)=>a.push([t,x,y]);
+    const x0=X(.22);add(pa,0,x0,Y);add(pb,0,x0-d,Y+7);add(bl,0,x0+5,Y-3);add(hp,0,x0-d+8,Y+5);
+    const phase=(t0,L,Fo)=>{ // L loopt voorop met de bal, Fo volgt met de hoepel
+     let t=t0;
+     for(const s of [X(.34),X(.52),X(.70)]){
+      add(L,t+1.2,s,Y);add(Fo,t+1.2,s-d,Y+7);add(bl,t+1.2,s+5,Y-3);add(hp,t+1.2,s-d+8,Y+5);br.push([t+1.2,2.8]);
+      add(Fo,t+1.8,s+5,Y+9);add(hp,t+1.8,s+14,Y+7);add(bl,t+1.8,s+14,Y+7);br.push([t+1.5,4.4],[t+1.8,2.8]); // bal recht omhoog, hoepel erheen
+      add(L,t+2.4,s,Y);add(Fo,t+2.4,s+5,Y+9);add(hp,t+2.4,s+14,Y+7);add(bl,t+2.4,s+14,Y+7);br.push([t+2.1,1.6],[t+2.4,2.8]); // bal stuitert in de hoepel
+      add(L,t+3,s+14,Y);add(Fo,t+3,s+14-d,Y+7);add(hp,t+3,s+14-d+8,Y+5);add(bl,t+3,s+19,Y-3);br.push([t+3,2.8]);
+      t+=3;
+     }
+     return X(.70)+14;
+    };
+    const wissel=(t0,xe,Lp,Fp)=>{ // bal en hoepel gaan over, daarna lopen ze terug naar het begin met omgewisselde rollen
+     add(Lp,t0+.4,xe,Y);add(Fp,t0+.4,xe-d,Y+7);add(bl,t0+.4,xe-d+5,Y+4);add(hp,t0+.4,xe+8,Y-2);br.push([t0+.2,3.6],[t0+.4,2.8]);
+     add(Fp,t0+4,x0,Y);add(Lp,t0+4,x0-d,Y+7);add(bl,t0+4,x0+5,Y-3);add(hp,t0+4,x0-d+8,Y+5);br.push([t0+4,2.8]);
+    };
+    let xe=phase(0,pa,pb);wissel(9,xe,pa,pb);
+    xe=phase(13,pb,pa);wissel(22,xe,pb,pa);
+    const kt=a=>a.map(q=>n3(q[0]/T)).join(';');
+    const run=a=>tl(a.map(q=>[q[1],q[2]]),a.map(q=>q[0]/T),T,bg);
+    o+=player(pa[0][1],pa[0][2],sideA,run(pa))+player(pb[0][1],pb[0][2],sideA,run(pb));
+    o+='<g transform="translate('+n2(hp[0][1])+' '+n2(hp[0][2])+')">'+run(hp)+'<circle r="5" fill="none" stroke="'+C.hoepel+'" stroke-width="1.6"/></g>';
+    o+='<g transform="translate('+n2(bl[0][1])+' '+n2(bl[0][2])+')">'+run(bl)+'<circle r="2.8" fill="'+C.ball+'" stroke="'+C.ballS+'" stroke-width="1"><animate attributeName="r" values="'+br.map(q=>q[1]).join(';')+'" keyTimes="'+br.map(q=>n3(q[0]/T)).join(';')+'" dur="'+T+'s" begin="'+bg+'s" repeatCount="indefinite"/></circle></g>';
+   }
+   for(let r=0;r<rest;r++)o+=bench(F,r,false);
+   {const q=P(.5,.07);o+='<text x="'+n2(q[0])+'" y="'+n2(q[1])+'" text-anchor="middle" fill="#fff" font-size="6.5" font-weight="800"><animate attributeName="opacity" calcMode="discrete" values="0;1;0;1" keyTimes="0;'+n3(9/T)+';'+n3(13/T)+';'+n3(22/T)+'" dur="'+T+'s" repeatCount="indefinite"/>3 keer gelukt: wissel van rol</text>';}
+   break;
+  }
   default:return formationOld(F,spec,k,fi);
  }
  return o;
@@ -589,7 +622,7 @@ window.scene=function(d,n,courts){
  const spec=derive(d);
  if(!spec)return null;
  n=Math.max(1,n|0);courts=Math.max(1,courts|0);
- const one=['tag','scatter','circle','relay','circuit','wall','solo','cross','sideline','lanes','netrun'].includes(spec.form)||spec.teams==='half';
+ const one=['tag','scatter','circle','relay','circuit','wall','solo','cross','sideline','lanes','netrun','hoopcatch'].includes(spec.form)||spec.teams==='half';
  const grp=spec.form==='vs'?(Array.isArray(spec.teams)?spec.teams:[2,2]).reduce((a,b)=>a+b):spec.form==='triples'?3:spec.form==='feed'?4:spec.form==='queue'?6:spec.form==='serve'?6:2;
  const f=one?1:Math.max(1,Math.min(courts,Math.ceil(n/grp)));
  const per=distribute(n,f);
@@ -672,7 +705,7 @@ window.SCENE_OVERRIDES={
  // Door elkaar
  '019634e5-793c-7072-a870-f2f146a98bd1':{form:'solo',action:'up',move:true,net:false},
  // Lopen en vangen
- '019634e5-793c-7072-a870-f2f147826d9e':{form:'scatter',action:'throw',net:false,objs:[{t:'hoepel',n:4,grid:true}]},
+ '019634e5-793c-7072-a870-f2f147826d9e':{form:'hoopcatch',action:'throw',net:false,trainer:false,objs:[]},
  // In de kegel: trainer gooit over het net naar 2 spelers
  '019634e5-793d-7613-951a-d149edca6c49':{form:'feed',over:true,trainer:true,action:'throw',objs:[{t:'kar',n:1}]},
  // Speel en go
