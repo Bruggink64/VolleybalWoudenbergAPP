@@ -469,6 +469,8 @@ const ROT={
  DIA:P('#fb7185',[[204,298],[434,298],[434,274],[418,224]],"Pos 5 (Linksachter LIB): loopt helemaal achter de passers langs naar Rechtsachter en loopt aan achter de 3-meterlijn!")},
  tg:[T('POS 4 (PL1)',130,182,'#ffd100'),T('1e-TEMPO (MID)',276,180,'#c084fc'),T('PIJP (PL2)',280,224,'#fbbf24'),T('DIA (3M POS 1)',418,224,'#fb7185')]}
 };
+// De libero loopt bij de wissel met de pass achterlangs (achter de passer-loper), niet voorlangs: een boog via een punt diep in het veld.
+Object.values(ROT).forEach(R=>{const l=R.players.LIB;if(l)l.via=[(l.kf[1][0]+l.kf[2][0])/2,330];});
 // Fase 4: na een punt draait het team een positie door (kloksgewijs). De speler op Pos 2 loopt naar Pos 1 en serveert.
 const RPOS={1:[396,266],2:[404,186],3:[276,186],4:[150,186],5:[164,266],6:[276,266]},RNEXT={1:6,6:5,5:4,4:3,3:2,2:1};
 function rotPos(n){const o={};Object.entries(ROT[n].players).forEach(([k,p])=>{const m=/^Pos (\d)/.exec(p.role);if(m)o[k]=+m[1];});return o;}
@@ -504,6 +506,8 @@ function rotDraw(){
    return;}
   const a=o.kf[seg],b=o.kf[seg+1]||a,ax=a[0],ay=mapY(a[1]),bx=b[0],by=mapY(b[1]);
   let x=lerp(ax,bx,st),y=lerp(ay,by,st),g='';
+  if(seg===1&&o.via){const cx=o.via[0],cy=mapY(o.via[1]),u=1-st;x=u*u*ax+2*u*st*cx+st*st*bx;y=u*u*ay+2*u*st*cy+st*st*by;g='<path d="M '+ax+' '+ay+' Q '+cx+' '+cy+' '+bx+' '+by+'" fill="none" stroke="'+o.c+'" stroke-width="2.4" stroke-dasharray="5,4" opacity=".75"/>';}
+  else
   if(seg===0&&o.arc0){x+=Math.sin(st*Math.PI)*o.arc0;g='<path d="M '+ax+' '+ay+' Q '+((ax+bx)/2+o.arc0*1.35)+' '+((ay+by)/2)+' '+bx+' '+by+'" fill="none" stroke="'+o.c+'" stroke-width="2.4" stroke-dasharray="5,4" opacity=".8"/>';}
   else if(Math.hypot(bx-ax,by-ay)>5)g='<line x1="'+ax+'" y1="'+ay+'" x2="'+bx+'" y2="'+by+'" stroke="'+o.c+'" stroke-width="2.4" stroke-dasharray="5,4" opacity=".75"/>';
   ps+=g+'<circle cx="'+x+'" cy="'+y+'" r="16" fill="'+o.c+'" stroke="#1d1d1b" stroke-width="2.8"/><text x="'+x+'" y="'+(y+4)+'" fill="#1d1d1b" font-size="10" font-weight="900" text-anchor="middle">'+k+'</text>';

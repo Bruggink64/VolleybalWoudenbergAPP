@@ -70,7 +70,7 @@ function rotModel(n){
  const eio=t=>t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2;
  const tgCol=new Set(R.tg.map(t=>t.col));
  const items=Object.entries(R.players).map(([k,o])=>({kind:'player',label:k,color:o.c,
-  pos:f=>{const F=f*4,seg=Math.min(3,Math.floor(F)),lt=F-seg;if(seg===3)return P(rotP4(n,k,lt));const st=eio(lt),a=P(o.kf[seg]),b=P(o.kf[seg+1]||o.kf[seg]);let x=a[0]+(b[0]-a[0])*st;const z=a[1]+(b[1]-a[1])*st;if(seg===0&&o.arc0)x+=Math.sin(st*Math.PI)*MX(280+o.arc0);return [x,z];},
+  pos:f=>{const F=f*4,seg=Math.min(3,Math.floor(F)),lt=F-seg;if(seg===3)return P(rotP4(n,k,lt));const st=eio(lt),a=P(o.kf[seg]),b=P(o.kf[seg+1]||o.kf[seg]);if(seg===1&&o.via){const c=P(o.via),u=1-st;return [u*u*a[0]+2*u*st*c[0]+st*st*b[0],u*u*a[1]+2*u*st*c[1]+st*st*b[1]];}let x=a[0]+(b[0]-a[0])*st;const z=a[1]+(b[1]-a[1])*st;if(seg===0&&o.arc0)x+=Math.sin(st*Math.PI)*MX(280+o.arc0);return [x,z];},
   lift:f=>{const F=f*4;return F>=2&&F<3.2&&tgCol.has(o.c)&&k!=='SV'?bump(F,2.85,.2,.65):0;}}));
  const rv=R.players[R.recv].kf[0],pass=[MX(rv[0]),.9,MZ(my(rv[1]))],sv=[MX(336),2.5,MZ(my(188))],srv=[MX(280),2.6,MZ(48)];
  const s0=seg3(srv,pass,2.2),s1=seg3(pass,sv,2.6);
