@@ -195,7 +195,7 @@ dialog#pick::backdrop,dialog#s_pick::backdrop{background:rgba(0,0,0,.45)}
   <div class="row" id="rotBtns"></div>
   <div id="rotSvg" style="margin-top:10px"></div>
   <p><b id="rotPhase"></b></p>
-  <input type="range" id="rotSlider" min="0" max="2.99" step="0.02" value="0">
+  <input type="range" id="rotSlider" min="0" max="3.99" step="0.02" value="0">
   <div class="row" style="margin-top:8px"><button onclick="scrubRot(0.1)">1. Service</button><button onclick="scrubRot(1.1)">2. Pass naar SV</button><button onclick="scrubRot(2.1)">3. Set-up en aanloop</button></div>
   <div class="row" style="margin-top:8px"><button id="rotPlay" class="on" onclick="toggleRot()">Pauzeer</button><button onclick="restartRot()">Opnieuw</button></div>
  </div>
@@ -469,21 +469,39 @@ const ROT={
  DIA:P('#fb7185',[[204,298],[434,298],[434,274],[418,224]],"Pos 5 (Linksachter LIB): loopt helemaal achter de passers langs naar Rechtsachter en loopt aan achter de 3-meterlijn!")},
  tg:[T('POS 4 (PL1)',130,182,'#ffd100'),T('1e-TEMPO (MID)',276,180,'#c084fc'),T('PIJP (PL2)',280,224,'#fbbf24'),T('DIA (3M POS 1)',418,224,'#fb7185')]}
 };
+// Fase 4: na een punt draait het team een positie door (kloksgewijs). De speler op Pos 2 loopt naar Pos 1 en serveert.
+const RPOS={1:[396,266],2:[404,186],3:[276,186],4:[150,186],5:[164,266],6:[276,266]},RNEXT={1:6,6:5,5:4,4:3,3:2,2:1};
+function rotPos(n){const o={};Object.entries(ROT[n].players).forEach(([k,p])=>{const m=/^Pos (\d)/.exec(p.role);if(m)o[k]=+m[1];});return o;}
+function rotSrv(n){const o=rotPos(n);return Object.keys(o).find(k=>o[k]===2);}
+function rotP4(n,k,lt){
+ const p=ROT[n].players[k],pos=rotPos(n)[k],a=p.kf[p.kf.length-1],b=RPOS[pos],c=RPOS[RNEXT[pos]],e=t=>ease(Math.max(0,Math.min(1,t)));
+ if(lt<.3){const s=e(lt/.3);return [lerp(a[0],b[0],s),lerp(a[1],b[1],s)];}
+ if(lt<.4)return b;
+ const s=e((lt-.4)/.45);return [lerp(b[0],c[0],s),lerp(b[1],c[1],s)];
+}
+const rotCap4=n=>'Fase 4: punt gescoord! Het team draait een positie door: '+rotSrv(n)+' (Pos 2) loopt naar Pos 1 en serveert';
 let rotN=1,rotF=0,rotPlay=true;
 function setView(v){document.querySelector('header h1').textContent=v==='home'?'Trainersapp':v==='sen'?'Trainingsgenerator Jeugd & Senioren':'Trainingsgenerator Mini’s';['home','gen','sen','rot','def'].forEach(k=>{$('v_'+k).style.display=k===v?'':'none';$('t_'+k).className=k===v?'on':'';});if(v==='sen')senView();if(v==='rot')rotView();if(v==='def')defView();}
 function rotView(){
  $('rotBtns').innerHTML=[1,2,3,4,5,6].map(r=>'<button class="'+(r===rotN?'on':'')+'" onclick="rotN='+r+';rotF=0;rotView()">Rotatie '+r+' (SV pos '+[1,6,5,4,3,2][r-1]+')</button>').join('');
  const R=ROT[rotN];
- $('rotTitle').textContent=R.title;$('rotSummary').textContent=R.summary;
+ $('rotTitle').textContent=R.title;$('rotSummary').textContent=R.summary+' Na een gescoord punt (fase 4) draait het team door: '+rotSrv(rotN)+' staat dan op Pos 2, loopt naar Pos 1 en serveert. Scoort het team op eigen service, dan serveert dezelfde speler gewoon opnieuw.';
  $('rotRoles').innerHTML=Object.entries(R.players).map(([k,o])=>'<div class="rl"><span class="tag" style="background:'+o.c+'">'+k+'</span><span>'+esc(o.role)+'</span></div>').join('');
  rotDraw();
 }
 function rotDraw(){
- const R=ROT[rotN],seg=Math.min(2,Math.floor(rotF)),lt=rotF-seg,st=ease(lt);
- $('rotPhase').textContent=['Fase 1: Service onderweg: SV, MID1 en DIA maken direct ruimte','Fase 2: Pass naar SV: alle 4 de aanvallers halen uit om aan te lopen','Fase 3: 4 set-up opties vanuit SV: iedereen loopt tegelijk aan!'][seg];
+ const R=ROT[rotN],seg=Math.min(3,Math.floor(rotF)),lt=rotF-seg,st=ease(lt);
+ $('rotPhase').textContent=['Fase 1: Service onderweg: SV, MID1 en DIA maken direct ruimte','Fase 2: Pass naar SV: alle 4 de aanvallers halen uit om aan te lopen','Fase 3: 4 set-up opties vanuit SV: iedereen loopt tegelijk aan!',rotCap4(rotN)][seg];
  const sl=$('rotSlider');if(document.activeElement!==sl)sl.value=rotF.toFixed(2);
  let ps='';
  Object.entries(R.players).forEach(([k,o])=>{
+  if(seg===3){
+   const q=rotP4(rotN,k,lt),px=q[0],py=mapY(q[1]),pos=rotPos(rotN)[k],b0=RPOS[pos],c0=RPOS[RNEXT[pos]],isS=k===rotSrv(rotN);
+   if(lt>=.3&&lt<.9)ps+='<line x1="'+b0[0]+'" y1="'+mapY(b0[1])+'" x2="'+c0[0]+'" y2="'+mapY(c0[1])+'" stroke="'+o.c+'" stroke-width="2.4" stroke-dasharray="5,4" opacity=".7"/>';
+   ps+='<circle cx="'+px+'" cy="'+py+'" r="16" fill="'+o.c+'" stroke="#1d1d1b" stroke-width="2.8"/><text x="'+px+'" y="'+(py+4)+'" fill="#1d1d1b" font-size="10" font-weight="900" text-anchor="middle">'+k+'</text>';
+   if(isS&&lt>=.4)ps+='<circle cx="'+px+'" cy="'+py+'" r="22" fill="none" stroke="#fff" stroke-width="3" stroke-dasharray="4 3"/><circle cx="'+(px+21)+'" cy="'+(py-14)+'" r="9.5" fill="#fde047" stroke="#b45309" stroke-width="2"/>';
+   if(isS&&lt>=.85)ps+='<rect x="'+(px-36)+'" y="'+(py+25)+'" width="72" height="15" rx="3" fill="#1d1d1b" fill-opacity=".9" stroke="#fde047"/><text x="'+px+'" y="'+(py+36)+'" fill="#fde047" font-size="8.5" font-weight="900" text-anchor="middle">SERVEERT</text>';
+   return;}
   const a=o.kf[seg],b=o.kf[seg+1]||a,ax=a[0],ay=mapY(a[1]),bx=b[0],by=mapY(b[1]);
   let x=lerp(ax,bx,st),y=lerp(ay,by,st),g='';
   if(seg===0&&o.arc0){x+=Math.sin(st*Math.PI)*o.arc0;g='<path d="M '+ax+' '+ay+' Q '+((ax+bx)/2+o.arc0*1.35)+' '+((ay+by)/2)+' '+bx+' '+by+'" fill="none" stroke="'+o.c+'" stroke-width="2.4" stroke-dasharray="5,4" opacity=".8"/>';}
@@ -492,9 +510,10 @@ function rotDraw(){
  });
  const rv=R.players[R.recv].kf[0],pass=[rv[0],mapY(rv[1])],sv=[336,mapY(188)],srv=[280,48];
  let bs='';
- if(seg===0)bs='<line x1="'+srv[0]+'" y1="'+srv[1]+'" x2="'+pass[0]+'" y2="'+pass[1]+'" stroke="#fde047" stroke-width="2" stroke-dasharray="5,4" opacity=".75"/><circle cx="'+lerp(srv[0],pass[0],lt)+'" cy="'+lerp(srv[1],pass[1],lt)+'" r="9.5" fill="#fde047" stroke="#b45309" stroke-width="2"/>';
+ if(seg===3){if(lt<.4)bs='<rect x="150" y="318" width="260" height="20" rx="4" fill="#1d1d1b" fill-opacity=".9" stroke="#fde047"/><text x="280" y="332" fill="#fde047" font-size="10.5" font-weight="900" text-anchor="middle">PUNT GESCOORD!</text>';}
+ else if(seg===0)bs='<line x1="'+srv[0]+'" y1="'+srv[1]+'" x2="'+pass[0]+'" y2="'+pass[1]+'" stroke="#fde047" stroke-width="2" stroke-dasharray="5,4" opacity=".75"/><circle cx="'+lerp(srv[0],pass[0],lt)+'" cy="'+lerp(srv[1],pass[1],lt)+'" r="9.5" fill="#fde047" stroke="#b45309" stroke-width="2"/>';
  else if(seg===1)bs='<line x1="'+pass[0]+'" y1="'+pass[1]+'" x2="'+sv[0]+'" y2="'+sv[1]+'" stroke="#34d399" stroke-width="2.2" stroke-dasharray="5,4" opacity=".8"/><circle cx="'+lerp(pass[0],sv[0],lt)+'" cy="'+(lerp(pass[1],sv[1],lt)-Math.sin(lt*Math.PI)*24)+'" r="9.5" fill="#fde047" stroke="#b45309" stroke-width="2"/>';
- else bs=R.tg.map(t=>{const tx=t.to[0],ty=mapY(t.to[1]);return '<line x1="'+sv[0]+'" y1="'+sv[1]+'" x2="'+tx+'" y2="'+ty+'" stroke="'+t.col+'" stroke-width="2.2" stroke-dasharray="4,3" opacity=".85"/><circle cx="'+lerp(sv[0],tx,lt)+'" cy="'+(lerp(sv[1],ty,lt)-Math.sin(lt*Math.PI)*18)+'" r="8.5" fill="#fde047" stroke="'+t.col+'" stroke-width="2.5"/><rect x="'+(tx-32)+'" y="'+(ty-30)+'" width="64" height="14" rx="3" fill="#1d1d1b" fill-opacity=".88" stroke="'+t.col+'"/><text x="'+tx+'" y="'+(ty-20)+'" fill="#fff" font-size="7.5" font-weight="900" text-anchor="middle">'+t.label+'</text>';}).join('');
+ else if(seg===2)bs=R.tg.map(t=>{const tx=t.to[0],ty=mapY(t.to[1]);return '<line x1="'+sv[0]+'" y1="'+sv[1]+'" x2="'+tx+'" y2="'+ty+'" stroke="'+t.col+'" stroke-width="2.2" stroke-dasharray="4,3" opacity=".85"/><circle cx="'+lerp(sv[0],tx,lt)+'" cy="'+(lerp(sv[1],ty,lt)-Math.sin(lt*Math.PI)*18)+'" r="8.5" fill="#fde047" stroke="'+t.col+'" stroke-width="2.5"/><rect x="'+(tx-32)+'" y="'+(ty-30)+'" width="64" height="14" rx="3" fill="#1d1d1b" fill-opacity=".88" stroke="'+t.col+'"/><text x="'+tx+'" y="'+(ty-20)+'" fill="#fff" font-size="7.5" font-weight="900" text-anchor="middle">'+t.label+'</text>';}).join('');
  $('rotSvg').innerHTML='<svg viewBox="0 0 560 680" class="tac" style="max-height:560px" role="img" aria-label="5-1 rotatie '+rotN+'"><rect width="560" height="680" fill="#1d1d1b"/><rect x="110" y="40" width="340" height="600" rx="4" fill="#0a7be0" stroke="#fff" stroke-width="3"/><line x1="110" y1="230" x2="450" y2="230" stroke="#bae6fd" stroke-width="2" stroke-dasharray="6,4"/><line x1="110" y1="450" x2="450" y2="450" stroke="#bae6fd" stroke-width="2" stroke-dasharray="6,4"/><line x1="96" y1="340" x2="464" y2="340" stroke="#ffd100" stroke-width="5"/><circle cx="110" cy="340" r="5" fill="#ef4444"/><circle cx="450" cy="340" r="5" fill="#ef4444"/>'+ps+bs+'</svg>';
 }
 function scrubRot(v){rotPlay=false;rotF=parseFloat(v);$('rotPlay').textContent='Afspelen';rotDraw();}
@@ -504,7 +523,7 @@ $('rotSlider').oninput=e=>scrubRot(e.target.value);
 let rotLast=0;
 function rotLoop(ts){
  const dt=Math.min(.05,(ts-rotLast)/1000);rotLast=ts;
- if(rotPlay&&$('v_rot').style.display!=='none'){rotF+=dt*.48;if(rotF>=3)rotF=0;rotDraw();}
+ if(rotPlay&&$('v_rot').style.display!=='none'){rotF+=dt*.48;if(rotF>=4)rotF=0;rotDraw();}
  requestAnimationFrame(rotLoop);
 }
 requestAnimationFrame(rotLoop);

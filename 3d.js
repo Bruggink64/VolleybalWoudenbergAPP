@@ -64,20 +64,20 @@ function senModel(d){
  const cap=f=>{for(let i=1;i<STB.length;i++)if(f<STB[i])return i<=st.length?'Stap '+i+': '+st[i-1]:'';return six?'Stap 5: '+(d.stappen[d.stappen.length-1]||''):'Terug naar de beginopstelling';};
  return {title:d.t,dur:9,items,balls,cap};
 }
-// 5-1 rotaties: drie fases (service, pass naar SV, set-up en aanloop), zoals op het tabblad 5-1 rotaties
+// 5-1 rotaties: vier fases (service, pass naar SV, set-up en aanloop, punt en wie er serveert), zoals op het tabblad 5-1 rotaties
 function rotModel(n){
  const R=ROT[n],P=v=>[MX(v[0]),MZ(my(v[1]))];
  const eio=t=>t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2;
  const tgCol=new Set(R.tg.map(t=>t.col));
  const items=Object.entries(R.players).map(([k,o])=>({kind:'player',label:k,color:o.c,
-  pos:f=>{const F=f*3,seg=Math.min(2,Math.floor(F)),lt=F-seg,st=eio(lt),a=P(o.kf[seg]),b=P(o.kf[seg+1]||o.kf[seg]);let x=a[0]+(b[0]-a[0])*st;const z=a[1]+(b[1]-a[1])*st;if(seg===0&&o.arc0)x+=Math.sin(st*Math.PI)*MX(280+o.arc0);return [x,z];},
-  lift:f=>{const F=f*3;return F>=2&&tgCol.has(o.c)&&k!=='SV'?bump(F,2.85,.2,.65):0;}}));
+  pos:f=>{const F=f*4,seg=Math.min(3,Math.floor(F)),lt=F-seg;if(seg===3)return P(rotP4(n,k,lt));const st=eio(lt),a=P(o.kf[seg]),b=P(o.kf[seg+1]||o.kf[seg]);let x=a[0]+(b[0]-a[0])*st;const z=a[1]+(b[1]-a[1])*st;if(seg===0&&o.arc0)x+=Math.sin(st*Math.PI)*MX(280+o.arc0);return [x,z];},
+  lift:f=>{const F=f*4;return F>=2&&F<3.2&&tgCol.has(o.c)&&k!=='SV'?bump(F,2.85,.2,.65):0;}}));
  const rv=R.players[R.recv].kf[0],pass=[MX(rv[0]),.9,MZ(my(rv[1]))],sv=[MX(336),2.5,MZ(my(188))],srv=[MX(280),2.6,MZ(48)];
  const s0=seg3(srv,pass,2.2),s1=seg3(pass,sv,2.6);
- const balls=[{at:f=>{const F=f*3;if(F<1)return s0(F);if(F<2)return s1(F-1);return null;}}]
-  .concat(R.tg.map(t=>{const to=[MX(t.to[0]),3,MZ(my(t.to[1]))],s2=seg3(sv,to,1.2);return {at:f=>{const F=f*3;return F>=2?s2(F-2):null;},color:t.col};}));
- const caps=['Fase 1: service onderweg; SV, MID1 en DIA maken direct ruimte','Fase 2: pass naar SV; de aanvallers halen uit om aan te lopen','Fase 3: vier set-up-opties vanuit SV; iedereen loopt tegelijk aan'];
- return {title:R.title,dur:3/.48,items,balls,cap:f=>caps[Math.min(2,Math.floor(f*3))],sig:'r'+n};
+ const srvK=rotSrv(n),balls=[{at:f=>{const F=f*4;if(F<1)return s0(F);if(F<2)return s1(F-1);return null;}},{at:f=>{const F=f*4;if(F<3.4)return null;const q=P(rotP4(n,srvK,F-3));return [q[0]+.5,1.1,q[1]];}}]
+  .concat(R.tg.map(t=>{const to=[MX(t.to[0]),3,MZ(my(t.to[1]))],s2=seg3(sv,to,1.2);return {at:f=>{const F=f*4;return F>=2&&F<3?s2(F-2):null;},color:t.col};}));
+ const caps=['Fase 1: service onderweg; SV, MID1 en DIA maken direct ruimte','Fase 2: pass naar SV; de aanvallers halen uit om aan te lopen','Fase 3: vier set-up-opties vanuit SV; iedereen loopt tegelijk aan',rotCap4(n)];
+ return {title:R.title,dur:4/.48,items,balls,cap:f=>caps[Math.min(3,Math.floor(f*4))],sig:'r'+n};
 }
 // Verdediging en blokdekking: zelfde gegevens als het tabblad Verdediging (DEFS/DEFZ, getDef())
 function defModel(){
@@ -379,7 +379,7 @@ function modelOf(h){
 }
 function frameOf(h){
  if(h.kind==='sen'){try{return (h.svg.getCurrentTime()%9)/9;}catch(e){return 0;}}
- if(h.kind==='rot')return (typeof rotF!=='undefined'?rotF:0)/3;
+ if(h.kind==='rot')return (typeof rotF!=='undefined'?rotF:0)/4;
  if(h.kind==='def')return (typeof dF!=='undefined'?dF:0)/3;
  return 0;
 }
@@ -482,7 +482,7 @@ function init(){
 // ---------- knoppen ----------
 window.open3D=open;
 window.d3Sen=id=>{const d=(window.SEN||[]).find(x=>x.id===id);if(!d)return;const h=hosts.find(x=>x.kind==='sen'&&x.wrap.closest('.stp')&&x.wrap.closest('.stp').dataset.senid===id);open(senModel(d),h?frameOf(h)*9:0);};
-window.d3Rot=()=>{if(typeof ROT!=='undefined'&&typeof rotN!=='undefined')open(rotModel(rotN),rotF/3*(3/.48));};
+window.d3Rot=()=>{if(typeof ROT!=='undefined'&&typeof rotN!=='undefined')open(rotModel(rotN),rotF/4*(4/.48));};
 window.d3Def=()=>{if(typeof getDef==='function')open(defModel(),dF/3*(3/.48));};
 window.__a3={hosts,state:()=>({want3d,broken,ready:!!R}),gl:()=>R,senModel,miniModel,rotModel,defModel,build};
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
