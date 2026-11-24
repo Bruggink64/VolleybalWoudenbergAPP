@@ -24,3 +24,4 @@ Een suggestie die een fout in de app meldt behandel ik als fix: eerst reproducer
 15. **N tegen M**: beide kanten tekenen (ook "4 tegen 4 waarvan 3 in het veld" = 4-4 getekend).
 16. **Trainer bij de tekst**: noemt de tekst de trainer, dan staat er een trainer (`TR`, trainerkleur) in de tekening; tweetallen/teams ook echt met alle spelers tekenen (ploegen van drie = drie per rij).
 17. **5-1 rotaties**: de basisposities volgen de draaivolgorde (pos 1→6→5→4→3→2). Labels als "Pos 4" in de tekst moeten daarmee kloppen; een afwijkende passlijn-opstelling expliciet als "passlijn" benoemen.
+18. **Materiaal dat meebeweegt**: beweegt een voorwerp mee met een speler (de hoepel bij "Lopen en vangen"), teken het dan als meebewegende animatie in een eigen formatie in `scenes.js` (`hoopcatch`), niet als vaste plek in een raster. Staat er "na 3 keer wissel je van rol", laat dan de rollen echt wisselen in de lus (begin- en eindstand gelijk, zodat de lus aansluit).
