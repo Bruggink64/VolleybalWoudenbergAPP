@@ -9,10 +9,15 @@ const WELKOM_TITEL='Welkom, trainer!';
 const WELKOM_TEKST='Fijn dat je er bent. Stel hier in een paar tikken een training samen voor de mini’s of voor jeugd en senioren, en bekijk de 5-1 rotaties en de verdediging. Hieronder zie je wie er deze week speelt en hoe onze teams het deden. Veel trainingsplezier!';
 const WELKOM_KORT='Stel snel een training samen en zie hieronder wie er deze week speelt.'; // op de telefoon
 const AANTAL=8;                       // aantal wedstrijden per lijst voordat "Meer tonen" verschijnt
+// teams van andere clubs die we volgen: Nevobo-verenigingscode, team (soort/nummer), naam in de app,
+// en hoe de naam in de Nevobo-gegevens eruitziet. Ze staan apart in de teamkeuze en tellen niet mee bij "Alle teams".
+const EXTRA=[
+ {club:'CKL7S2R',team:'heren/1',naam:'Keistad HS 1',herken:/keistad\s+hs\s*1$/i}   // AVV Keistad Amersfoort, Superdivisie
+];
 // -------------------
 
 const FEED='https://api.nevobo.nl/export/vereniging/'+CLUB+'/';
-const LSK='vvw_home_v1',TEAMK='vvw_home_team',STK='vvw_home_stand_v7';
+const LSK='vvw_home_v2',TEAMK='vvw_home_team',STK='vvw_home_stand_v8';
 // competitiestand: plek van elk team in de poules van onze teams (JSON-API van de Nevobo)
 const API='https://api.nevobo.nl';
 const $=id=>document.getElementById(id);
@@ -23,9 +28,17 @@ const TZ={timeZone:'Europe/Amsterdam'};
 const dag=d=>d.toLocaleDateString('nl-NL',{...TZ,weekday:'long',day:'numeric',month:'long'});
 const tijd=d=>d.toLocaleTimeString('nl-NL',{...TZ,hour:'2-digit',minute:'2-digit'});
 const dagKey=d=>d.toLocaleDateString('sv-SE',TZ);
-const isW=s=>/woudenberg/i.test(s);
-// "Vallei Finance Group Woudenberg DS 1" -> "DS 1"
-const teamVan=s=>{const m=/woudenberg\s+(.+)$/i.exec(s);return m?m[1].trim():s.trim();};
+const isWb=s=>/woudenberg/i.test(s);
+// gevolgd team van een andere club, bijv. "AVV Keistad HS 1"
+const isX=s=>EXTRA.find(e=>e.herken.test(String(s).trim()))||null;
+const extraTeam=t=>EXTRA.some(e=>e.naam===t);
+// "eigen" team: van Woudenberg of een gevolgd team
+const isW=s=>isWb(s)||!!isX(s);
+// "Vallei Finance Group Woudenberg DS 1" -> "DS 1", "AVV Keistad HS 1" -> "Keistad HS 1"
+const teamVan=s=>{const x=isX(s);if(x)return x.naam;const m=/woudenberg\s+(.+)$/i.exec(s);return m?m[1].trim():s.trim();};
+// thuiswedstrijd: Woudenberg speelt thuis in Woudenberg, een gevolgd team als het als eerste genoemd wordt
+const isThuis=w=>extraTeam(w.team)?!!isX(w.a):/woudenberg/i.test(w.plaats||'');
+const teamPad=e=>'/competitie/teams/'+e.club.toLowerCase()+'/'+e.team;
 
 function parse(xml,soort){
  const d=new DOMParser().parseFromString(xml,'text/xml');
@@ -49,9 +62,17 @@ function parse(xml,soort){
  }).filter(Boolean);
 }
 
+const rss=u=>fetch(u,{cache:'no-cache'}).then(x=>{if(!x.ok)throw new Error(x.status);return x.text();});
 async function laad(){
- const r=await Promise.all(['programma','resultaten'].map(f=>fetch(FEED+f+'.rss',{cache:'no-cache'}).then(x=>{if(!x.ok)throw new Error(x.status);return x.text();})));
+ const r=await Promise.all(['programma','resultaten'].map(f=>rss(FEED+f+'.rss')));
  const data={p:parse(r[0],'p'),u:parse(r[1],'u'),bij:Date.now()};
+ // gevolgde teams van andere clubs; lukt dat niet, dan de vorige gegevens van die teams houden
+ await Promise.all(EXTRA.map(async e=>{
+  const pad='https://api.nevobo.nl/export/team/'+e.club+'/'+e.team+'/';
+  let p,u;try{const x=await Promise.all([rss(pad+'programma.rss'),rss(pad+'resultaten.rss')]);p=parse(x[0],'p');u=parse(x[1],'u');}
+  catch(err){p=D?D.p.filter(w=>w.team===e.naam):[];u=D?D.u.filter(w=>w.team===e.naam):[];}
+  data.p.push(...p.filter(w=>w.team===e.naam));data.u.push(...u.filter(w=>w.team===e.naam));
+ }));
  put(LSK,data);return data;
 }
 
@@ -69,7 +90,8 @@ async function allePaginas(pad){
  return uit;
 }
 async function laadStand(){
- const eigen=await allePaginas('/competitie/pouleindelingen?vereniging=/relatiebeheer/verenigingen/'+CLUB.toLowerCase()+'&seizoen=/seizoenen/'+seizoen());
+ const eigen=(await allePaginas('/competitie/pouleindelingen?vereniging=/relatiebeheer/verenigingen/'+CLUB.toLowerCase()+'&seizoen=/seizoenen/'+seizoen()))
+  .concat(...(await Promise.all(EXTRA.map(e=>allePaginas('/competitie/pouleindelingen?team='+teamPad(e)+'&seizoen=/seizoenen/'+seizoen()).catch(()=>[])))));
  const poules=Array.from(new Set(eigen.map(m=>m.poule))).filter(p=>!/beker/i.test(p)); // alleen de competitie, geen beker
  const groepen=[];for(let i=0;i<poules.length;i+=8)groepen.push(poules.slice(i,i+8));
  const leden=(await Promise.all(groepen.map(g=>allePaginas('/competitie/pouleindelingen?'+g.map(p=>'poule[]='+encodeURIComponent(p)).join('&'))))).flat();
@@ -142,7 +164,7 @@ function teams(){
   return (ia<0?99:ia)-(ib<0?99:ib)||String(a[0]).localeCompare(b[0])||a[1]-b[1];});
 }
 // eigen teams zonder sponsornaam: "Vallei Finance Group Woudenberg DS 1" -> "Woudenberg DS 1"
-const naam=(s,w)=>(isW(s)?'<b>Woudenberg '+esc(teamVan(s))+'</b>':esc(s))+(w?rang(w,s):'');
+const naam=(s,w)=>(isX(s)?'<b>'+esc(s)+'</b>':isWb(s)?'<b>Woudenberg '+esc(teamVan(s))+'</b>':esc(s))+(w?rang(w,s):'');
 
 // ---- live standen ----
 // Tijdens een wedstrijd houdt de teller (DWF) de stand bij; de Nevobo zet die op .../live.
@@ -152,7 +174,9 @@ const liveKey=w=>w.t+'|'+w.team;
 async function wedstrijdenVandaag(){
  const dk=dagKey(new Date());
  if(vandaag&&vandaag.dag===dk&&Date.now()-vandaag.bij<30*60e3)return vandaag.w;
- const l=await allePaginas('/competitie/wedstrijden?vereniging=/relatiebeheer/verenigingen/'+CLUB.toLowerCase()+'&datum[after]='+dk+'&datum[before]='+dk+'T23:59:59');
+ const dt='&datum[after]='+dk+'&datum[before]='+dk+'T23:59:59';
+ const l=(await allePaginas('/competitie/wedstrijden?vereniging=/relatiebeheer/verenigingen/'+CLUB.toLowerCase()+dt))
+  .concat(...(await Promise.all(EXTRA.map(e=>allePaginas('/competitie/wedstrijden?team='+teamPad(e)+dt).catch(()=>[])))));
  vandaag={dag:dk,bij:Date.now(),w:l.map(m=>({id:m['@id'],t:Date.parse(m.tijdstip||''),teams:m.teams||[]}))};return vandaag.w;
 }
 let liveBezig=false;
@@ -193,7 +217,7 @@ function programma(lijst){
  const toon=meerP?rest.slice(0,AANTAL*4):rest.slice(0,AANTAL);let h='',dk='';
  toon.forEach(w=>{const d=new Date(w.t),k=dagKey(d);
   if(k!==dk){dk=k;h+='<h4 class="hm-dag">'+esc(dag(d))+'</h4>';}
-  const thuis=/woudenberg/i.test(w.plaats||'');
+  const thuis=isThuis(w);
   h+='<a class="hm-w" href="'+esc(w.url)+'" target="_blank" rel="noopener"><span class="hm-t">'+esc(tijd(d))+'</span>'
    +'<span class="hm-m"><span class="hm-ts">'+naam(w.a,w)+' <i>–</i> '+naam(w.b,w)+'</span>'
    +'<span class="hm-z">'+(LIVE[liveKey(w)]?'<em class="hm-livetag">Live '+LIVE[liveKey(w)].stand.join('–')+'</em>':'')+bekerTag(w)+(thuis?'<em class="hm-thuis">Thuis</em>':'<em class="hm-uit">Uit</em>')+esc([w.zaal,w.plaats].filter(Boolean).join(', '))+'</span></span></a>';});
@@ -222,9 +246,9 @@ function tegel(b,kort,lang){return '<div><b>'+b+'</b><span>'+(lang?'<i>'+lang+'<
 function weekStat(team){
  if(!D)return '';const nu=Date.now();
  if(!team){
-  const wk=D.p.filter(w=>!mini(w.team)&&w.t>=nu-2*3600e3&&w.t<nu+7*864e5);
-  const thuis=wk.filter(w=>/woudenberg/i.test(w.plaats||'')).length;
-  const vorig=D.u.filter(w=>!mini(w.team)&&w.t>=nu-7*864e5&&uitkomst(w)),win=vorig.filter(w=>uitkomst(w)==='win').length;
+  const wk=D.p.filter(w=>!mini(w.team)&&!extraTeam(w.team)&&w.t>=nu-2*3600e3&&w.t<nu+7*864e5);
+  const thuis=wk.filter(isThuis).length;
+  const vorig=D.u.filter(w=>!mini(w.team)&&!extraTeam(w.team)&&w.t>=nu-7*864e5&&uitkomst(w)),win=vorig.filter(w=>uitkomst(w)==='win').length;
   return '<div class="hm-stats">'+tegel(wk.length,'komende 7 dagen','wedstrijden de ')+tegel(thuis,'thuis','daarvan ')+tegel(win+'/'+vorig.length,'gewonnen',null).replace('</span>','<i> afgelopen week</i></span>')+'</div>'
    +'<p class="hm-uitleg">Zonder de mini’s. Kies een team voor de cijfers van het seizoen.</p>';
  }
@@ -273,7 +297,7 @@ function standRij(team,naam){
 }
 function volgBlok(team){
  const v=volgende(team);if(!v)return '';
- const opp=isW(v.a)?v.b:v.a,p=plek(team,opp),thuis=/woudenberg/i.test(v.plaats||''),k=S&&S.vorm&&S.vorm[team],f=k&&(k[sleutel(opp)]||k[Object.keys(k).find(x=>x.endsWith(sleutel(opp))||sleutel(opp).endsWith(x))||'']);
+ const opp=isW(v.a)?v.b:v.a,p=plek(team,opp),thuis=isThuis(v),k=S&&S.vorm&&S.vorm[team],f=k&&(k[sleutel(opp)]||k[Object.keys(k).find(x=>x.endsWith(sleutel(opp))||sleutel(opp).endsWith(x))||'']);
  return '<div class="hm-next"><span class="hm-nl">Volgende</span><span class="hm-nt"><b>'+esc(dag(new Date(v.t)))+' '+esc(tijd(new Date(v.t)))+'</b> '+(thuis?'<em class="hm-thuis">Thuis</em>':'<em class="hm-uit">Uit</em>')+'</span>'
   +'<span class="hm-no">'+esc(opp)+(p?' <span class="hm-r" title="'+p[0]+'e van '+p[1]+'">#'+p[0]+'</span>':'')+'</span>'+(f?'<span class="hm-nf" title="Vorm tegenstander (laatste 5)">'+bolL(f)+'</span>':'')+'</div>';
 }
@@ -322,9 +346,9 @@ function statSectie(team,st){
    return '<div title="'+o.W+' van '+o.n+' gewonnen"><b>'+p+'%</b><span class="hm-st"><i style="height:'+Math.max(p,3)+'%"></i></span><em>'+MAANDEN[+m.slice(5)-1]+'</em><small>'+o.W+'/'+o.n+'</small></div>';}).join('')+'</div>';
  }
  // vergelijk met andere Woudenberg-teams
- const rij=teams().filter(t=>!mini(t)).map(t=>[t,teamStats(t)]).filter(x=>x[1]);
+ const rij=teams().filter(t=>!mini(t)&&(!extraTeam(t)||t===team)).map(t=>[t,teamStats(t)]).filter(x=>x[1]);
  rij.sort((a,b)=>b[1].W/b[1].n-a[1].W/a[1].n||b[1].n-a[1].n);
- return '<p class="hm-uitleg">Percentage gewonnen wedstrijden dit seizoen, zonder de mini’s</p><div class="hm-vgl">'
+ return '<p class="hm-uitleg">Percentage gewonnen wedstrijden dit seizoen, zonder de mini’s'+(extraTeam(team)?', met '+esc(team)+' ter vergelijking':'')+'</p><div class="hm-vgl">'
   +rij.map(x=>'<div'+(x[0]===team?' class="eigen"':'')+'><span>'+esc(x[0])+'</span>'+bar(Math.round(100*x[1].W/x[1].n),pct(x[1].W,x[1].n)+' <i>('+x[1].W+'/'+x[1].n+')</i>')+'</div>').join('')+'</div>';
 }
 function teamKaart(team){
@@ -342,8 +366,9 @@ function teamKaart(team){
 
 function teken(){
  const el=$('v_home');if(!el)return;
- const team=get(TEAMK,''),f=l=>team?l.filter(w=>w.team===team):l,ts=teams();
- const opt='<option value="">Alle teams</option>'+ts.map(t=>'<option'+(t===team?' selected':'')+'>'+esc(t)+'</option>').join('');
+ const team=get(TEAMK,''),f=l=>team?l.filter(w=>w.team===team):l.filter(w=>!extraTeam(w.team)),ts=teams();
+ const o=t=>'<option'+(t===team?' selected':'')+'>'+esc(t)+'</option>',ex=ts.filter(extraTeam);
+ const opt='<option value="">Alle teams</option>'+ts.filter(t=>!extraTeam(t)).map(o).join('')+(ex.length?'<optgroup label="Andere clubs">'+ex.map(o).join('')+'</optgroup>':'');
  const bij=D?'Bijgewerkt '+new Date(D.bij).toLocaleString('nl-NL',{...TZ,weekday:'short',hour:'2-digit',minute:'2-digit'}):'';
  el.innerHTML='<section class="hm-welkom"><h2>'+esc(WELKOM_TITEL)+'</h2><p class="hm-lang">'+esc(WELKOM_TEKST)+'</p><p class="hm-kort">'+esc(WELKOM_KORT)+'</p>'
   +'<div class="hm-snel"><button type="button" data-v="gen">Training mini’s</button><button type="button" data-v="sen">Training jeugd &amp; senioren</button>'
