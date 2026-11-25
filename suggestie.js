@@ -323,6 +323,14 @@ async function badge(){
 badge();setInterval(()=>{if(!document.hidden)badge();},60000);
 // de lijst ververst zichzelf elke minuut zolang het beheervenster openstaat (niet tijdens het typen of de proefversie)
 setInterval(()=>{try{if(dlg&&dlg.open&&dlg.querySelector('[data-rt]')&&!dlg.querySelector('.sgo2:not([hidden])')&&!(pdlg&&pdlg.open))admin('auto');}catch(e){}},60000);
+// online bewaren voor de beheerder (tabblad Aanval, aanval.js): één eigen document per Google-account.
+// Wie mag lezen en schrijven staat in tools/firestore.rules (alleen de beheerder, alleen zijn eigen document).
+if(ON)window.vvwFire={
+ login:()=>AUTH.login(),logout:()=>AUTH.logout(),
+ async user(){try{const {auth}=await fb();const u=auth.currentUser;return u?{uid:u.uid,email:u.email||''}:null;}catch(e){return null;}},
+ async lees(col,id){try{return await authed(DB+'/'+col+'/'+encodeURIComponent(id)+KEY);}catch(e){if(e.status===404)return null;throw e;}},
+ schrijf:(col,id,fields)=>authed(DB+'/'+col+'/'+encodeURIComponent(id)+KEY,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({fields})})
+};
 // beheer direct openen met #beheer achter de link
 const hash=()=>{if(ON&&location.hash==='#beheer')admin();};
 window.addEventListener('hashchange',hash);hash();
