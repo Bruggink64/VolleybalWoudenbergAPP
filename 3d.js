@@ -268,7 +268,7 @@ function build(model){
  flat(140,140,0,0,mat(C.apron),-.01);
  if(model.mini){
   const M=model.mini;
-  M.courts.forEach(c=>{flat(c.w,c.d,c.x,c.z,courtM,0);flat(c.w*1.6,c.d*1.4,c.x,c.z,poolM,.003);const L=(w,d,x,z)=>flat(w,d,x,z,C.line);
+  M.courts.forEach(c=>{flat(c.w,c.d,c.x,c.z,courtM,0);flat(c.w*1.6,c.d*1.4,c.x,c.z,poolM,.003);const L=(w,d,x,z)=>flat(w,d,x,z,C.line,.015);
    L(c.w+.05,.05,c.x,c.z-c.d/2);L(c.w+.05,.05,c.x,c.z+c.d/2);L(.05,c.d,c.x-c.w/2,c.z);L(.05,c.d,c.x+c.w/2,c.z);});
   M.nets.forEach(n=>net(n.x0,n.x1,n.z,2.1,.75));
   const cs=M.courts.length?M.courts:[{x:0,z:0,w:4.5,d:10.4}];
@@ -277,7 +277,7 @@ function build(model){
    const g=new THREE.BufferGeometry().setFromPoints(pts);scene.add(new THREE.LineSegments(g,new THREE.LineBasicMaterial({color:'#ffffff',transparent:true,opacity:.5})));}
  }else{
   flat(9,18,0,0,courtM,0);flat(12,22,0,1,poolM,.003);
-  const L=(w,d,x,z)=>flat(w,d,x,z,C.line);
+  const L=(w,d,x,z)=>flat(w,d,x,z,C.line,.015);
   L(9.06,.06,0,-9);L(9.06,.06,0,9);L(.06,18.06,-4.5,0);L(.06,18.06,4.5,0);L(9,.06,0,0);L(9,.06,0,-3);L(9,.06,0,3);
   [-1,1].forEach(sd=>[-3,3].forEach(z=>{for(let i=0;i<5;i++)L(.18,.05,sd*(4.72+i*.34),z);}));
   net(-4.5,4.5,0,2.43);
