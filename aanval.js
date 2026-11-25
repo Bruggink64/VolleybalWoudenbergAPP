@@ -305,9 +305,9 @@ function bouw(){
   +'<div id="avAnim2"></div>'
   +'<hr><label class="t" for="avNaam">Deze combinatie bewaren</label>'
   +'<div class="row"><input type="text" id="avNaam" maxlength="40" placeholder="Naam, bijv. snelle midden"><button type="button" id="avBewaar">Bewaar</button></div>'
-  +'<div id="avLijst"></div>'
+  +'<div id="avLijst"></div><div id="avOnline"></div>'
   +'<label class="t">Delen met een trainer of team</label><div class="row"><button type="button" id="avLink">Kopieer link</button><button type="button" id="avTxt">Kopieer als tekst</button></div>'
-  +'<p class="note">Bewaarde combinaties staan alleen op dit apparaat. Met de link opent een ander dezelfde combinatie.</p>'
+  +'<p class="note">Met de link opent een ander dezelfde combinatie.</p>'
   +'</section>';
  v.querySelector('#avKaart').addEventListener('click',e=>{const g=e.target.closest('[data-plek]');if(g)kiesCode(g.dataset.plek+gekozen[1]);});
  v.querySelector('#avKaart').addEventListener('keydown',e=>{const g=e.target.closest('[data-plek]');if(g&&(e.key==='Enter'||e.key===' ')){e.preventDefault();kiesCode(g.dataset.plek+gekozen[1]);}});
@@ -321,7 +321,7 @@ function bouw(){
  uitleg=Blok($('avAnim1'),()=>'Aanval '+gekozen+': '+tekst(gekozen).toLowerCase());
  combo=Blok($('avAnim2'),()=>C.naam||'Combinatie '+C.rijen.map(r=>r.code).join(' + '));
  const x=VOORBEELD[0];if(!C.rijen.length){C={naam:x.naam,rijen:x.rijen.map(r=>({rol:r[0],code:r[1]})),doel:'b'};$('avVbUit').textContent=x.uit;}
- kiesCode(gekozen);comboUI();lijstUI();
+ kiesCode(gekozen);comboUI();lijstUI();onlineUI();
 }
 function kiesCode(code){
  if(!geldig(code))return;gekozen=code;
@@ -360,12 +360,56 @@ function lijstUI(){
  const a=opslag.get();
  $('avLijst').innerHTML=a.length?a.map((c,i)=>'<div class="sv"><button type="button" class="lnk" data-open="'+i+'">'+esc(c.naam)+' <span class="note">'+esc(c.rijen.map(r=>r.code).join(' + '))+'</span></button><button type="button" data-del="'+i+'">Verwijder</button></div>').join(''):'<p class="note">Nog geen bewaarde combinaties.</p>';
  $('avLijst').querySelectorAll('[data-open]').forEach(b=>b.onclick=()=>{const c=opslag.get()[+b.dataset.open];if(!c)return;C=JSON.parse(JSON.stringify(c));$('avVbUit').textContent='';comboUI();});
- $('avLijst').querySelectorAll('[data-del]').forEach(b=>b.onclick=()=>{const a=opslag.get();a.splice(+b.dataset.del,1);opslag.set(a);lijstUI();});
+ $('avLijst').querySelectorAll('[data-del]').forEach(b=>b.onclick=()=>{const a=opslag.get();a.splice(+b.dataset.del,1);opslag.set(a);lijstUI();if(online)onlineSchrijf();});
+}
+// ---------- online bewaren voor de beheerder (Firebase, via suggestie.js) ----------
+// Na inloggen als beheerder staat de lijst online (Firestore, document aanvalcombis/<uid>) en is hij op elk apparaat
+// hetzelfde. Dit apparaat onthoudt dat online bewaren aan staat; de lijst in deze browser is dan een kopie.
+const ONL='vvw.aanval.online';
+const vlag={get(){try{return localStorage.getItem(ONL)==='1';}catch(e){return false;}},set(v){try{if(v)localStorage.setItem(ONL,'1');else localStorage.removeItem(ONL);}catch(e){}}};
+let online=null,onlineFout='',bezig=false;
+async function onlineStart(inloggen){
+ const F=window.vvwFire;if(!F||bezig)return;bezig=true;onlineFout='';onlineUI();
+ try{
+  if(inloggen)await F.login();
+  const u=await F.user();
+  if(!u){online=null;vlag.set(false);return;}
+  const doc=await F.lees('aanvalcombis',u.uid);
+  let lijst=[];try{lijst=doc&&doc.fields&&doc.fields.lijst?JSON.parse(doc.fields.lijst.stringValue):[];}catch(e){lijst=[];}
+  if(!Array.isArray(lijst))lijst=[];
+  // bij het inloggen op een apparaat: wat hier al bewaard was en online nog niet bestaat, komt erbij
+  const extra=inloggen?opslag.get().filter(c=>!lijst.some(x=>x.naam===c.naam)):[];
+  lijst=lijst.concat(extra).slice(0,40);
+  online=u;vlag.set(true);opslag.set(lijst);
+  if(extra.length)await onlineSchrijf();
+  lijstUI();if(inloggen)melding('Online bewaren staat aan');
+ }catch(e){
+  online=null;
+  if(e&&e.status===403){vlag.set(false);onlineFout='Online bewaren kan alleen met het beheerdersaccount.';}
+  else if(e&&e.status===401){vlag.set(false);}
+  else if(!/popup|cancel/i.test(String(e&&(e.code||e.message))))onlineFout='Online lijst ophalen lukt nu niet (geen internet?). De combinaties op dit apparaat werken gewoon.';
+ }finally{bezig=false;onlineUI();}
+}
+async function onlineSchrijf(){
+ const F=window.vvwFire;if(!F||!online)return;
+ try{await F.schrijf('aanvalcombis',online.uid,{lijst:{stringValue:JSON.stringify(opslag.get())},tijd:{timestampValue:new Date().toISOString()}});}
+ catch(e){melding('Online bewaren lukt nu niet; hij staat wel op dit apparaat');}
+}
+function onlineUI(){
+ const el=$('avOnline');if(!el)return;
+ if(!window.vvwFire){el.innerHTML='';return;}
+ if(bezig){el.innerHTML='<p class="note">Online lijst ophalen&hellip;</p>';return;}
+ el.innerHTML=(online
+  ?'<p class="note av-on">&#9729; Online bewaard ('+esc(online.email)+'): je ziet deze combinaties op elk apparaat waar je als beheerder inlogt.</p><div class="row"><button type="button" data-o="uit">Uitloggen</button></div>'
+  :'<div class="row"><button type="button" data-o="in">Beheerder: inloggen en online bewaren</button></div><p class="note">Zonder inloggen staan bewaarde combinaties alleen op dit apparaat.</p>')
+  +(onlineFout?'<p class="note av-warn">'+esc(onlineFout)+'</p>':'');
+ const b=el.querySelector('[data-o]');if(!b)return;
+ b.onclick=async()=>{if(b.dataset.o==='in')onlineStart(true);else{try{await window.vvwFire.logout();}catch(e){}online=null;vlag.set(false);onlineUI();melding('Uitgelogd; de combinaties blijven op dit apparaat staan');}};
 }
 function bewaar(){
  const naam=($('avNaam').value||'').trim()||C.naam||('Combinatie '+C.rijen.map(r=>r.code).join(' + '));
  C.naam=naam;const a=opslag.get().filter(c=>c.naam!==naam);a.unshift({naam,rijen:C.rijen,doel:C.doel});
- if(opslag.set(a.slice(0,40))){melding('Bewaard: '+naam);lijstUI();$('avNaam').value=naam;}else melding('Bewaren lukt niet in deze browser');
+ if(opslag.set(a.slice(0,40))){melding(online?'Bewaard (ook online): '+naam:'Bewaard: '+naam);lijstUI();$('avNaam').value=naam;if(online)onlineSchrijf();}else melding('Bewaren lukt niet in deze browser');
 }
 function code(){return 'aanval='+encodeURIComponent(C.naam||'').replace(/%20/g,'+')+'~'+C.rijen.map(r=>r.rol+r.code).join('.')+'~'+C.doel;}
 function link(){return location.origin+location.pathname+'#'+code();}
@@ -387,7 +431,7 @@ function kopieer(t,msg){
 // ---------- in- en uitschakelen met het tabblad ----------
 window.aanvalView=function(aan){
  zichtbaar=!!aan;
- if(aan){bouw();blokken.forEach(B=>{B.sig='';});kick();}
+ if(aan){bouw();blokken.forEach(B=>{B.sig='';});kick();if(vlag.get()&&!bezig)onlineStart(false);}
  else blokken.forEach(stop3d);
 };
 // directe link met een combinatie (#aanval=...)
