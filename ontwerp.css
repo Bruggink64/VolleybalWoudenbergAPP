@@ -107,7 +107,7 @@ aside.card{border-top:0}
  header .sugg{margin:0 0 0 auto;font-size:12px;padding:7px 10px;flex:none}
  .wrap{padding:12px 12px 20px;gap:12px}
  /* tabbladen worden een onderbalk */
- .tabs{position:fixed;left:0;right:0;bottom:0;z-index:30;margin:0;border-radius:0;background:var(--card);border-top:1px solid var(--line);padding:6px 4px calc(6px + env(safe-area-inset-bottom,0px));display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:0;width:auto}
+ .tabs{position:fixed;left:0;right:0;bottom:0;z-index:30;margin:0;border-radius:0;background:var(--card);border-top:1px solid var(--line);padding:6px 4px calc(6px + env(safe-area-inset-bottom,0px));display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:0;width:auto}
  .tabs button{flex-direction:column;gap:3px;padding:4px 2px;font:600 11px var(--disp);color:var(--mut);background:none;box-shadow:none}
  .tabs button.on{background:none;box-shadow:none;color:var(--ink)}
  .tabs .ic{width:54px;height:30px;border-radius:15px;display:flex;align-items:center;justify-content:center}

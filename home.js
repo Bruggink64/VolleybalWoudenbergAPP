@@ -372,7 +372,7 @@ function teken(){
  const bij=D?'Bijgewerkt '+new Date(D.bij).toLocaleString('nl-NL',{...TZ,weekday:'short',hour:'2-digit',minute:'2-digit'}):'';
  el.innerHTML='<section class="hm-welkom"><h2>'+esc(WELKOM_TITEL)+'</h2><p class="hm-lang">'+esc(WELKOM_TEKST)+'</p><p class="hm-kort">'+esc(WELKOM_KORT)+'</p>'
   +'<div class="hm-snel"><button type="button" data-v="gen">Training mini’s</button><button type="button" data-v="sen">Training jeugd &amp; senioren</button>'
-  +'<button type="button" data-v="rot">5-1 rotaties</button><button type="button" data-v="def">Verdediging</button></div></section>'
+  +'<button type="button" data-v="rot">5-1 rotaties</button><button type="button" data-v="def">Verdediging</button><button type="button" data-v="aanval">Aanval</button></div></section>'
   +'<div class="hm-kop"><label for="hm_team">Team</label><select id="hm_team">'+opt+'</select><button type="button" id="hm_ver" class="hm-ver" aria-label="Vernieuwen" title="Vernieuwen"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a9 9 0 1 1-3-6.7M21 4v5h-5"/></svg><span>Vernieuwen</span></button></div>'
   +weekStat(team)
   +(D?liveBlok(f(D.p)):'')

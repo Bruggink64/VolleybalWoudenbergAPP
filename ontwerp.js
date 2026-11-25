@@ -14,6 +14,7 @@ const I={
  sen:'M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM2 21v-1a6 6 0 0 1 12 0v1M17 11a3 3 0 1 0 0-6M22 21v-1a5 5 0 0 0-4-4.9',
  rot:'M21 12a9 9 0 1 1-3-6.7M21 4v5h-5',
  def:'M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z',
+ aanval:'M3 20c2-7 6-12 11-13M18 3a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5zM3 20h7',
  swap:'M16 3h5v5M4 20 21 3M21 16v5h-5M15 15l6 6M4 4l5 5',
  pin:'M12 17v5M9 3h6l-1 6 3 3v2H7v-2l3-3z',
  more:'M5 12h.01M12 12h.01M19 12h.01',
@@ -30,7 +31,7 @@ let busy=false;
 
 // ---------- tabbladen ----------
 function tabs(){
- const set=[['t_home','home','Home','Home'],['t_gen','mini','Mini’s','Mini’s'],['t_sen','sen','Jeugd & Senioren','Jeugd/Sen.'],['t_rot','rot','5-1 rotaties','5-1'],['t_def','def','Verdediging','Verdediging']];
+ const set=[['t_home','home','Home','Home'],['t_gen','mini','Mini’s','Mini’s'],['t_sen','sen','Jeugd & Senioren','Jeugd/Sen.'],['t_rot','rot','5-1 rotaties','5-1'],['t_def','def','Verdediging','Verdediging'],['t_aanval','aanval','Aanval','Aanval']];
  set.forEach(([id,k,l,s])=>{const b=document.getElementById(id);if(!b||b.dataset.ow)return;b.dataset.ow=1;
   b.innerHTML='<span class="ic">'+ic(I[k])+'</span><span class="long">'+l+'</span><span class="short">'+s+'</span>';
   b.setAttribute('aria-label',l);});
