@@ -34,3 +34,10 @@
 .av-warn{color:#b45309}
 @media(max-width:560px){.av-rij{grid-template-columns:40px minmax(0,1fr) 40px}.av-rij select[data-k=code]{grid-column:2/4;grid-row:2}.av-rij button{grid-column:3;grid-row:1}.av-code b{font-size:28px}}
 @media print{.av-anim,.av-combi .row,.av-snel{display:none}}
+/* nooit breder dan het scherm: rasterkolommen mogen krimpen, canvas en tekeningen schalen mee */
+.wrap2.av{grid-template-columns:minmax(0,1fr)}
+@media(min-width:900px){.wrap2.av{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}}
+.av>.card{min-width:0;max-width:100%}
+.av-stage .av-cv{width:100%!important;height:auto!important}
+.av select{max-width:100%}
+.av-vb{flex-wrap:wrap}.av-vb button{flex:1 1 40%;min-width:0}
