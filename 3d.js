@@ -531,7 +531,10 @@ function btns(h){const live=on()&&!!h.B&&!h.err,show=!broken&&(live||!want3d);
  h.bar.style.display=show?'':'none';
  const k=(live?'1':'0')+show;if(h.bk===k)return;h.bk=k;
  h.bar.innerHTML=live?'<button type="button" data-a3="open" aria-label="Draaibaar 3D-venster openen">&#10530; Draaien</button><button type="button" data-a3="mode" aria-label="Toon 2D-animatie">2D</button>':'<button type="button" data-a3="mode" aria-label="Toon 3D-animatie">3D</button>';}
-function refresh(){hosts.forEach(h=>{h.wrap.classList.toggle('a3on',on()&&!!h.B);btns(h);});kick();}
+function refresh(){hosts.forEach(h=>{h.wrap.classList.toggle('a3on',on()&&!!h.B);btns(h);});
+ // terug naar 2D: de 2D-tekening van rotaties/verdediging weer bijwerken (die stond stil zolang 3D erover lag)
+ try{if(typeof rotDraw==='function')rotDraw();if(typeof defDraw==='function')defDraw();}catch(e){}
+ kick();}
 function svgOf(h){return h.kind==='rot'?h.wrap.querySelector('#rotSvg svg'):h.kind==='def'?h.wrap.querySelector('#dSvg svg'):h.svg;}
 function modelOf(h){
  if(h.kind==='mini')return miniModel(h.svg);
@@ -597,7 +600,8 @@ function loop(ts){
  raf=0;
  if(!on()||!R)return;
  if(V){raf=requestAnimationFrame(loop);return;} // groot venster open: even niet
- if(ts-lastTs<33){raf=requestAnimationFrame(loop);return;} // ~30 beelden per seconde is genoeg
+ // zo vloeiend als het scherm (meestal 60 beelden per seconde); alleen als het tekenen zwaar is, terug naar ~30
+ if(cost>18&&ts-lastTs<31){raf=requestAnimationFrame(loop);return;}
  lastTs=ts;
  const t0=performance.now();
  const dpr=Math.min(1.5,window.devicePixelRatio||1);

@@ -493,10 +493,13 @@ function rotView(){
  $('rotRoles').innerHTML=Object.entries(R.players).map(([k,o])=>'<div class="rl"><span class="tag" style="background:'+o.c+'">'+k+'</span><span>'+esc(o.role)+'</span></div>').join('');
  rotDraw();
 }
+// staat de 3D-weergave over de 2D-tekening heen, dan hoeft de (verborgen) 2D-tekening niet elk beeldje opnieuw: dat maakt 3D vloeiender
+function skip2d(id){const e=$(id),w=e&&e.parentNode;return !!(w&&w.classList&&w.classList.contains('a3on')&&e.firstChild);}
 function rotDraw(){
  const R=ROT[rotN],seg=Math.min(3,Math.floor(rotF)),lt=rotF-seg,st=ease(lt);
  $('rotPhase').textContent=['Fase 1: Service onderweg: SV, MID1 en DIA maken direct ruimte','Fase 2: Pass naar SV: alle 4 de aanvallers halen uit om aan te lopen','Fase 3: 4 set-up opties vanuit SV: iedereen loopt tegelijk aan!',rotCap4(rotN)][seg];
  const sl=$('rotSlider');if(document.activeElement!==sl)sl.value=rotF.toFixed(2);
+ if(skip2d('rotSvg'))return;
  let ps='';
  Object.entries(R.players).forEach(([k,o])=>{
   if(seg===3){
@@ -580,6 +583,7 @@ function defDraw(){
  const {key,sc}=getDef(),seg=Math.min(2,Math.floor(dF)),lt=dF-seg,st=ease(lt),fd=dMode==='field_defense';
  const sl=$('dSlider');if(document.activeElement!==sl)sl.value=dF.toFixed(2);
  $('dPhase').textContent=(fd?['Fase 1: pass onderweg naar hun setter (team wacht in 1e uitgangspositie)','Fase 2: setter speelt naar aanvaller → verplaatsen van 1e naar 2e uitgangspositie','Fase 3: slagmoment → blok sluiten en stilzitten uit de blokschaduw']:['Fase 1: pass naar onze spelverdeler (aanloop start)','Fase 2: set onderweg → 2-3 cup blokdekking sluit onder de aanvaller','Fase 3: slag en afgeketste blokbal oprapen in de 1e of 2e ring'])[seg];
+ if(skip2d('dSvg'))return;
  let zs='';
  if(fd&&DEFZ[key])Object.entries(DEFZ[key]).forEach(([r,z])=>{const sel=r===dInsp;if(!dAll&&!sel)return;
   zs+='<g data-role="'+r+'" style="cursor:pointer"><polygon points="'+z.poly+'" fill="'+z.fill+'" fill-opacity="'+(sel?.56:.36)+'" stroke="'+(sel?'#fff':z.stroke)+'" stroke-width="'+(sel?3.2:2)+'" stroke-linejoin="round"/>'+(sel?'<rect x="'+(z.lx-68)+'" y="'+(z.ly-10)+'" width="136" height="17" rx="4" fill="#1d1d1b" fill-opacity=".88" stroke="'+z.stroke+'"/><text x="'+z.lx+'" y="'+(z.ly+2)+'" fill="#fff" font-size="8.2" font-weight="900" text-anchor="middle">'+z.label+'</text>':'')+'</g>';});
