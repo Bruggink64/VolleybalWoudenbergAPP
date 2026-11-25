@@ -48,13 +48,18 @@ function boog(a,b,H){
  return {T,H,a,b,at:t=>{const u=Math.max(0,Math.min(T,t));return [a[0]+(b[0]-a[0])*u/T,a[1]+vy*u-G*u*u/2,a[2]+(b[2]-a[2])*u/T];}};
 }
 const RAAK=[SV[0],2.55,SV[1]+.05]; // waar de spelverdeler de bal speelt
-function plekken(code){
- const p=PLEK[code[0]];
+// beginplek hoort bij de rol (waar de speler normaal aanvalt), niet bij de code:
+// buiten komt van links buiten het veld (positie 4), midden vanuit het midden, diagonaal van rechts buiten het veld,
+// een achteraanval begint achter in het veld aan de kant van de code
+const START={BU:[-5.0,3.7],MI:[.1,3.1],DI:[5.0,3.7],AC:[0,6.2]};
+function plekken(code,rol){
+ const p=PLEK[code[0]];rol=ROL[rol]?rol:rolVan(code);
  let S,K,H,Lp;
- if(p.rij==='b'){S=[p.x*.9,7.4];K=[p.x,3.9];H=[p.x,2.95,3.25];Lp=[p.x,3.0];}
+ if(p.rij==='b'){S=[rol==='BU'?Math.min(p.x,-3.0):rol==='DI'?Math.max(p.x,3.0):p.x,7.4];K=[p.x+(S[0]-p.x)*.15,3.9];H=[p.x,2.95,3.25];Lp=[p.x,3.0];}
  else{
-  if(p.x<-3.5)S=[-5.3,4.0];else if(p.x>3.6)S=[5.0,4.0];else if(code[0]==='4')S=[-4.7,3.8];else S=[p.x*.55,3.4];
-  K=[p.x+(S[0]-p.x)*.12,1.15];H=[p.x,3.0,.45];Lp=[p.x,.55];}
+  S=START[rol].slice();
+  const dx=S[0]-p.x,dz=S[1]-1.15,L=Math.hypot(dx,dz)||1;
+  K=[p.x+dx/L*.35,1.15];H=[p.x,3.0,.45];Lp=[p.x,.55];}
  const d=Math.hypot(H[0]-RAAK[0],H[2]-RAAK[2]),s=code[1];
  const top=s==='1'?H[1]+.03+.02*d:s==='2'?4.4+.05*d:5.8+.05*d;
  return {S,K,H,Lp,set:boog(RAAK,H,top)};
@@ -66,7 +71,7 @@ const lerp2=(a,b,u)=>[a[0]+(b[0]-a[0])*u,a[1]+(b[1]-a[1])*u];
 function rally(aan,j){
  const srv=boog([.8,2.9,-9.9],[LIB[0],.85,LIB[1]],3.7),t0=.3,Tp=t0+srv.T;
  const pass=boog([LIB[0],.85,LIB[1]],RAAK,4.3),Ts=Tp+pass.T;
- const P=aan.map(a=>Object.assign({},a,plekken(a.code)));
+ const P=aan.map(a=>Object.assign({},a,plekken(a.code,a.rol)));
  P.forEach(p=>{p.Tc=Ts+p.set.T;});
  const doel=P[j],Tc=doel.Tc,eind=Math.max(...P.map(p=>p.Tc))+.4,terug=eind+.5,L=terug+1.2;
  const land=[doel.H[0]*.55+(doel.H[0]>0?-.6:.6),.11,-5.6],Tl=Tc+.38;
@@ -79,7 +84,7 @@ function rally(aan,j){
   if(t<terug+.6)return land;
   return null;};
  const actors=P.map(p=>{
-  const tA=p.Tc-1.25,tK=p.Tc-.32,tL=p.Tc+.36;
+  const tK=p.Tc-.32,tA=tK-Math.max(.93,Math.hypot(p.K[0]-p.S[0],p.K[1]-p.S[1])/4.6),tL=p.Tc+.36;
   return {label:p.code,color:ROL[p.rol].c,rol:p.rol,code:p.code,S:p.S,K:p.K,
    pos:t=>{if(t<tA)return p.S;if(t<tK){const u=(t-tA)/(tK-tA);return lerp2(p.S,p.K,u*u*(2-u)*.5+u*.5);}
     if(t<tL)return lerp2(p.K,p.Lp,(t-tK)/(tL-tK));if(t<terug)return p.Lp;return lerp2(p.Lp,p.S,ease((t-terug)/(L-terug-.1)));},
