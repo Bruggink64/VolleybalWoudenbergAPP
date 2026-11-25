@@ -161,7 +161,7 @@ const VBW=320; // breedte van de mini-SVG (scenes.js)
 
 // ---------- 3D-scène opbouwen (gedeeld door venster en ingebouwde weergave) ----------
 // Stijl (versie 4, nov. 2026, naar het Gemini-voorbeeld van Yannick): sporthal met tribunes (stoeltjes, glazen balustrade,
-// gele ledstrip), lichtbrug met schijnwerpers en lichtbundels, blauwgrijs veld met lichtvlek, net met witte mazen en gele band,
+// gele ledstrip), blauwgrijs veld met lichtvlek (lichtbrug en lichtbundels op verzoek weggelaten), net met witte mazen en gele band,
 // palen met gele strepen, spelers in zwart clubshirt met gele strepen (libero geel) en code op de rug, gloeiende ring en
 // pil-label in de rolkleur, echte volleybal met gele lichtstreep. Alles met eenvoudige vormen en zelfgetekende plaatjes;
 // veel onderdelen zijn samengevoegd zodat een telefoon het makkelijk trekt.
@@ -232,7 +232,7 @@ function build(model){
     [new THREE.BoxGeometry(.7*s,.016,.016),'#94a3b8',-sd*.35*s,h,0],[new THREE.BoxGeometry(.7*s,.016,.016),'#94a3b8',-sd*.35*s,h-nh,0]]);
    add(g,vcol,px,0,z);});
   return band;};
- // zaal: tribunes achter en aan beide zijkanten (betonnen treden, stoeltjes, glazen balustrade, gele ledstrip), lichtbrug erboven
+ // zaal: tribunes achter en aan beide zijkanten (betonnen treden, stoeltjes, glazen balustrade, gele ledstrip)
  function hall(hx,hz,s){
   const N=8,TH=.56*s,D=.92*s,WH=1.15*s,seats=[],dummy=new THREE.Object3D();
   const led=basic(C.band),glass=new THREE.MeshLambertMaterial({color:'#94a3b8',transparent:true,opacity:.16,depthWrite:false});
@@ -258,17 +258,6 @@ function build(model){
   [-1,1].forEach(sd=>{add(new THREE.BoxGeometry(2.6*s,8.8*s,2.6*s),mat(C.riser),sd*(ex+.6*s),4.4*s,-(ez+.2*s));add(new THREE.BoxGeometry(.12*s,6.2*s,.12*s),led,sd*(ex-.7*s),4.2*s,-(ez-1.1*s));});
   const pan=new THREE.BoxGeometry(.46,.08,.38),back=new THREE.BoxGeometry(.46,.44,.075).translate(0,.24,-.17);
   [[pan,C.seat],[back,C.seatB]].forEach(([geo,c])=>{const im=new THREE.InstancedMesh(geo,mat(c),seats.length);seats.forEach((m,i)=>im.setMatrixAt(i,m));im.instanceMatrix.needsUpdate=true;scene.add(im);});
-  // lichtbrug met schijnwerpers en zachte lichtbundels
-  const ty=12.6*s,tx=hx+2.3*s,lz=[-1.05,-.33,.39,1.05].map(v=>v*hz);
-  [-1,1].forEach(sd=>add(new THREE.BoxGeometry(.45*s,.45*s,2*hz+10*s),mat(C.truss),sd*tx,ty,-s));
-  [-(hz+2*s),0,hz+1.5*s].forEach(cz=>add(new THREE.BoxGeometry(2*tx+.9*s,.36*s,.36*s),mat(C.truss),0,ty+.15*s,cz));
-  const fix=new THREE.InstancedMesh(new THREE.BoxGeometry(.95*s,.16*s,.55*s),mat(C.truss),8),face=new THREE.InstancedMesh(new THREE.PlaneGeometry(.84*s,.42*s),new THREE.MeshBasicMaterial({color:'#fff8dc',side:THREE.DoubleSide,fog:false}),8);
-  const beams=new THREE.InstancedMesh(new THREE.ConeGeometry(4.4*s,13.5*s,24,1,true),new THREE.MeshBasicMaterial({color:'#eef6ff',transparent:true,opacity:.022,side:THREE.DoubleSide,depthWrite:false,blending:THREE.AdditiveBlending}),8);
-  let i=0;[-1,1].forEach(sd=>lz.forEach(z=>{const x=sd*tx;
-   dummy.scale.setScalar(1);dummy.position.set(x,ty-.3*s,z);dummy.rotation.set(0,0,-sd*.32);dummy.updateMatrix();fix.setMatrixAt(i,dummy.matrix);
-   dummy.position.set(x,ty-.39*s,z);dummy.rotation.set(Math.PI/2,sd*.32,0);dummy.updateMatrix();face.setMatrixAt(i,dummy.matrix);
-   dummy.position.set(x*.66,ty-6.6*s,z*.85);dummy.rotation.set(0,0,-sd*.3);dummy.updateMatrix();beams.setMatrixAt(i,dummy.matrix);i++;}));
-  [fix,face,beams].forEach(m=>{m.instanceMatrix.needsUpdate=true;scene.add(m);});
   // clubembleem op de vloer langs de linkerzijlijn
   const im=logoImg(),bt=tex(THREE,512,256,(g)=>{rr(g,20,55,472,146,32);g.fillStyle='rgba(255,209,0,.14)';g.fill();g.lineWidth=5;g.strokeStyle='rgba(255,209,0,.72)';g.stroke();
    if(im){g.save();rr(g,44,72,144,112,18);g.clip();g.drawImage(im,44,70,144,116);g.restore();}
