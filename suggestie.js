@@ -246,7 +246,12 @@ async function bouwProef(sha,oid){
  const skip=/^(https?:)?\/\//,files=new Set();
  h.replace(/<script\s+src="([^"]+)"[^>]*><\/script>/g,(m,f)=>{if(!skip.test(f))files.add(f);return m;});
  h.replace(/<link\s+rel="stylesheet"\s+href="([^"]+)"[^>]*>/g,(m,f)=>{if(!skip.test(f))files.add(f);return m;});
+ // bestanden die de app op de achtergrond laadt (<script data-later="...">); suggestie.js blijft weg
+ const later=(/<script\s+data-later="([^"]+)"/.exec(h)||[])[1];const lat=later?later.split(/\s+/).filter(Boolean):[];
+ lat.forEach(f=>{if(f!=='suggestie.js'&&!skip.test(f))files.add(f);});
  const txt={};await Promise.all([...files].map(async f=>{txt[f]=await get(f);}));
+ if(lat.length){const T={};lat.forEach(f=>{T[f]=f==='suggestie.js'||skip.test(f)?'':txt[f];});
+  h=h.replace(/<script\s+data-later=/,()=>'<script>window.LAAD_TXT='+JSON.stringify(T).replace(/</g,'\\u003c').replace(/\u2028/g,'\\u2028').replace(/\u2029/g,'\\u2029')+';<\/script><script data-later=');}
  h=h.replace(/<script\s+src="([^"]+)"[^>]*><\/script>/g,(m,f)=>skip.test(f)||f==='suggestie.js'?'':'<script>'+txt[f].replace(/<\/script/gi,'<\\/script')+'<\/script>');
  h=h.replace(/<link\s+rel="stylesheet"\s+href="([^"]+)"[^>]*>/g,(m,f)=>skip.test(f)?m:'<style>'+txt[f]+'</style>');
  // bij een Jeugd & Senioren-oefening direct de goede oefening tonen

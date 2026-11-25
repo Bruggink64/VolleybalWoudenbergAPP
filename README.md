@@ -3,7 +3,8 @@
 Trainingsgenerator voor de trainers van VV Woudenberg: mini's level 1 t/m 5 (60 min), jeugd en senioren 2e klasse t/m 2e divisie (90 min op 1 veld), 5-1 rotaties en verdediging.
 Open de app: https://bruggink64.github.io/VolleybalWoudenbergAPP/
 
-- `index.html`, `data.js`, `scenes.js`: app en mini-oefeningen (VolleyWijzer, Nevobo).
+- `index.html`, `app.js`, `data.js`, `scenes.js`: app (mini's, 5-1 rotaties, verdediging) en mini-oefeningen (VolleyWijzer, Nevobo).
+- Snel starten: `index.html` laadt eerst alleen `ontwerp.js` en `home.js`, zodat de homepagina meteen staat. De rest laadt daarna op de achtergrond, in de volgorde van de lijst in `<script data-later="...">` onderaan `index.html` (nieuw bestand? zet het in die lijst). Tikt iemand al op een tabblad voordat alles binnen is, dan verschijnt kort "Even laden..." en opent het tabblad zodra het klaar is. De mini-training wordt pas gemaakt als het tabblad Mini's opengaat. De proefversie op de beheerpagina leest dezelfde lijst.
 - `senioren.js`: oefeningen jeugd/senioren (eigen teksten), `senioren-app.js`: het tabblad Jeugd & Senioren.
 - `ontwerp.css`, `ontwerp.js`: het ontwerp (onderbalk op de telefoon, ingeklapte instellingen en oefeningen, tijdbalk, donkere zaalmodus, en op breed scherm drie kolommen). Werkt bovenop de app; de trainingslogica blijft in de andere bestanden.
 - `home.js`, `home.css`: de homepagina met welkomstbericht en het programma en de uitslagen van VV Woudenberg, live uit de Nevobo-RSS (verenigingscode CKL8Z3K). De welkomsttekst staat bovenin `home.js`. Per team staan er statistieken (vorm, sets, volgende tegenstander en onder 'Meer statistieken' thuis/uit, verloop en teamvergelijking); alles wordt bij elke weergave berekend uit de Nevobo-gegevens en de uitslagen worden elke 5 minuten ververst.
