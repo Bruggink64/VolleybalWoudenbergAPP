@@ -187,7 +187,6 @@ function build(model){
  const scene=new THREE.Scene();
  // zaal: donker met twee zachte lichtbundels en een vage tribune; de vloer loopt weg in de mist
  scene.background=tex(THREE,512,256,(g,w,h)=>{const gr=g.createLinearGradient(0,0,0,h);gr.addColorStop(0,'#1b1e25');gr.addColorStop(.55,'#111318');gr.addColorStop(1,C.bg);g.fillStyle=gr;g.fillRect(0,0,w,h);
-  g.fillStyle='rgba(255,255,255,.035)';for(let r=0;r<6;r++){const y=62+r*15;for(let x=(r%2)*9;x<w;x+=18)g.fillRect(x,y,12,6);}
   [[120,0],[392,0]].forEach(([x,y])=>{const s=g.createRadialGradient(x,y,4,x,y,210);s.addColorStop(0,'rgba(220,228,255,.16)');s.addColorStop(1,'rgba(220,228,255,0)');g.fillStyle=s;g.fillRect(0,0,w,h);});});
  const fk=Math.max(.6,model.k||1);scene.fog=new THREE.Fog(C.bg,24*fk,58*fk);
  scene.add(new THREE.HemisphereLight(0xdde4ee,0x0a0b0e,.8));
@@ -199,25 +198,52 @@ function build(model){
  // gedeelde plaatjes
  const pool=tex(THREE,128,128,(g,w,h)=>{const s=g.createRadialGradient(64,64,0,64,64,64);s.addColorStop(0,'rgba(255,255,255,.55)');s.addColorStop(1,'rgba(255,255,255,0)');g.fillStyle=s;g.fillRect(0,0,w,h);});
  const poolM=new THREE.MeshBasicMaterial({map:pool,transparent:true,opacity:.22,blending:THREE.AdditiveBlending,depthWrite:false});
- const netT=tex(THREE,64,64,(g)=>{g.fillStyle='rgba(255,255,255,.1)';g.fillRect(0,0,64,64);g.strokeStyle='rgba(255,255,255,.95)';g.lineWidth=10;g.strokeRect(0,0,64,64);},true);
+ const netT=tex(THREE,64,64,(g)=>{g.fillStyle='rgba(8,9,11,.5)';g.fillRect(0,0,64,64);g.strokeStyle='rgba(240,242,245,.95)';g.lineWidth=7;g.strokeRect(0,0,64,64);},true);
  const padT=tex(THREE,256,256,(g,w,h)=>{g.fillStyle=C.post;g.fillRect(0,0,w,h);g.fillStyle=C.band;g.fillRect(0,0,w,10);g.fillRect(0,h-10,w,10);
   const im=logoImg();if(im){[64,192].forEach(x=>{g.save();rr(g,x-56,62,112,54,10);g.clip();g.drawImage(im,x-56,61,112,56);g.restore();});}});
  const padM=new THREE.MeshLambertMaterial({map:padT});
  const net=(x0,x1,z,h,s)=>{s=s||1;const w=x1-x0,cx=(x0+x1)/2,nh=.9*s;
   const t=netT.clone();t.needsUpdate=true;t.repeat.set(w/(.12*s),nh/(.12*s));
-  const nm=new THREE.Mesh(new THREE.PlaneGeometry(w,nh),new THREE.MeshBasicMaterial({map:t,color:C.net,transparent:true,opacity:.8,side:THREE.DoubleSide,depthWrite:false}));nm.position.set(cx,h-nh/2-.04,z);scene.add(nm);
-  const band=add(new THREE.BoxGeometry(w,.07,.03),mat(C.band),cx,h,z);
-  add(new THREE.BoxGeometry(w,.025,.02),mat(C.post),cx,h-nh-.04,z);
+  const nm=new THREE.Mesh(new THREE.PlaneGeometry(w,nh),new THREE.MeshBasicMaterial({map:t,transparent:true,side:THREE.DoubleSide,depthWrite:false}));nm.position.set(cx,h-nh/2-.04,z);scene.add(nm);
+  const band=add(new THREE.BoxGeometry(w,.08,.035),mat(C.band),cx,h,z);
+  add(new THREE.BoxGeometry(w,.05,.03),mat(C.band),cx,h-nh-.04,z);
+  [x0,x1].forEach(x=>add(new THREE.BoxGeometry(.05,nh,.03),mat('#f3f4f6'),x,h-nh/2-.04,z));
   [x0-.35*s,x1+.35*s].forEach(x=>{add(new THREE.CylinderGeometry(.05,.05,h+.15,10),mat(C.post),x,(h+.15)/2,z);
    const pad=add(new THREE.CylinderGeometry(.15*s,.15*s,1.5*s,18),padM,x,.75*s+.02,z);pad.rotation.y=Math.PI/2;
-   [h,h-nh-.04].forEach(y=>{const k=add(new THREE.CylinderGeometry(.006,.006,.35*s,4),mat('#9aa1ab'),(x+(x<cx?x0:x1))/2,y,z);k.rotation.z=Math.PI/2;});});
+   [h,h-nh-.04].forEach(y=>{const k=add(new THREE.CylinderGeometry(.008,.008,.35*s,4),mat('#d6dae1'),(x+(x<cx?x0:x1))/2,y,z);k.rotation.z=Math.PI/2;});});
   return band;};
+ // zaal rondom het veld: tribunes met stoeltjes, lichtbundels van het plafond en reclameborden met het clublogo
+ function hall(hx,hz,s){
+  const seatT=tex(THREE,64,64,(g)=>{g.fillStyle='#0e1014';g.fillRect(0,0,64,64);g.fillStyle='#1c1f26';rr(g,8,6,48,34,8);g.fill();g.fillStyle='#15171c';g.fillRect(8,44,48,12);g.fillStyle='rgba(255,255,255,.04)';g.fillRect(10,8,44,4);},true);
+  const stand=(len,x,z,ry)=>{const t=seatT.clone();t.needsUpdate=true;t.repeat.set(len/(.55*s),1);const m=new THREE.MeshLambertMaterial({map:t}),grp=new THREE.Group();
+   for(let i=0;i<6;i++){const hh=.5*s*(i+1),d=.85*s;const b=new THREE.Mesh(new THREE.BoxGeometry(len,hh,d),m);b.position.set(0,hh/2,i*d);grp.add(b);}
+   const wall=new THREE.Mesh(new THREE.BoxGeometry(len+6*s,9*s,.3),mat('#101216'));wall.position.set(0,4.5*s,6*.85*s+.4);grp.add(wall);
+   grp.position.set(x,0,z);grp.rotation.y=ry;scene.add(grp);};
+  const ez=hz+4.5*s,ex=hx+4.5*s;
+  stand(2*ex+2*s,0,-ez,Math.PI);stand(2*ex+2*s,0,ez,0);stand(2*ez,-ex,0,-Math.PI/2);stand(2*ez,ex,0,Math.PI/2);
+  // lichtbundels: zachte kegels van licht vanaf het plafond, met een lamp bovenaan
+  const beamT=tex(THREE,8,128,(g)=>{const gr=g.createLinearGradient(0,0,0,128);gr.addColorStop(0,'rgba(255,255,255,1)');gr.addColorStop(1,'rgba(255,255,255,0)');g.fillStyle=gr;g.fillRect(0,0,8,128);});
+  const beamM=new THREE.MeshBasicMaterial({map:beamT,color:'#cfdcff',transparent:true,opacity:.065,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide,fog:false});
+  const lampM=new THREE.MeshBasicMaterial({color:'#f4f7ff',fog:false}),H=Math.max(11*s,9);
+  [[-1,-1],[1,-1],[-1,1],[1,1]].forEach(([a,b])=>{const x=a*(hx+1.5*s),z=b*hz*.55;
+   const c=new THREE.Mesh(new THREE.ConeGeometry(3.6*s,H,28,1,true),beamM);c.position.set(x,H/2,z);scene.add(c);
+   const l=new THREE.Mesh(new THREE.CircleGeometry(.4*s,16),lampM);l.rotation.x=Math.PI/2;l.position.set(x,H,z);scene.add(l);});
+  // reclameborden met het clublogo achter beide achterlijnen
+  const bt=tex(THREE,512,160,(g,w,h)=>{g.fillStyle=C.band;g.fillRect(0,0,w,h);g.fillStyle='#111';g.fillRect(0,h-12,w,12);
+   const im=logoImg();if(im){g.save();rr(g,14,10,176,136,18);g.clip();g.drawImage(im,14,8,176,140);g.restore();}
+   g.fillStyle='#111';g.textBaseline='middle';const fit=(t,wt,px)=>{g.font=wt+' '+px+'px Poppins,system-ui,sans-serif';const m=g.measureText(t).width;if(m>290){px=Math.floor(px*290/m);g.font=wt+' '+px+'px Poppins,system-ui,sans-serif';}g.fillText(t,206,0);};g.save();g.translate(0,60);fit('VV WOUDENBERG','900',46);g.translate(0,50);fit('Volleybal sinds 1971','700',26);g.restore();});
+  const bm=new THREE.MeshLambertMaterial({map:bt}),bw=3.2*s,bh=1*s;
+  [[-1,0],[1,Math.PI]].forEach(([sg,ry])=>[-1,1].forEach(side=>{const b=new THREE.Mesh(new THREE.BoxGeometry(bw,bh,.06),[mat(C.post),mat(C.post),mat(C.post),mat(C.post),bm,mat(C.post)]);
+   b.position.set(side*(bw/2+.3*s),bh/2*.95,sg*(hz+2.2*s));b.rotation.set(0,ry,0);b.rotateX(-.2);scene.add(b);}));
+ }
  const floor=new THREE.Mesh(new THREE.PlaneGeometry(90,90),mat(C.floor));floor.rotation.x=-Math.PI/2;floor.position.y=-.01;scene.add(floor);
  if(model.mini){
   const M=model.mini;
   M.courts.forEach(c=>{flat(c.w,c.d,c.x,c.z,mat(C.court),0);flat(c.w*1.6,c.d*1.4,c.x,c.z,poolM,.003);const L=(w,d,x,z)=>flat(w,d,x,z,C.line);
    L(c.w+.05,.05,c.x,c.z-c.d/2);L(c.w+.05,.05,c.x,c.z+c.d/2);L(.05,c.d,c.x-c.w/2,c.z);L(.05,c.d,c.x+c.w/2,c.z);});
   M.nets.forEach(n=>net(n.x0,n.x1,n.z,2.1,.75));
+  const cs=M.courts.length?M.courts:[{x:0,z:0,w:4.5,d:10.4}];
+  hall(Math.max(...cs.map(c=>Math.abs(c.x)+c.w/2)),Math.max(...cs.map(c=>Math.abs(c.z)+c.d/2)),Math.max(.6,Math.min(1,model.k||1)));
   if(M.lines.length){const pts=[];M.lines.forEach(([a,b])=>{pts.push(new THREE.Vector3(a[0],.02,a[1]),new THREE.Vector3(b[0],.02,b[1]));});
    const g=new THREE.BufferGeometry().setFromPoints(pts);scene.add(new THREE.LineSegments(g,new THREE.LineBasicMaterial({color:'#ffffff',transparent:true,opacity:.5})));}
  }else{
@@ -228,9 +254,7 @@ function build(model){
   // antennes rood-wit
   const antT=tex(THREE,8,64,(g)=>{for(let i=0;i<18;i++){g.fillStyle=i%2?'#ffffff':'#e11d48';g.fillRect(0,i*64/18,8,64/18+1);}});antT.magFilter=THREE.NearestFilter;
   [-4.5,4.5].forEach(x=>add(new THREE.CylinderGeometry(.013,.013,1.8,6),new THREE.MeshBasicMaterial({map:antT}),x,2.33,0));
-  // clublogo op de vloer naast het veld
-  const im=logoImg();if(im){const lt=tex(THREE,256,200,(g)=>{rr(g,6,6,244,188,34);g.clip();g.drawImage(im,0,-2,256,204);});
-   flat(2.6,2,-7.3,-3.4,new THREE.MeshBasicMaterial({map:lt,transparent:true,opacity:.8,depthWrite:false}),.004);}
+  hall(4.5,9,1);
  }
  // vlakken op de vloer (verdedigingsvakken, blokschaduw)
  const polys=(model.polys||[]).map((p,i)=>{const sh=new THREE.Shape(p.pts.map(q=>new THREE.Vector2(q[0],-q[1])));
@@ -272,8 +296,8 @@ function build(model){
   head:new THREE.SphereGeometry(.125,14,10),neck:new THREE.CylinderGeometry(.05,.055,.1,8)};
  const nets=model.mini?model.mini.nets.map(n=>n.z):[0];
  const shirt=(color,text)=>{if(!text)return mat(color);
-  const t=tex(THREE,256,128,(g,w,h)=>{g.fillStyle=color;g.fillRect(0,0,w,h);g.fillStyle='rgba(0,0,0,.28)';g.fillRect(0,0,w,10);g.fillRect(56,0,12,h);g.fillRect(188,0,12,h);
-   g.fillStyle=lum(color)>.62?'#15171b':'#ffffff';g.font='900 '+(text.length>3?34:44)+'px Poppins,system-ui,sans-serif';g.textAlign='center';g.textBaseline='middle';g.fillText(text,128,62);});
+  const t=tex(THREE,256,128,(g,w,h)=>{g.fillStyle=C.post;g.fillRect(0,0,w,h);g.fillStyle=color;g.fillRect(0,0,w,7);g.fillRect(58,0,8,h);g.fillRect(190,0,8,h);
+   g.fillStyle=color;g.font='900 '+(text.length>3?34:44)+'px Poppins,system-ui,sans-serif';g.textAlign='center';g.textBaseline='middle';g.fillText(text,128,62);});
   return new THREE.MeshLambertMaterial({map:t});};
  model.items.forEach(it0=>{
   if(it0.kind!=='player'){const g=objMesh(it0);if(!g)return;scene.add(g);actors.push({it:it0,g});return;}
@@ -283,7 +307,7 @@ function build(model){
   const M=(geo,m,x,y,z)=>{const o=new THREE.Mesh(geo,m);o.position.set(x||0,y||0,z||0);fig.add(o);return o;};
   const legs=[-.1,.1].map(x=>M(G.leg,mat(C.skin),x,.86,0));
   M(G.shorts,mat(C.shorts),0,.86,0);
-  M(G.torso,shirt(it.color,it.label),0,1.25,0);M(G.sh,mat(it.color),0,1.52,0).scale.set(1,1,1.25);
+  M(G.torso,shirt(it.color,it.label),0,1.25,0);M(G.sh,mat(it.label?C.post:it.color),0,1.52,0).scale.set(1,1,1.25);
   M(G.neck,mat(C.skin),0,1.57,0);M(G.head,mat(C.skin),0,1.69,0);
   const arms=[-1,1].map(s=>{const a=M(G.arm,mat(C.skin),s*.27,1.49,0);a.rotation.z=s*.07;return a;});
   fig.scale.setScalar(k);body.add(fig);g.add(body);
