@@ -8,7 +8,7 @@
 (function(){
 if(window.top!==window||!history.pushState)return; // niet in de proefversie (die draait in een venster binnen de app)
 const qa=s=>Array.from(document.querySelectorAll(s));
-const VIEWS=['home','gen','sen','rot','def'];
+const VIEWS=['home','gen','sen','rot','def','aanval'];
 const view=()=>VIEWS.find(k=>{const e=document.getElementById('v_'+k);return e&&e.style.display!=='none';})||'home';
 
 // welke vensters zijn open, in de volgorde waarin ze opengingen
