@@ -122,12 +122,12 @@ const px=x=>X0+x*SX;
 function hoogteSvg(P,t){
  const Y=h=>218-h*SX;
  let s='<svg viewBox="0 0 340 230" class="av-svg" role="img" aria-label="Hoogte van de bal, gezien vanaf de eigen achterlijn">';
- s+='<rect width="340" height="230" fill="#1d1d1b"/>';
+ s+='<rect width="340" height="230" fill="'+S2D.K.bg+'"/>';
  for(let h=1;h<=7;h++)s+='<line x1="8" x2="332" y1="'+Y(h)+'" y2="'+Y(h)+'" stroke="#ffffff" stroke-opacity=".07"/><text x="10" y="'+(Y(h)-2)+'" fill="#94a3b8" font-size="8">'+h+' m</text>';
- s+='<rect x="8" y="218" width="324" height="12" fill="#0a7be0"/>';
+ s+='<rect x="0" y="218" width="340" height="12" fill="'+S2D.K.apron+'"/><rect x="'+px(-4.5)+'" y="218" width="'+(9*SX)+'" height="12" fill="'+S2D.K.court+'"/><line x1="'+px(-4.5)+'" x2="'+px(4.5)+'" y1="218" y2="218" stroke="#fff" stroke-opacity=".8" stroke-width="1.5"/>';
  // net met antennes
  s+='<rect x="'+px(-4.5)+'" y="'+Y(2.43)+'" width="'+(9*SX)+'" height="'+(.9*SX)+'" fill="url(#avnet)" stroke="#e5e7eb" stroke-opacity=".5"/><rect x="'+px(-4.5)+'" y="'+(Y(2.43)-2)+'" width="'+(9*SX)+'" height="4" fill="#ffd100"/>';
- [-4.5,4.5].forEach(x=>{s+='<line x1="'+px(x)+'" x2="'+px(x)+'" y1="'+Y(0)+'" y2="'+Y(2.43)+'" stroke="#94a3b8" stroke-width="2.5"/><line x1="'+px(x)+'" x2="'+px(x)+'" y1="'+Y(1.53)+'" y2="'+Y(3.23)+'" stroke="#ef4444" stroke-width="3" stroke-dasharray="5 5"/>';});
+ [-4.5,4.5].forEach(x=>{s+='<line x1="'+px(x)+'" x2="'+px(x)+'" y1="'+Y(0)+'" y2="'+Y(2.43)+'" stroke="'+S2D.K.band+'" stroke-width="4"/><line x1="'+px(x)+'" x2="'+px(x)+'" y1="'+Y(0)+'" y2="'+Y(2.43)+'" stroke="'+S2D.K.post+'" stroke-width="4" stroke-dasharray="9 5"/><line x1="'+px(x)+'" x2="'+px(x)+'" y1="'+Y(1.53)+'" y2="'+Y(3.23)+'" stroke="#ef4444" stroke-width="3" stroke-dasharray="5 5"/>';});
  s+='<defs><pattern id="avnet" width="6" height="6" patternUnits="userSpaceOnUse"><path d="M6 0H0V6" fill="none" stroke="#e5e7eb" stroke-opacity=".35" stroke-width=".8"/></pattern></defs>';
  const [r,u]=P.at(t);
  // baan van de set (als stippellijn) zodra de pass onderweg is
@@ -138,30 +138,32 @@ function hoogteSvg(P,t){
  // spelers: verste (bij het net) eerst
  const L=P.actors.map(a=>({a,p:a.pos(t),h:a.lift(t)})).sort((x,y)=>x.p[1]-y.p[1]);
  L.forEach(({a,p,h})=>{const x=px(p[0]),k=.8+Math.min(1,p[1]/9)*.25,w=13*k,top=Y(h+1.55*k),arm=h>.15;
-  s+='<g opacity="'+(a.label==='L'?.75:1)+'"><rect x="'+(x-w/2)+'" y="'+top+'" width="'+w+'" height="'+(1.25*k*SX)+'" rx="5" fill="'+a.color+'" stroke="#1d1d1b" stroke-width="1.5"/>';
-  s+='<circle cx="'+x+'" cy="'+(top-5*k)+'" r="'+(5.5*k)+'" fill="#d9a066" stroke="#1d1d1b" stroke-width="1.2"/>';
-  if(arm)s+='<line x1="'+(x+w/2-2)+'" y1="'+(top+3)+'" x2="'+(x+w/2+3)+'" y2="'+(top-16*k)+'" stroke="'+a.color+'" stroke-width="4" stroke-linecap="round"/>';
-  s+='<text x="'+x+'" y="'+(top+15*k)+'" fill="#1d1d1b" font-size="'+(a.label.length>2?8:9)+'" font-weight="900" text-anchor="middle">'+esc(a.label)+'</text></g>';});
+  const c=S2D.bright(a.color),lib=S2D.isLib(a.label),sh=lib?S2D.K.lib:S2D.K.jersey;
+  s+='<g opacity="'+(a.label==='L'?.8:1)+'"><ellipse cx="'+x+'" cy="221" rx="'+(w*.75)+'" ry="2.6" fill="'+c+'" opacity=".45"/>';
+  s+='<rect x="'+(x-w/2)+'" y="'+top+'" width="'+w+'" height="'+(1.25*k*SX)+'" rx="5" fill="'+sh+'" stroke="'+c+'" stroke-width="1.8"/>';
+  s+='<circle cx="'+x+'" cy="'+(top-5*k)+'" r="'+(5.5*k)+'" fill="#dcb495" stroke="'+S2D.K.post+'" stroke-width="1.2"/>';
+  if(arm)s+='<line x1="'+(x+w/2-2)+'" y1="'+(top+3)+'" x2="'+(x+w/2+3)+'" y2="'+(top-16*k)+'" stroke="#dcb495" stroke-width="4" stroke-linecap="round"/>';
+  s+='<text x="'+x+'" y="'+(top+15*k)+'" fill="'+(lib?S2D.K.jersey:c)+'" font-size="'+(a.label.length>2?8:9)+'" font-weight="900" text-anchor="middle">'+esc(a.label)+'</text></g>';});
  const b=P.ball(t);
- if(b){s+='<ellipse cx="'+px(b[0])+'" cy="221" rx="5" ry="1.8" fill="#000" opacity=".45"/><circle cx="'+px(b[0])+'" cy="'+Y(b[1])+'" r="5.5" fill="#fde047" stroke="#b45309" stroke-width="1.5"/>';}
+ if(b){s+='<ellipse cx="'+px(b[0])+'" cy="221" rx="5" ry="1.8" fill="#000" opacity=".45"/>'+S2D.ball(px(b[0]),Y(b[1]),5.5);}
  return s+'</svg>';
 }
 function bovenSvg(P,t){
  const Z=z=>26+z*SX;
  let s='<svg viewBox="0 0 340 300" class="av-svg" role="img" aria-label="Bovenaanzicht van de eigen helft">';
- s+='<rect width="340" height="300" fill="#1d1d1b"/><rect x="'+px(-4.5)+'" y="'+Z(0)+'" width="'+(9*SX)+'" height="'+(9*SX)+'" fill="#0a7be0" stroke="#fff" stroke-width="2"/>';
- s+='<rect x="'+px(-4.5)+'" y="4" width="'+(9*SX)+'" height="'+(Z(0)-4)+'" fill="#0a7be0" opacity=".45"/>';
- s+='<line x1="'+px(-4.5)+'" x2="'+px(4.5)+'" y1="'+Z(3)+'" y2="'+Z(3)+'" stroke="#bae6fd" stroke-width="1.5"/>';
- s+='<line x1="'+(px(-4.5)-8)+'" x2="'+(px(4.5)+8)+'" y1="'+Z(0)+'" y2="'+Z(0)+'" stroke="#ffd100" stroke-width="4"/>';
- [-4.5,4.5].forEach(x=>s+='<circle cx="'+px(x)+'" cy="'+Z(0)+'" r="3.5" fill="#ef4444"/>');
+ s+='<rect width="340" height="300" fill="'+S2D.K.apron+'"/><rect x="'+px(-4.5)+'" y="'+Z(0)+'" width="'+(9*SX)+'" height="'+(9*SX)+'" fill="'+S2D.K.court+'"/>';
+ s+='<rect x="'+px(-4.5)+'" y="4" width="'+(9*SX)+'" height="'+(Z(0)-4)+'" fill="'+S2D.K.court+'" opacity=".55"/>';
+ s+='<rect x="'+px(-4.5)+'" y="'+Z(0)+'" width="'+(9*SX)+'" height="'+(9*SX)+'" fill="none" stroke="#fff" stroke-width="2"/>';
+ s+='<line x1="'+px(-4.5)+'" x2="'+px(4.5)+'" y1="'+Z(3)+'" y2="'+Z(3)+'" stroke="#fff" stroke-opacity=".7" stroke-width="1.5"/>';
+ s+=S2D.net(px(-4.5)-8,px(4.5)+8,Z(0),4,[px(-4.5),px(4.5)]);
  Object.entries(PLEK).forEach(([k,p])=>{const z=p.rij==='b'?3.45:.2;s+='<text x="'+px(p.x)+'" y="'+(Z(z)+(p.rij==='b'?0:4))+'" fill="#fff" opacity=".45" font-size="9" font-weight="800" text-anchor="middle">'+k+'</text>';});
  const [r,u]=P.at(t);
  P.actors.forEach(a=>{if(!a.K)return;s+='<line x1="'+px(a.S[0])+'" y1="'+Z(a.S[1])+'" x2="'+px(a.K[0])+'" y2="'+Z(a.K[1])+'" stroke="'+a.color+'" stroke-width="2" stroke-dasharray="4 4" opacity=".7"/>';});
- if(u>r.Ts-1.2){const a=r.setAt(0),b=r.setAt(r.setT);s+='<line x1="'+px(a[0])+'" y1="'+Z(a[2])+'" x2="'+px(b[0])+'" y2="'+Z(b[2])+'" stroke="#fde047" stroke-width="1.5" stroke-dasharray="2 3"/>';}
+ if(u>r.Ts-1.2){const a=r.setAt(0),b=r.setAt(r.setT);s+='<line x1="'+px(a[0])+'" y1="'+Z(a[2])+'" x2="'+px(b[0])+'" y2="'+Z(b[2])+'" stroke="'+S2D.K.band+'" stroke-width="1.8" stroke-dasharray="2 3"/>';}
  P.actors.forEach(a=>{const p=a.pos(t),h=a.lift(t),x=px(p[0]),y=Z(p[1]),R=11+h*4;
-  s+='<circle cx="'+x+'" cy="'+y+'" r="'+R+'" fill="'+a.color+'" stroke="#1d1d1b" stroke-width="2"/><text x="'+x+'" y="'+(y+3.5)+'" fill="#1d1d1b" font-size="'+(a.label.length>2?8:9.5)+'" font-weight="900" text-anchor="middle">'+esc(a.label)+'</text>';});
+  s+=S2D.tok(x,y,a.label,a.color,R,{fs:a.label.length>2?8:9.5,sw:2.2});});
  const b=P.ball(t);
- if(b&&b[2]>-.8){s+='<circle cx="'+px(b[0])+'" cy="'+Z(b[2])+'" r="3" fill="#000" opacity=".45"/><circle cx="'+px(b[0])+'" cy="'+(Z(b[2])-b[1]*2.2)+'" r="'+(4+b[1]*.55)+'" fill="#fde047" stroke="#b45309" stroke-width="1.5"/>';}
+ if(b&&b[2]>-.8){s+='<circle cx="'+px(b[0])+'" cy="'+Z(b[2])+'" r="3" fill="#000" opacity=".45"/>'+S2D.ball(px(b[0]),Z(b[2])-b[1]*2.2,4+b[1]*.55);}
  return s+'</svg>';
 }
 
@@ -267,16 +269,15 @@ const melding=t=>{if(typeof window.toast==='function')window.toast(t);};
 function plekKaart(){
  const Z=z=>22+z*SX;
  let s='<svg viewBox="0 0 340 168" class="av-kaart" role="group" aria-label="Kies een plek">';
- s+='<rect width="340" height="168" rx="12" fill="#0a7be0"/><rect x="'+px(-4.5)+'" y="'+Z(0)+'" width="'+(9*SX)+'" height="150" fill="none" stroke="#fff" stroke-width="2"/>';
- s+='<line x1="'+px(-4.5)+'" x2="'+px(4.5)+'" y1="'+Z(3)+'" y2="'+Z(3)+'" stroke="#bae6fd" stroke-width="1.5"/><text x="'+(px(4.5)-4)+'" y="'+(Z(3)-4)+'" fill="#bae6fd" font-size="8" text-anchor="end">3 m-lijn</text>';
- s+='<line x1="'+(px(-4.5)-8)+'" x2="'+(px(4.5)+8)+'" y1="'+Z(0)+'" y2="'+Z(0)+'" stroke="#ffd100" stroke-width="5"/><text x="170" y="12" fill="#fff" font-size="9" font-weight="700" text-anchor="middle">net</text>';
- [-4.5,4.5].forEach(x=>s+='<circle cx="'+px(x)+'" cy="'+Z(0)+'" r="4" fill="#ef4444" stroke="#fff"/>');
- s+='<circle cx="'+px(SV[0])+'" cy="'+Z(1.35)+'" r="12" fill="'+C_SV+'" stroke="#1d1d1b" stroke-width="2"/><text x="'+px(SV[0])+'" y="'+(Z(1.35)+3.5)+'" font-size="9" font-weight="900" text-anchor="middle" fill="#1d1d1b">SV</text>';
+ s+='<rect width="340" height="168" rx="12" fill="'+S2D.K.apron+'"/><rect x="'+px(-4.5)+'" y="'+Z(0)+'" width="'+(9*SX)+'" height="140" fill="'+S2D.K.court+'" stroke="#fff" stroke-width="2"/>';
+ s+='<line x1="'+px(-4.5)+'" x2="'+px(4.5)+'" y1="'+Z(3)+'" y2="'+Z(3)+'" stroke="#fff" stroke-opacity=".7" stroke-width="1.5"/><text x="'+(px(4.5)-4)+'" y="'+(Z(3)-4)+'" fill="#fff" fill-opacity=".75" font-size="8" text-anchor="end">3 m-lijn</text>';
+ s+=S2D.net(px(-4.5)-8,px(4.5)+8,Z(0),5,[px(-4.5),px(4.5)])+'<text x="170" y="12" fill="#fff" font-size="9" font-weight="700" text-anchor="middle">net</text>';
+ s+=S2D.tok(px(SV[0]),Z(1.35),'SV',C_SV,12,{fs:9,sw:2.2});
  Object.entries(PLEK).forEach(([k,p])=>{const z=p.rij==='b'?3.75:.55,on=gekozen[0]===k,c=ROL[rolVan(k+'2')].c;
-  s+='<g class="av-pk" data-plek="'+k+'" tabindex="0" role="button" aria-pressed="'+on+'" aria-label="Plek '+k+': '+esc(p.naam)+'"><circle cx="'+px(p.x)+'" cy="'+Z(z)+'" r="'+(on?14:12)+'" fill="'+(on?'#1d1d1b':c)+'" stroke="'+(on?'#ffd100':'#1d1d1b')+'" stroke-width="'+(on?3:2)+'"/><text x="'+px(p.x)+'" y="'+(Z(z)+4.5)+'" font-size="'+(on?13:12)+'" font-weight="900" text-anchor="middle" fill="'+(on?'#ffd100':'#1d1d1b')+'">'+k+'</text></g>';});
+  s+='<g class="av-pk" data-plek="'+k+'" tabindex="0" role="button" aria-pressed="'+on+'" aria-label="Plek '+k+': '+esc(p.naam)+'">'+(on?'<circle cx="'+px(p.x)+'" cy="'+Z(z)+'" r="19" fill="'+S2D.K.band+'" opacity=".3"/><circle cx="'+px(p.x)+'" cy="'+Z(z)+'" r="14" fill="'+S2D.K.band+'" stroke="#fff" stroke-width="2.5"/><text x="'+px(p.x)+'" y="'+(Z(z)+4.5)+'" font-size="13" font-weight="900" text-anchor="middle" fill="'+S2D.K.jersey+'">'+k+'</text>':S2D.tok(px(p.x),Z(z),k,c,12,{fs:12,sw:2.4}))+'</g>';});
  return s+'</svg>';
 }
-function boogje(s){const h=s==='1'?3:s==='2'?11:20;return '<svg viewBox="0 0 44 26" aria-hidden="true"><line x1="2" x2="42" y1="24" y2="24" stroke="currentColor" stroke-opacity=".35"/><path d="M4 18 Q22 '+(18-h*1.8)+' 40 15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-dasharray="3 2.5"/><circle cx="40" cy="15" r="3" fill="#fde047" stroke="#b45309"/></svg>';}
+function boogje(s){const h=s==='1'?3:s==='2'?11:20;return '<svg viewBox="0 0 44 26" aria-hidden="true"><line x1="2" x2="42" y1="24" y2="24" stroke="currentColor" stroke-opacity=".35"/><path d="M4 18 Q22 '+(18-h*1.8)+' 40 15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-dasharray="3 2.5"/><circle cx="40" cy="15" r="3" fill="#ffd60a" stroke="#1f5fd1"/></svg>';}
 
 function bouw(){
  const v=$('v_aanval');if(!v||v.dataset.ok)return;v.dataset.ok=1;

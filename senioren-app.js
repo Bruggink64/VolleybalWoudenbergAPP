@@ -157,11 +157,7 @@ function objSvg(k,x,y){
 function anim(d){
  const D=9,kt='0;0.15;0.3;0.45;0.6;0.82;0.96;1',kb='0;0.15;0.3;0.45;0.6;0.7;0.96;1';
  let o='<svg viewBox="0 0 560 680" role="img" aria-label="Animatie: '+esc(d.t)+'" class="senv">'
-  +'<rect x="110" y="40" width="340" height="600" rx="4" style="fill:var(--court)" stroke="#fff" stroke-width="3"/>'
-  +'<line x1="110" y1="230" x2="450" y2="230" stroke="#fff" stroke-opacity=".6" stroke-width="2" stroke-dasharray="6 4"/>'
-  +'<line x1="110" y1="450" x2="450" y2="450" stroke="#fff" stroke-opacity=".6" stroke-width="2" stroke-dasharray="6 4"/>'
-  +'<line x1="96" y1="340" x2="464" y2="340" stroke="#ffd100" stroke-width="6"/>'
-  +ZONES+'<text x="122" y="62" fill="#fff" fill-opacity=".7" font-size="14" font-weight="700">overkant</text><text x="122" y="628" fill="#fff" fill-opacity=".7" font-size="14" font-weight="700">eigen veld</text>';
+  +S2D.court560({zones:ZONES})+'<text x="122" y="62" fill="#fff" fill-opacity=".7" font-size="14" font-weight="700">overkant</text><text x="122" y="628" fill="#fff" fill-opacity=".7" font-size="14" font-weight="700">eigen veld</text>';
  const v=verdeling(d),ord=doorOrder(d),start=nm=>{const p=d.p.find(x=>x[0]===nm);return p?p[2][0]:null;};
  const gap=Math.min(34,240/Math.max(1,v.rij-1)),ry=i=>420+i*gap,RX=55;
  // waar gaat elke speler heen bij het doordraaien?
@@ -179,7 +175,7 @@ function anim(d){
  // spelers in de rij: links naast het veld; bij doordraaien schuift de voorste het veld in en de rest op
  for(let i=0;i<v.rij;i++){const y=ry(i),to=i===0&&ord.length&&start(ord[0])?start(ord[0]):[RX,ry(i-1)];
   const xs=[RX,RX,RX,RX,RX,to[0],to[0],RX].join(';'),ys=[y,y,y,y,y,to[1],to[1],y].join(';');
-  o+='<circle cx="'+RX+'" cy="'+y+'" r="13" fill="#ffcc00" fill-opacity=".6" stroke="#1d1d1b" stroke-width="2">'+(ord.length?'<animate attributeName="cx" values="'+xs+'" keyTimes="'+kt+'" dur="'+D+'s" repeatCount="indefinite"/><animate attributeName="cy" values="'+ys+'" keyTimes="'+kt+'" dur="'+D+'s" repeatCount="indefinite"/>':'')+'</circle>';}
+  o+='<circle cx="'+RX+'" cy="'+y+'" r="13" fill="#14171f" stroke="#ffd100" stroke-opacity=".7" stroke-width="2.5">'+(ord.length?'<animate attributeName="cx" values="'+xs+'" keyTimes="'+kt+'" dur="'+D+'s" repeatCount="indefinite"/><animate attributeName="cy" values="'+ys+'" keyTimes="'+kt+'" dur="'+D+'s" repeatCount="indefinite"/>':'')+'</circle>';}
  if(v.rij)o+='<text x="55" y="404" text-anchor="middle" font-size="13" font-weight="800" fill="#fff" fill-opacity=".85">rij</text>';
  // label 'N× groep' alleen als de tekening minder spelers toont dan er meedoen
  const getekend=d.p.filter(p=>p[1]!=='#2dd4bf'&&!objOf(d,p)).length;
@@ -192,17 +188,17 @@ function anim(d){
  const b=d.bal;o+=balBaan(d,b);
  const rm=rolMap(d);
  d.p.filter(p=>!isObj(p)).forEach(p=>{const q=p[2],to=dest[p[0]]||q[0],vs=q.length===7?[...q,q[6]]:[...q,q[3],to,to,q[0]],vx=vs.map(v=>v[0]).join(';'),vy=vs.map(v=>v[1]).join(';');
-  o+='<g><circle r="17" fill="'+p[1]+'" stroke="#1d1d1b" stroke-width="3" cx="'+q[0][0]+'" cy="'+q[0][1]+'"><animate attributeName="cx" values="'+vx+'" keyTimes="'+kt+'" dur="'+D+'s" repeatCount="indefinite"/><animate attributeName="cy" values="'+vy+'" keyTimes="'+kt+'" dur="'+D+'s" repeatCount="indefinite"/></circle>'
-   +'<text font-size="11" font-weight="900" text-anchor="middle" fill="#1d1d1b" x="'+q[0][0]+'" y="'+(q[0][1]+4)+'"><animate attributeName="x" values="'+vx+'" keyTimes="'+kt+'" dur="'+D+'s" repeatCount="indefinite"/><animate attributeName="y" values="'+vs.map(v=>v[1]+4).join(';')+'" keyTimes="'+kt+'" dur="'+D+'s" repeatCount="indefinite"/>'+esc(p[0])+'</text>'
+  const ty=S2D.tdy(p[0],17,11),an=(n,v)=>'<animate attributeName="'+n+'" values="'+v+'" keyTimes="'+kt+'" dur="'+D+'s" repeatCount="indefinite"/>';
+  o+='<g>'+S2D.tok(q[0][0],q[0][1],p[0],p[1],17,{fs:11,a:an('cx',vx)+an('cy',vy),ta:an('x',vx)+an('y',vs.map(v=>v[1]+ty).join(';'))})
    +(rm[p[0]]?'<text font-size="18" font-weight="900" text-anchor="middle" fill="#fff" stroke="#1d1d1b" stroke-width="6" stroke-linejoin="round" paint-order="stroke" x="'+q[0][0]+'" y="'+(q[0][1]+40)+'"><animate attributeName="x" values="'+vx+'" keyTimes="'+kt+'" dur="'+D+'s" repeatCount="indefinite"/><animate attributeName="y" values="'+vs.map(v=>v[1]+40).join(';')+'" keyTimes="'+kt+'" dur="'+D+'s" repeatCount="indefinite"/>'+rm[p[0]]+'</text>':'')+'</g>';});
  const still=b.every(x=>x[0]===b[0][0]&&x[1]===b[0][1]);if(still)return o+'</svg>';
  const bs=b.length===6?[...b,b[5],b[5]]:[...b,b[4],b[4],b[0]];
- o+='<circle r="10" fill="#fde047" stroke="#b45309" stroke-width="2.5" cx="'+b[0][0]+'" cy="'+b[0][1]+'"><animate attributeName="cx" values="'+bs.map(v=>v[0]).join(';')+'" keyTimes="'+(b.length===6?kt:kb)+'" dur="'+D+'s" repeatCount="indefinite"/><animate attributeName="cy" values="'+bs.map(v=>v[1]).join(';')+'" keyTimes="'+(b.length===6?kt:kb)+'" dur="'+D+'s" repeatCount="indefinite"/></circle>';
+ o+='<circle r="10" fill="#ffd60a" stroke="#1f5fd1" stroke-width="2.5" cx="'+b[0][0]+'" cy="'+b[0][1]+'"><animate attributeName="cx" values="'+bs.map(v=>v[0]).join(';')+'" keyTimes="'+(b.length===6?kt:kb)+'" dur="'+D+'s" repeatCount="indefinite"/><animate attributeName="cy" values="'+bs.map(v=>v[1]).join(';')+'" keyTimes="'+(b.length===6?kt:kb)+'" dur="'+D+'s" repeatCount="indefinite"/></circle>';
  if(d.baan){const G=Math.min(4,Math.max(1,v.groepen)),grp=o.slice(i0);o=o.slice(0,i0);
   for(let g=0;g<G;g++){o+='<g transform="translate('+((g-(G-1)/2)*85)+',0)">'+grp+'</g>';if(g<G-1)o+='<line x1="'+(280+(g-(G-1)/2)*85+42.5)+'" y1="40" x2="'+(280+(g-(G-1)/2)*85+42.5)+'" y2="640" stroke="#fff" stroke-opacity=".35" stroke-width="2" stroke-dasharray="3 7"/>';}}
  return o+'</svg>';
 }
-const LEGS='<p class="leg"><span><i style="background:#fde047"></i>bal</span><span><i style="background:#ffcc00"></i>eigen team</span><span><i style="background:#c084fc"></i>spelverdeler</span><span><i style="background:#34d399"></i>libero of verdediger</span><span><i style="background:#fb923c"></i>blok</span><span><i style="background:#f87171"></i>overkant</span><span><i style="background:#2dd4bf"></i>trainer</span><span><i class="ln"></i>looplijn</span></p>';
+const LEGS='<p class="leg"><span><i style="background:#ffd60a;box-shadow:inset 0 0 0 2px #1f5fd1"></i>bal</span><span><i style="background:#ffcc00"></i>eigen team</span><span><i style="background:#c084fc"></i>spelverdeler</span><span><i style="background:#34d399"></i>libero of verdediger</span><span><i style="background:#fb923c"></i>blok</span><span><i style="background:#f87171"></i>overkant</span><span><i style="background:#2dd4bf"></i>trainer</span><span><i class="ln"></i>looplijn</span></p>';
 const LEGP='<p class="leg"><span>Onder elke speler staat zijn positie uit jouw groep (SV, DIA, PL, MID, LIB).</span></p>';
 const ROLT={
  warming:{sv:'Warm je handen en vingers op en let tijdens het lopen al op de plek van je teamgenoten.',dia:'Warm je schouder en sprongen op en maak lange loopbewegingen vanaf de buitenkant.',pl:'Beweeg veel: versnel en rem af, praat en neem de bal aan met stabiele armen.',mid:'Werk aan snelle voeten langs het net: sluit aan, spring en land stevig.',lib:'Blijf laag en beweeglijk en train je eerste aanraking.'},

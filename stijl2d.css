@@ -1,0 +1,21 @@
+/* stijl2d.css – mini-animaties (scenes.js) in de 3D-stijl: donkere vrije zone, blauwgrijs veld, gele netband,
+   zwarte palen met geel, spelers in de heldere 3D-teamkleuren, geel-blauwe bal.
+   Bewust via CSS: de 3D-weergave leest de kleurcodes uit de SVG-attributen, die blijven dus ongewijzigd. */
+svg.scn{background:#2b303b;border-color:#11131a}
+svg.scn>rect[fill="#7fb2a3"]{fill:#2b303b}
+svg.scn rect[fill="#fff"][fill-opacity]{fill:#4b5a7a;fill-opacity:1}
+svg.scn line[stroke="#ffcc00"]{stroke:#ffd100}
+svg.scn circle[fill="#001a33"]{fill:#11131a;stroke:#ffd100;stroke-width:1}
+svg.scn ellipse[rx="5.6"]{stroke:#0c0d12;stroke-width:.9}
+svg.scn ellipse[fill="#1e293b"]{fill:#ffd100}
+svg.scn ellipse[fill="#7f1d1d"]{fill:#ef4444}
+svg.scn ellipse[fill="#0f766e"]{fill:#14b8a6}
+svg.scn ellipse[fill="#6d28d9"]{fill:#a78bfa}
+svg.scn ellipse[fill="#b45309"]{fill:#fb923c}
+svg.scn circle[fill="#fde047"]{fill:#ffd60a;stroke:#1f5fd1}
+svg.scn rect[fill="#2563eb"],svg.scn rect[fill="#1d4ed8"]{stroke:#93c5fd}
+svg.scn rect[fill="#475569"]{fill:#64748b}
+/* legenda onder de mini-animatie */
+.leg i.s2-bal{background:#ffd60a!important;box-shadow:inset 0 0 0 2px #1f5fd1}
+/* grote velden: zijkanten van het beeld in de kleur van de vrije zone */
+svg.senv,svg.tac{background:#2b303b}

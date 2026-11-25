@@ -153,6 +153,7 @@ dialog#pick::backdrop,dialog#s_pick::backdrop{background:rgba(0,0,0,.45)}
 <link rel="stylesheet" href="ontwerp.css">
 <link rel="stylesheet" href="home.css">
 <link rel="stylesheet" href="aanval.css">
+<link rel="stylesheet" href="stijl2d.css">
 </head>
 <body>
 <header>
@@ -229,6 +230,7 @@ dialog#pick::backdrop,dialog#s_pick::backdrop{background:rgba(0,0,0,.45)}
  <div class="hnav"><button id="hallPrev" onclick="hallStep(-1)">Vorige</button><button id="hallNext" onclick="hallStep(1)">Volgende</button></div>
 </div>
 <div id="toast" role="status" aria-live="polite"></div>
+<script src="stijl2d.js"></script>
 <script src="data.js"></script>
 <script src="scenes.js"></script>
 <script src="minis-extra.js"></script>
@@ -251,7 +253,7 @@ function detail(d,full){
  o+='</div>';
  return o;
 }
-const LEG='<p class="leg"><span><i style="background:#fde047"></i>bal</span><span><i style="background:#0f766e"></i>trainer</span><span><i style="background:#6d28d9"></i>spelverdeler</span><span><i style="background:#7f1d1d"></i>tegenstander of tikker</span><span><i style="background:#b45309"></i>wissel</span><span><i class="ln"></i>looplijn</span></p>';
+const LEG='<p class="leg"><span><i class="s2-bal"></i>bal</span><span><i style="background:#ffd100"></i>eigen team</span><span><i style="background:#14b8a6"></i>trainer</span><span><i style="background:#a78bfa"></i>spelverdeler</span><span><i style="background:#ef4444"></i>tegenstander of tikker</span><span><i style="background:#fb923c"></i>wissel</span><span><i class="ln"></i>looplijn</span></p>';
 const anim=d=>{const s=window.scene&&window.scene(d,S.n,S.courts);return s?s+LEG:svg(d[5]);};
 const LL={aanvallen:'Aanvallen',blokkeren:'Blokkeren',bovenhands:'Bovenhands spelen',onderarms:'Onderarms spelen',serveren:'Serveren',verdedigen:'Verdedigen',tactiek_ind:'Tactiek individueel',tactiek_team:'Tactiek team',warming:'Warming-up / fysiek'};
 const GS={warming:0,aanvallen:2,blokkeren:2,bovenhands:2,onderarms:2,serveren:2,verdedigen:2,tactiek_ind:2,tactiek_team:4};
@@ -505,8 +507,8 @@ function rotDraw(){
   if(seg===3){
    const q=rotP4(rotN,k,lt),px=q[0],py=mapY(q[1]),pos=rotPos(rotN)[k],b0=RPOS[pos],c0=RPOS[RNEXT[pos]],isS=k===rotSrv(rotN);
    if(lt>=.3&&lt<.9)ps+='<line x1="'+b0[0]+'" y1="'+mapY(b0[1])+'" x2="'+c0[0]+'" y2="'+mapY(c0[1])+'" stroke="'+o.c+'" stroke-width="2.4" stroke-dasharray="5,4" opacity=".7"/>';
-   ps+='<circle cx="'+px+'" cy="'+py+'" r="16" fill="'+o.c+'" stroke="#1d1d1b" stroke-width="2.8"/><text x="'+px+'" y="'+(py+4)+'" fill="#1d1d1b" font-size="10" font-weight="900" text-anchor="middle">'+k+'</text>';
-   if(isS&&lt>=.4)ps+='<circle cx="'+px+'" cy="'+py+'" r="22" fill="none" stroke="#fff" stroke-width="3" stroke-dasharray="4 3"/><circle cx="'+(px+21)+'" cy="'+(py-14)+'" r="9.5" fill="#fde047" stroke="#b45309" stroke-width="2"/>';
+   ps+=S2D.tok(px,py,k,o.c,16,{fs:10.5});
+   if(isS&&lt>=.4)ps+='<circle cx="'+px+'" cy="'+py+'" r="22" fill="none" stroke="#fff" stroke-width="3" stroke-dasharray="4 3"/>'+S2D.ball(px+21,py-14);
    if(isS&&lt>=.85)ps+='<rect x="'+(px-36)+'" y="'+(py+25)+'" width="72" height="15" rx="3" fill="#1d1d1b" fill-opacity=".9" stroke="#fde047"/><text x="'+px+'" y="'+(py+36)+'" fill="#fde047" font-size="8.5" font-weight="900" text-anchor="middle">SERVEERT</text>';
    return;}
   const a=o.kf[seg],b=o.kf[seg+1]||a,ax=a[0],ay=mapY(a[1]),bx=b[0],by=mapY(b[1]);
@@ -515,15 +517,15 @@ function rotDraw(){
   else
   if(seg===0&&o.arc0){x+=Math.sin(st*Math.PI)*o.arc0;g='<path d="M '+ax+' '+ay+' Q '+((ax+bx)/2+o.arc0*1.35)+' '+((ay+by)/2)+' '+bx+' '+by+'" fill="none" stroke="'+o.c+'" stroke-width="2.4" stroke-dasharray="5,4" opacity=".8"/>';}
   else if(Math.hypot(bx-ax,by-ay)>5)g='<line x1="'+ax+'" y1="'+ay+'" x2="'+bx+'" y2="'+by+'" stroke="'+o.c+'" stroke-width="2.4" stroke-dasharray="5,4" opacity=".75"/>';
-  ps+=g+'<circle cx="'+x+'" cy="'+y+'" r="16" fill="'+o.c+'" stroke="#1d1d1b" stroke-width="2.8"/><text x="'+x+'" y="'+(y+4)+'" fill="#1d1d1b" font-size="10" font-weight="900" text-anchor="middle">'+k+'</text>';
+  ps+=g+S2D.tok(x,y,k,o.c,16,{fs:10.5});
  });
  const rv=R.players[R.recv].kf[0],pass=[rv[0],mapY(rv[1])],sv=[336,mapY(188)],srv=[280,48];
  let bs='';
  if(seg===3){if(lt<.4)bs='<rect x="150" y="318" width="260" height="20" rx="4" fill="#1d1d1b" fill-opacity=".9" stroke="#fde047"/><text x="280" y="332" fill="#fde047" font-size="10.5" font-weight="900" text-anchor="middle">PUNT GESCOORD!</text>';}
- else if(seg===0)bs='<line x1="'+srv[0]+'" y1="'+srv[1]+'" x2="'+pass[0]+'" y2="'+pass[1]+'" stroke="#fde047" stroke-width="2" stroke-dasharray="5,4" opacity=".75"/><circle cx="'+lerp(srv[0],pass[0],lt)+'" cy="'+lerp(srv[1],pass[1],lt)+'" r="9.5" fill="#fde047" stroke="#b45309" stroke-width="2"/>';
- else if(seg===1)bs='<line x1="'+pass[0]+'" y1="'+pass[1]+'" x2="'+sv[0]+'" y2="'+sv[1]+'" stroke="#34d399" stroke-width="2.2" stroke-dasharray="5,4" opacity=".8"/><circle cx="'+lerp(pass[0],sv[0],lt)+'" cy="'+(lerp(pass[1],sv[1],lt)-Math.sin(lt*Math.PI)*24)+'" r="9.5" fill="#fde047" stroke="#b45309" stroke-width="2"/>';
- else if(seg===2)bs=R.tg.map(t=>{const tx=t.to[0],ty=mapY(t.to[1]);return '<line x1="'+sv[0]+'" y1="'+sv[1]+'" x2="'+tx+'" y2="'+ty+'" stroke="'+t.col+'" stroke-width="2.2" stroke-dasharray="4,3" opacity=".85"/><circle cx="'+lerp(sv[0],tx,lt)+'" cy="'+(lerp(sv[1],ty,lt)-Math.sin(lt*Math.PI)*18)+'" r="8.5" fill="#fde047" stroke="'+t.col+'" stroke-width="2.5"/><rect x="'+(tx-32)+'" y="'+(ty-30)+'" width="64" height="14" rx="3" fill="#1d1d1b" fill-opacity=".88" stroke="'+t.col+'"/><text x="'+tx+'" y="'+(ty-20)+'" fill="#fff" font-size="7.5" font-weight="900" text-anchor="middle">'+t.label+'</text>';}).join('');
- $('rotSvg').innerHTML='<svg viewBox="0 0 560 680" class="tac" style="max-height:560px" role="img" aria-label="5-1 rotatie '+rotN+'"><rect width="560" height="680" fill="#1d1d1b"/><rect x="110" y="40" width="340" height="600" rx="4" fill="#0a7be0" stroke="#fff" stroke-width="3"/><line x1="110" y1="230" x2="450" y2="230" stroke="#bae6fd" stroke-width="2" stroke-dasharray="6,4"/><line x1="110" y1="450" x2="450" y2="450" stroke="#bae6fd" stroke-width="2" stroke-dasharray="6,4"/><line x1="96" y1="340" x2="464" y2="340" stroke="#ffd100" stroke-width="5"/><circle cx="110" cy="340" r="5" fill="#ef4444"/><circle cx="450" cy="340" r="5" fill="#ef4444"/>'+ps+bs+'</svg>';
+ else if(seg===0)bs='<line x1="'+srv[0]+'" y1="'+srv[1]+'" x2="'+pass[0]+'" y2="'+pass[1]+'" stroke="#fde047" stroke-width="2" stroke-dasharray="5,4" opacity=".75"/>'+S2D.ball(lerp(srv[0],pass[0],lt),lerp(srv[1],pass[1],lt));
+ else if(seg===1)bs='<line x1="'+pass[0]+'" y1="'+pass[1]+'" x2="'+sv[0]+'" y2="'+sv[1]+'" stroke="#34d399" stroke-width="2.2" stroke-dasharray="5,4" opacity=".8"/>'+S2D.ball(lerp(pass[0],sv[0],lt),lerp(pass[1],sv[1],lt)-Math.sin(lt*Math.PI)*24);
+ else if(seg===2)bs=R.tg.map(t=>{const tx=t.to[0],ty=mapY(t.to[1]);return '<line x1="'+sv[0]+'" y1="'+sv[1]+'" x2="'+tx+'" y2="'+ty+'" stroke="'+t.col+'" stroke-width="2.2" stroke-dasharray="4,3" opacity=".85"/>'+S2D.ball(lerp(sv[0],tx,lt),lerp(sv[1],ty,lt)-Math.sin(lt*Math.PI)*18,8.5)+'<rect x="'+(tx-32)+'" y="'+(ty-30)+'" width="64" height="14" rx="3" fill="#1d1d1b" fill-opacity=".88" stroke="'+t.col+'"/><text x="'+tx+'" y="'+(ty-20)+'" fill="#fff" font-size="7.5" font-weight="900" text-anchor="middle">'+t.label+'</text>';}).join('');
+ $('rotSvg').innerHTML='<svg viewBox="0 0 560 680" class="tac" style="max-height:560px" role="img" aria-label="5-1 rotatie '+rotN+'">'+S2D.court560()+ps+bs+'</svg>';
 }
 function scrubRot(v){rotPlay=false;rotF=parseFloat(v);$('rotPlay').textContent='Afspelen';rotDraw();}
 function toggleRot(){rotPlay=!rotPlay;$('rotPlay').textContent=rotPlay?'Pauzeer':'Afspelen';}
@@ -595,18 +597,18 @@ function defDraw(){
  Object.entries(sc.players).forEach(([k,o])=>{
   const a=o.kf[seg],b=o.kf[seg+1]||a,x=lerp(a[0],b[0],st),y=lerp(mapY(a[1]),mapY(b[1]),st);
   const s0=[o.kf[0][0],mapY(o.kf[0][1])],e0=[o.kf[2][0],mapY(o.kf[2][1])],far=Math.hypot(e0[0]-s0[0],e0[1]-s0[1])>4,sel=k===dInsp;
-  ps+='<g data-role="'+k+'" style="cursor:pointer">'+(far?'<line x1="'+s0[0]+'" y1="'+s0[1]+'" x2="'+e0[0]+'" y2="'+e0[1]+'" stroke="'+o.c+'" stroke-width="2.2" stroke-dasharray="5,4" opacity=".65"/><circle cx="'+s0[0]+'" cy="'+s0[1]+'" r="5" fill="'+o.c+'" opacity=".45"/>':'')+(sel?'<circle cx="'+x+'" cy="'+y+'" r="22" fill="none" stroke="#fff" stroke-width="3" stroke-dasharray="5,3"/>':'')+'<circle cx="'+x+'" cy="'+y+'" r="16" fill="'+o.c+'" stroke="#1d1d1b" stroke-width="2.8"/><text x="'+x+'" y="'+(y+4)+'" fill="#1d1d1b" font-size="10.5" font-weight="900" text-anchor="middle">'+k+'</text></g>';
+  ps+='<g data-role="'+k+'" style="cursor:pointer">'+(far?'<line x1="'+s0[0]+'" y1="'+s0[1]+'" x2="'+e0[0]+'" y2="'+e0[1]+'" stroke="'+o.c+'" stroke-width="2.2" stroke-dasharray="5,4" opacity=".65"/><circle cx="'+s0[0]+'" cy="'+s0[1]+'" r="5" fill="'+o.c+'" opacity=".45"/>':'')+(sel?'<circle cx="'+x+'" cy="'+y+'" r="22" fill="none" stroke="#fff" stroke-width="3" stroke-dasharray="5,3"/>':'')+S2D.tok(x,y,k,o.c,16,{fs:10.5})+'</g>';
  });
  let ob='';
- const ball=(x,y)=>'<circle cx="'+x+'" cy="'+y+'" r="9.5" fill="#fde047" stroke="#b45309" stroke-width="2.2"/>';
+ const ball=(x,y)=>S2D.ball(x,y);
  if(fd){
   const pp=[sc.pas[0],mapY(sc.pas[1])],sp=[sc.set[0],mapY(sc.set[1])];let hit=[280,mapY(158)];
   Object.values(sc.opp).forEach(o=>{
    const a=o.kf[seg],b=o.kf[seg+1]||a,ox=lerp(a[0],b[0],st),oy=lerp(mapY(a[1]),mapY(b[1]),st);
    if(o.active)hit=[o.kf[2][0],mapY(o.kf[2][1])];
-   ob+='<g opacity="'+(o.active?1:.55)+'"><circle cx="'+ox+'" cy="'+oy+'" r="13.5" fill="'+(o.active?'#ef4444':'#64748b')+'" stroke="#fff" stroke-width="2"/><text x="'+ox+'" y="'+(oy+3.5)+'" fill="#fff" font-size="8" font-weight="900" text-anchor="middle">'+o.label+'</text></g>';
+   ob+='<g opacity="'+(o.active?1:.6)+'">'+S2D.tok(ox,oy,o.label,o.active?'#ef4444':'#94a3b8',13.5,{fs:8})+'</g>';
   });
-  ob+='<circle cx="'+pp[0]+'" cy="'+pp[1]+'" r="12" fill="#64748b" stroke="#fff" stroke-width="1.5"/><text x="'+pp[0]+'" y="'+(pp[1]+3)+'" fill="#fff" font-size="7.5" font-weight="900" text-anchor="middle">PASS</text><circle cx="'+sp[0]+'" cy="'+sp[1]+'" r="13" fill="#f97316" stroke="#fff" stroke-width="2"/><text x="'+sp[0]+'" y="'+(sp[1]+3)+'" fill="#fff" font-size="8" font-weight="900" text-anchor="middle">SET</text>';
+  ob+=S2D.tok(pp[0],pp[1],'PASS','#94a3b8',13,{fs:8})+S2D.tok(sp[0],sp[1],'SET','#f97316',13,{fs:8});
   const dt=[sc.tgt[0],mapY(sc.tgt[1])];let bx,by;
   if(seg===0){bx=lerp(pp[0],sp[0],lt);by=lerp(pp[1],sp[1],lt)-Math.sin(lt*Math.PI)*18;}
   else if(seg===1){bx=lerp(sp[0],hit[0],lt);by=lerp(sp[1],hit[1],lt)-Math.sin(lt*Math.PI)*20;}
@@ -614,13 +616,13 @@ function defDraw(){
   ob+=ball(bx,by);
  }else{
   const sf=[sc.setFrom[0],mapY(sc.setFrom[1])],h=[sc.hit[0],mapY(sc.hit[1])];
-  sc.blk.forEach(q=>{const x=q[0],y=mapY(q[1]);ob+='<circle cx="'+x+'" cy="'+y+'" r="13" fill="#ef4444" stroke="#fff" stroke-width="2"/><text x="'+x+'" y="'+(y+3)+'" fill="#fff" font-size="8" font-weight="900" text-anchor="middle">BLK</text>';});
+  sc.blk.forEach(q=>{const x=q[0],y=mapY(q[1]);ob+=S2D.tok(x,y,'BLK','#ef4444',13,{fs:8});});
   let bx,by;
   if(seg<=1){const t=(seg+lt)/2;bx=lerp(sf[0],h[0],t);by=lerp(sf[1],h[1],t)-Math.sin(t*Math.PI)*18;}
   else{bx=lerp(h[0],h[0]+18,lt);by=lerp(h[1],h[1]+68,lt);}
   ob+=ball(bx,by);
  }
- $('dSvg').innerHTML='<svg viewBox="0 0 560 680" class="tac" style="max-height:560px" role="img" aria-label="Verdediging"><rect width="560" height="680" fill="#1d1d1b"/><rect x="110" y="40" width="340" height="600" rx="4" fill="#0a7be0" stroke="#fff" stroke-width="3"/>'+zs+sh+'<line x1="110" y1="230" x2="450" y2="230" stroke="#bae6fd" stroke-width="2" stroke-dasharray="6,4"/><line x1="110" y1="450" x2="450" y2="450" stroke="#bae6fd" stroke-width="2" stroke-dasharray="6,4"/><line x1="96" y1="340" x2="464" y2="340" stroke="#ffd100" stroke-width="5"/><circle cx="110" cy="340" r="5" fill="#ef4444"/><circle cx="450" cy="340" r="5" fill="#ef4444"/>'+mh+ob+ps+'</svg>';
+ $('dSvg').innerHTML='<svg viewBox="0 0 560 680" class="tac" style="max-height:560px" role="img" aria-label="Verdediging">'+S2D.court560({zones:zs+sh})+mh+ob+ps+'</svg>';
 }
 function setDefMode(m){dMode=m;dF=0;dSc=m==='field_defense'?'left_attack':'cov_pos4';defView();}
 function pickDef(k){dSc=k;if(k==='all_three_cycle')dCyc='left_attack';dF=0;defView();}
