@@ -228,7 +228,7 @@ function draw(B){
   else{
    if(B.sig!==sig||!B.r3){B.sig=sig;if(!bouw3d(B)){draw(B);return;}B.stage.innerHTML='';B.stage.appendChild(B.r3.cv);}
    const R3=B.r3,w=B.stage.clientWidth||320,h=Math.round(w*.62);
-   if(R3.w!==w){R3.w=w;R3.renderer.setSize(w,h,false);R3.cv.style.width=w+'px';R3.cv.style.height=h+'px';R3.cam.aspect=w/h;R3.cam.updateProjectionMatrix();}
+   if(R3.w!==w){R3.w=w;R3.renderer.setSize(w,h,false);R3.cam.aspect=w/h;R3.cam.updateProjectionMatrix();}
    const tg={x:0,y:2.0,z:1.2};R3.cam.position.set(tg.x+R3.rr*Math.sin(R3.ph)*Math.sin(R3.th),tg.y+R3.rr*Math.cos(R3.ph),tg.z+R3.rr*Math.sin(R3.ph)*Math.cos(R3.th));R3.cam.lookAt(tg.x,tg.y,tg.z);
    const f=(B.t/B.P.dur)%1;R3.B.update(f,R3.cam);
    const [r]=B.P.at(B.t);R3.lijnen.forEach(o=>{o.l.visible=o.r===r;});
