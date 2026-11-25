@@ -160,48 +160,156 @@ function miniModel(svg){
 const VBW=320; // breedte van de mini-SVG (scenes.js)
 
 // ---------- 3D-scène opbouwen (gedeeld door venster en ingebouwde weergave) ----------
+// Stijl (versie 4, nov. 2026, naar het Gemini-voorbeeld van Yannick): sporthal met tribunes (stoeltjes, glazen balustrade,
+// gele ledstrip), lichtbrug met schijnwerpers en lichtbundels, blauwgrijs veld met lichtvlek, net met witte mazen en gele band,
+// palen met gele strepen, spelers in zwart clubshirt met gele strepen (libero geel) en code op de rug, gloeiende ring en
+// pil-label in de rolkleur, echte volleybal met gele lichtstreep. Alles met eenvoudige vormen en zelfgetekende plaatjes;
+// veel onderdelen zijn samengevoegd zodat een telefoon het makkelijk trekt.
+const C={bg:'#0c0d12',apron:'#2b303b',court:'#46516a',line:'#ffffff',band:'#ffd100',post:'#11131a',jersey:'#14171f',
+ skin:'#dcb495',shorts:'#0f1218',hair:'#1c1917',concrete:'#262c3a',riser:'#1a1e29',seat:'#323a4d',seatB:'#3a4358',truss:'#1f2430',
+ ball:'#ffd60a',ball2:'#1f5fd1'};
+// klein plaatje tekenen als textuur
+function tex(THREE,w,h,draw,rep){const c=document.createElement('canvas');c.width=w;c.height=h;draw(c.getContext('2d'),w,h);
+ const t=new THREE.CanvasTexture(c);if(rep){t.wrapS=t.wrapT=THREE.RepeatWrapping;}else t.minFilter=THREE.LinearFilter;return t;}
+const rr=(g,x,y,w,h,r)=>{g.beginPath();if(g.roundRect)g.roundRect(x,y,w,h,r);else g.rect(x,y,w,h);};
+// clublogo uit de kop van de app (staat er al als afbeelding in)
+function logoImg(){const im=document.querySelector('img.logo');return im&&im.complete&&im.naturalWidth?im:null;}
+// label boven een speler: donkere pil met gloeiende rand en een pijltje naar beneden in de rolkleur
 function label(THREE,text,color){
- const c=document.createElement('canvas');c.width=128;c.height=64;const g=c.getContext('2d');
- g.fillStyle='rgba(29,29,27,.85)';g.beginPath();if(g.roundRect)g.roundRect(4,8,120,48,14);else g.rect(4,8,120,48);g.fill();
- g.strokeStyle=color;g.lineWidth=5;g.stroke();
- g.fillStyle='#fff';g.font='900 '+(text.length>3?24:30)+'px Poppins,system-ui,sans-serif';g.textAlign='center';g.textBaseline='middle';g.fillText(text,64,33);
+ const c=document.createElement('canvas');c.width=256;c.height=128;const g=c.getContext('2d');
+ const fs=text.length>4?34:text.length>3?38:42;g.font='800 '+fs+'px Poppins,system-ui,sans-serif';
+ const w=Math.min(232,Math.max(96,g.measureText(text).width+56)),x=128-w/2;
+ g.shadowColor=color;g.shadowBlur=16;g.fillStyle='rgba(10,12,18,.86)';rr(g,x,22,w,64,32);g.fill();
+ g.shadowBlur=8;g.strokeStyle=color;g.lineWidth=4;g.stroke();
+ g.fillStyle=color;g.beginPath();g.moveTo(118,88);g.lineTo(138,88);g.lineTo(128,102);g.closePath();g.fill();g.shadowBlur=0;
+ g.fillStyle='#fff';g.textAlign='center';g.textBaseline='middle';g.fillText(text,128,55);
  const t=new THREE.CanvasTexture(c);t.minFilter=THREE.LinearFilter;
- const s=new THREE.Sprite(new THREE.SpriteMaterial({map:t,depthTest:false,transparent:true}));s.scale.set(.9,.45,1);s.renderOrder=10;return s;
+ const s=new THREE.Sprite(new THREE.SpriteMaterial({map:t,depthTest:false,transparent:true}));s.scale.set(1.15,.575,1);s.renderOrder=10;return s;
+}
+// donkere 2D-kleuren (bedoeld voor een licht veld) worden in 3D feller, anders verdwijnen ze tegen de donkere zaal
+const BRIGHT={'#1e293b':'#ffd100','#7f1d1d':'#ef4444','#0f766e':'#14b8a6','#6d28d9':'#a78bfa','#b45309':'#fb923c'};
+const lum=c=>{const n=parseInt(String(c).replace('#','').padEnd(6,'0').slice(0,6),16);return ((n>>16&255)*.299+(n>>8&255)*.587+(n&255)*.114)/255;};
+// losse vormen met elk een eigen kleur samenvoegen tot één vorm (één tekenopdracht in plaats van tien)
+function mergeCol(THREE,parts){
+ const pos=[],nor=[],col=[];
+ parts.forEach(([geo,color,x,y,z,sx,sy,sz,rx])=>{const g=geo.index?geo.toNonIndexed():geo.clone();
+  const m=new THREE.Matrix4().compose(new THREE.Vector3(x||0,y||0,z||0),new THREE.Quaternion().setFromEuler(new THREE.Euler(rx||0,0,0)),new THREE.Vector3(sx||1,sy||1,sz||1));
+  g.applyMatrix4(m);const c=new THREE.Color(color),p=g.attributes.position,n=g.attributes.normal;
+  for(let i=0;i<p.count;i++){pos.push(p.getX(i),p.getY(i),p.getZ(i));nor.push(n.getX(i),n.getY(i),n.getZ(i));col.push(c.r,c.g,c.b);}g.dispose();});
+ const out=new THREE.BufferGeometry();out.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));out.setAttribute('normal',new THREE.Float32BufferAttribute(nor,3));out.setAttribute('color',new THREE.Float32BufferAttribute(col,3));return out;
 }
 function build(model){
  const THREE=window.THREE;
- const scene=new THREE.Scene();scene.background=new THREE.Color('#1d1d1b');
- scene.add(new THREE.HemisphereLight(0xffffff,0x334155,.85));
- const sun=new THREE.DirectionalLight(0xffffff,.7);sun.position.set(6,14,8);scene.add(sun);
+ const scene=new THREE.Scene();
+ scene.background=new THREE.Color(C.bg);
+ const fk=Math.max(.6,Math.min(1,model.k||1));scene.fog=new THREE.FogExp2(C.bg,.0115/fk);
+ // licht: koel vullicht, warme hoofdlamp boven het veld, tegenlicht en een gele gloed achter het net
+ scene.add(new THREE.HemisphereLight(0xdbeafe,0x151924,.85));
+ const key=new THREE.DirectionalLight(0xfffbeb,.85);key.position.set(5,16,7);scene.add(key);
+ const fill=new THREE.DirectionalLight(0xe0f2fe,.45);fill.position.set(-7,14,-6);scene.add(fill);
+ const rim=new THREE.DirectionalLight(0xffd100,.3);rim.position.set(-8,7,-14);scene.add(rim);
  const cache={};const mat=c=>cache[c]||(cache[c]=new THREE.MeshLambertMaterial({color:c}));
- const add=(geo,m,x,y,z)=>{const o=new THREE.Mesh(geo,m);o.position.set(x||0,y||0,z||0);scene.add(o);return o;};
- const flat=(w,d,x,z,c,y)=>{const m=new THREE.Mesh(new THREE.PlaneGeometry(w,d),new THREE.MeshBasicMaterial({color:c||'#ffffff'}));m.rotation.x=-Math.PI/2;m.position.set(x,y||.005,z);scene.add(m);return m;};
- const net=(x0,x1,z,h)=>{const w=x1-x0,cx=(x0+x1)/2;
-  const nm=new THREE.Mesh(new THREE.PlaneGeometry(w,.9),new THREE.MeshBasicMaterial({color:'#e5e7eb',transparent:true,opacity:.35,side:THREE.DoubleSide}));nm.position.set(cx,h-.47,z);scene.add(nm);
-  const band=add(new THREE.BoxGeometry(w,.07,.03),mat('#ffd100'),cx,h,z);
-  [x0,x1].forEach(x=>add(new THREE.CylinderGeometry(.05,.05,h+.15,10),mat('#94a3b8'),x,(h+.15)/2,z));return band;};
- const floor=new THREE.Mesh(new THREE.PlaneGeometry(60,60),mat('#3f3f46'));floor.rotation.x=-Math.PI/2;floor.position.y=-.01;scene.add(floor);
+ const basic=c=>cache['b'+c]||(cache['b'+c]=new THREE.MeshBasicMaterial({color:c}));
+ const vcol=new THREE.MeshLambertMaterial({vertexColors:true});
+ const add=(geo,m,x,y,z,par)=>{const o=new THREE.Mesh(geo,m);o.position.set(x||0,y||0,z||0);(par||scene).add(o);return o;};
+ const flat=(w,d,x,z,c,y)=>{const m=new THREE.Mesh(new THREE.PlaneGeometry(w,d),typeof c==='object'&&c?c:basic(c||C.line));m.rotation.x=-Math.PI/2;m.position.set(x,y||.005,z);scene.add(m);return m;};
+ // gedeelde plaatjes
+ const pool=tex(THREE,128,128,(g,w,h)=>{const s=g.createRadialGradient(64,64,0,64,64,64);s.addColorStop(0,'rgba(255,250,235,.7)');s.addColorStop(.6,'rgba(255,250,235,.25)');s.addColorStop(1,'rgba(255,250,235,0)');g.fillStyle=s;g.fillRect(0,0,w,h);});
+ const poolM=new THREE.MeshBasicMaterial({map:pool,transparent:true,opacity:.32,blending:THREE.AdditiveBlending,depthWrite:false});
+ const courtT=tex(THREE,128,128,(g,w,h)=>{g.fillStyle=C.court;g.fillRect(0,0,w,h);for(let i=0;i<900;i++){g.fillStyle='rgba(255,255,255,'+(Math.random()*.04)+')';g.fillRect(Math.random()*w,Math.random()*h,1,1);}},true);
+ const courtM=new THREE.MeshLambertMaterial({map:courtT});
+ const netT=tex(THREE,64,64,(g)=>{g.strokeStyle='rgba(235,240,248,.8)';g.lineWidth=5;g.strokeRect(0,0,64,64);},true);
+ // net: witte mazen, gele band boven, witte band onder en witte zijbanden; palen zwart met gele strepen
+ const net=(x0,x1,z,h,s)=>{s=s||1;const w=x1-x0,cx=(x0+x1)/2,nh=s;
+  const t=netT.clone();t.needsUpdate=true;t.repeat.set(w/(.1*s),nh/(.1*s));
+  const nm=new THREE.Mesh(new THREE.PlaneGeometry(w+.5*s,nh),new THREE.MeshBasicMaterial({map:t,transparent:true,side:THREE.DoubleSide,depthWrite:false}));nm.position.set(cx,h-nh/2,z);scene.add(nm);
+  const band=add(new THREE.BoxGeometry(w+.54*s,.085,.03),basic(C.band),cx,h,z);
+  add(new THREE.BoxGeometry(w+.5*s,.05,.022),mat('#e2e8f0'),cx,h-nh,z);
+  [x0,x1].forEach(x=>add(new THREE.BoxGeometry(.055,nh+.06,.024),mat('#f1f5f9'),x,h-nh/2,z));
+  [-1,1].forEach(sd=>{const px=sd<0?x0-.7*s:x1+.7*s;
+   const g=mergeCol(THREE,[[new THREE.CylinderGeometry(.045,.045,h+.2,10),'#475569',0,(h+.2)/2,0],[new THREE.CylinderGeometry(.115*s,.125*s,2.05*s,16),C.post,0,1.025*s,0],
+    [new THREE.CylinderGeometry(.12*s,.12*s,.09*s,16),C.band,0,1.72*s,0],[new THREE.CylinderGeometry(.124*s,.124*s,.04*s,16),C.band,0,1.58*s,0],
+    [new THREE.BoxGeometry(.7*s,.016,.016),'#94a3b8',-sd*.35*s,h,0],[new THREE.BoxGeometry(.7*s,.016,.016),'#94a3b8',-sd*.35*s,h-nh,0]]);
+   add(g,vcol,px,0,z);});
+  return band;};
+ // zaal: tribunes achter en aan beide zijkanten (betonnen treden, stoeltjes, glazen balustrade, gele ledstrip), lichtbrug erboven
+ function hall(hx,hz,s){
+  const N=8,TH=.56*s,D=.92*s,WH=1.15*s,seats=[],dummy=new THREE.Object3D();
+  const led=basic(C.band),glass=new THREE.MeshLambertMaterial({color:'#94a3b8',transparent:true,opacity:.16,depthWrite:false});
+  const section=(width,x,z,ry)=>{const sec=new THREE.Group();sec.position.set(x,0,z);sec.rotation.y=ry;scene.add(sec);
+   add(new THREE.BoxGeometry(width,WH,.36*s),mat(C.concrete),0,WH/2,0,sec);
+   add(new THREE.BoxGeometry(width-.1,.085*s,.06*s),led,0,WH-.14*s,.19*s,sec);
+   add(new THREE.BoxGeometry(width-.1,.58*s,.03*s),glass,0,WH+.29*s,.12*s,sec);
+   add(new THREE.BoxGeometry(width,.045*s,.065*s),mat('#64748b'),0,WH+.6*s,.12*s,sec);
+   // treden als één vorm (trapprofiel uitgerekt over de breedte)
+   const sh=new THREE.Shape();let y=WH;sh.moveTo(0,0);sh.lineTo(0,y);for(let r=0;r<N;r++){sh.lineTo((r+1)*D,y);if(r<N-1){y+=TH;sh.lineTo((r+1)*D,y);}}sh.lineTo(N*D,0);
+   const tg=new THREE.ExtrudeGeometry(sh,{depth:width,bevelEnabled:false});tg.rotateY(Math.PI/2);tg.translate(-width/2,0,-.18*s);
+   add(tg,mat(C.concrete),0,0,0,sec);
+   const top=WH+N*TH,bz=-.18*s-N*D;
+   add(new THREE.BoxGeometry(width+.4,top+2.8*s,.5*s),mat(C.riser),0,(top+2.8*s)/2,bz-.3*s,sec);
+   add(new THREE.BoxGeometry(width,.055*s,.05*s),led,0,top+1.15*s,bz-.04*s,sec);
+   sec.updateMatrixWorld(true);
+   const sp=.62*s;for(let r=0;r<N;r++)for(let sx=-width/2+.6*s;sx<=width/2-.6*s;sx+=sp){
+    if(Math.abs(((sx+width/2)%(6.2*s))-3.1*s)<.5*s&&width>8*s)continue; // trappen tussen de vakken
+    dummy.position.set(sx,WH+r*TH+.04*s,-.18*s-r*D-.5*D);dummy.scale.setScalar(s);dummy.updateMatrix();
+    seats.push(new THREE.Matrix4().multiplyMatrices(sec.matrixWorld,dummy.matrix));}};
+  const ez=hz+3.4*s,ex=hx+6.3*s;
+  section(2*ex+.4*s,0,-ez,0);section(2*ez+5.5*s,-ex,0,Math.PI/2);section(2*ez+5.5*s,ex,0,-Math.PI/2);
+  [-1,1].forEach(sd=>{add(new THREE.BoxGeometry(2.6*s,8.8*s,2.6*s),mat(C.riser),sd*(ex+.6*s),4.4*s,-(ez+.2*s));add(new THREE.BoxGeometry(.12*s,6.2*s,.12*s),led,sd*(ex-.7*s),4.2*s,-(ez-1.1*s));});
+  const pan=new THREE.BoxGeometry(.46,.08,.38),back=new THREE.BoxGeometry(.46,.44,.075).translate(0,.24,-.17);
+  [[pan,C.seat],[back,C.seatB]].forEach(([geo,c])=>{const im=new THREE.InstancedMesh(geo,mat(c),seats.length);seats.forEach((m,i)=>im.setMatrixAt(i,m));im.instanceMatrix.needsUpdate=true;scene.add(im);});
+  // lichtbrug met schijnwerpers en zachte lichtbundels
+  const ty=12.6*s,tx=hx+2.3*s,lz=[-1.05,-.33,.39,1.05].map(v=>v*hz);
+  [-1,1].forEach(sd=>add(new THREE.BoxGeometry(.45*s,.45*s,2*hz+10*s),mat(C.truss),sd*tx,ty,-s));
+  [-(hz+2*s),0,hz+1.5*s].forEach(cz=>add(new THREE.BoxGeometry(2*tx+.9*s,.36*s,.36*s),mat(C.truss),0,ty+.15*s,cz));
+  const fix=new THREE.InstancedMesh(new THREE.BoxGeometry(.95*s,.16*s,.55*s),mat(C.truss),8),face=new THREE.InstancedMesh(new THREE.PlaneGeometry(.84*s,.42*s),new THREE.MeshBasicMaterial({color:'#fff8dc',side:THREE.DoubleSide,fog:false}),8);
+  const beams=new THREE.InstancedMesh(new THREE.ConeGeometry(4.4*s,13.5*s,24,1,true),new THREE.MeshBasicMaterial({color:'#eef6ff',transparent:true,opacity:.022,side:THREE.DoubleSide,depthWrite:false,blending:THREE.AdditiveBlending}),8);
+  let i=0;[-1,1].forEach(sd=>lz.forEach(z=>{const x=sd*tx;
+   dummy.scale.setScalar(1);dummy.position.set(x,ty-.3*s,z);dummy.rotation.set(0,0,-sd*.32);dummy.updateMatrix();fix.setMatrixAt(i,dummy.matrix);
+   dummy.position.set(x,ty-.39*s,z);dummy.rotation.set(Math.PI/2,sd*.32,0);dummy.updateMatrix();face.setMatrixAt(i,dummy.matrix);
+   dummy.position.set(x*.66,ty-6.6*s,z*.85);dummy.rotation.set(0,0,-sd*.3);dummy.updateMatrix();beams.setMatrixAt(i,dummy.matrix);i++;}));
+  [fix,face,beams].forEach(m=>{m.instanceMatrix.needsUpdate=true;scene.add(m);});
+  // clubembleem op de vloer langs de linkerzijlijn
+  const im=logoImg(),bt=tex(THREE,512,256,(g)=>{rr(g,20,55,472,146,32);g.fillStyle='rgba(255,209,0,.14)';g.fill();g.lineWidth=5;g.strokeStyle='rgba(255,209,0,.72)';g.stroke();
+   if(im){g.save();rr(g,44,72,144,112,18);g.clip();g.drawImage(im,44,70,144,116);g.restore();}
+   g.textBaseline='middle';g.fillStyle='rgba(255,209,0,.92)';g.font='900 40px Poppins,system-ui,sans-serif';g.fillText('VOLLEYBAL',208,110);g.fillStyle='rgba(255,255,255,.85)';g.font='800 32px Poppins,system-ui,sans-serif';g.fillText('WOUDENBERG',208,152);});
+  const bm=flat(4.4*s,2.2*s,-(hx+1.95*s),hz*.29,new THREE.MeshLambertMaterial({map:bt,transparent:true,opacity:.85,depthWrite:false}),.006);bm.rotation.z=Math.PI/2;
+  flat(.08,2*hz,hx+1.3*s,0,new THREE.MeshBasicMaterial({color:C.band,transparent:true,opacity:.35}),.005);
+ }
+ flat(140,140,0,0,mat(C.apron),-.01);
  if(model.mini){
   const M=model.mini;
-  M.courts.forEach(c=>{flat(c.w,c.d,c.x,c.z,'#0a7be0',0);const L=(w,d,x,z)=>flat(w,d,x,z,'#ffffff');
+  M.courts.forEach(c=>{flat(c.w,c.d,c.x,c.z,courtM,0);flat(c.w*1.6,c.d*1.4,c.x,c.z,poolM,.003);const L=(w,d,x,z)=>flat(w,d,x,z,C.line);
    L(c.w+.05,.05,c.x,c.z-c.d/2);L(c.w+.05,.05,c.x,c.z+c.d/2);L(.05,c.d,c.x-c.w/2,c.z);L(.05,c.d,c.x+c.w/2,c.z);});
-  M.nets.forEach(n=>net(n.x0,n.x1,n.z,2.1));
+  M.nets.forEach(n=>net(n.x0,n.x1,n.z,2.1,.75));
+  const cs=M.courts.length?M.courts:[{x:0,z:0,w:4.5,d:10.4}];
+  hall(Math.max(...cs.map(c=>Math.abs(c.x)+c.w/2)),Math.max(...cs.map(c=>Math.abs(c.z)+c.d/2)),fk);
   if(M.lines.length){const pts=[];M.lines.forEach(([a,b])=>{pts.push(new THREE.Vector3(a[0],.02,a[1]),new THREE.Vector3(b[0],.02,b[1]));});
-   const g=new THREE.BufferGeometry().setFromPoints(pts);scene.add(new THREE.LineSegments(g,new THREE.LineBasicMaterial({color:'#ffffff',transparent:true,opacity:.55})));}
+   const g=new THREE.BufferGeometry().setFromPoints(pts);scene.add(new THREE.LineSegments(g,new THREE.LineBasicMaterial({color:'#ffffff',transparent:true,opacity:.5})));}
  }else{
-  flat(9,18,0,0,'#0a7be0',0);
-  const L=(w,d,x,z,c)=>flat(w,d,x,z,c);
-  L(9.1,.05,0,-9);L(9.1,.05,0,9);L(.05,18.1,-4.5,0);L(.05,18.1,4.5,0);L(9,.05,0,0);L(9,.04,0,-3,'#bae6fd');L(9,.04,0,3,'#bae6fd');
-  net(-4.8,4.8,0,2.43);
-  [-4.5,4.5].forEach(x=>add(new THREE.CylinderGeometry(.015,.015,1.8,6),mat('#ef4444'),x,2.33,0));
+  flat(9,18,0,0,courtM,0);flat(12,22,0,1,poolM,.003);
+  const L=(w,d,x,z)=>flat(w,d,x,z,C.line);
+  L(9.06,.06,0,-9);L(9.06,.06,0,9);L(.06,18.06,-4.5,0);L(.06,18.06,4.5,0);L(9,.06,0,0);L(9,.06,0,-3);L(9,.06,0,3);
+  [-1,1].forEach(sd=>[-3,3].forEach(z=>{for(let i=0;i<5;i++)L(.18,.05,sd*(4.72+i*.34),z);}));
+  net(-4.5,4.5,0,2.43);
+  // antennes rood-wit
+  const antT=tex(THREE,8,64,(g)=>{for(let i=0;i<18;i++){g.fillStyle=i%2?'#ffffff':'#e11d48';g.fillRect(0,i*64/18,8,64/18+1);}});antT.magFilter=THREE.NearestFilter;
+  [-4.5,4.5].forEach(x=>add(new THREE.CylinderGeometry(.014,.014,1.8,8),new THREE.MeshBasicMaterial({map:antT}),x,2.33,.015));
+  hall(4.5,9,1);
  }
  // vlakken op de vloer (verdedigingsvakken, blokschaduw)
  const polys=(model.polys||[]).map((p,i)=>{const sh=new THREE.Shape(p.pts.map(q=>new THREE.Vector2(q[0],-q[1])));
   const m=new THREE.Mesh(new THREE.ShapeGeometry(sh),new THREE.MeshBasicMaterial({color:p.color,transparent:true,opacity:p.op,depthWrite:false}));
   m.rotation.x=-Math.PI/2;m.position.y=.008+i*.0005;scene.add(m);return {p,m};});
+ // ring onder de speler: schaduw in het midden, gloeiende rand met dunne binnenring en een pijltje voor de kijkrichting
+ const ringT=tex(THREE,256,256,(g)=>{const s=g.createRadialGradient(128,128,0,128,128,62);s.addColorStop(0,'rgba(0,0,0,.6)');s.addColorStop(1,'rgba(0,0,0,0)');g.fillStyle=s;g.fillRect(0,0,256,256);
+  const o=g.createRadialGradient(128,128,52,128,128,108);o.addColorStop(0,'rgba(255,255,255,0)');o.addColorStop(.55,'rgba(255,255,255,.3)');o.addColorStop(.75,'rgba(255,255,255,.1)');o.addColorStop(1,'rgba(255,255,255,0)');g.fillStyle=o;g.fillRect(0,0,256,256);
+  g.strokeStyle='#fff';g.shadowColor='#fff';g.shadowBlur=14;g.lineWidth=8;g.beginPath();g.arc(128,128,78,0,Math.PI*2);g.stroke();
+  g.shadowBlur=0;g.globalAlpha=.4;g.lineWidth=2;g.beginPath();g.arc(128,128,64,0,Math.PI*2);g.stroke();g.globalAlpha=1;
+  g.fillStyle='#fff';g.shadowBlur=10;g.beginPath();g.moveTo(128,12);g.lineTo(111,42);g.lineTo(145,42);g.closePath();g.fill();});
+ const blobT=tex(THREE,64,64,(g)=>{const s=g.createRadialGradient(32,32,0,32,32,32);s.addColorStop(0,'rgba(0,0,0,.55)');s.addColorStop(1,'rgba(0,0,0,0)');g.fillStyle=s;g.fillRect(0,0,64,64);});
+ const ringG=new THREE.PlaneGeometry(1.38,1.38),blobG=new THREE.PlaneGeometry(1,1);
  // spelers en materiaal
- const shadowM=new THREE.MeshBasicMaterial({color:'#000000',transparent:true,opacity:.28});
- const shadowG=new THREE.CircleGeometry(.32,20);
  const actors=[];
  const objMesh=it=>{const g=new THREE.Group();const B=(w,h,d,c,y)=>{const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat(c));m.position.y=y==null?h/2:y;g.add(m);return m;};
   switch(it.kind){
@@ -209,46 +317,111 @@ function build(model){
    case 'dikkemat':B(1.4,.4,2,'#1d4ed8');break;
    case 'kast':B(.6,1,1.2,'#92400e');break;
    case 'bank':B(.3,.4,3,'#a16207');break;
-   case 'kar':B(.5,.6,.7,'#64748b');[[-.1,-.15],[.1,.1],[0,.2]].forEach(q=>{const b=new THREE.Mesh(new THREE.SphereGeometry(.11,12,10),mat('#fde047'));b.position.set(q[0],.68,q[1]);g.add(b);});break;
+   case 'kar':B(.5,.6,.7,'#64748b');[[-.1,-.15],[.1,.1],[0,.2]].forEach(q=>{const b=new THREE.Mesh(new THREE.SphereGeometry(.11,12,10),mat(C.ball));b.position.set(q[0],.68,q[1]);g.add(b);});break;
    case 'stoel':B(.45,.45,.45,'#78350f');break;
    case 'doel':[-.6,.6].forEach(x=>{const p=B(.06,1,.06,'#e2e8f0');p.position.x=x;});B(1.26,.06,.06,'#e2e8f0',1);break;
    case 'muur':B(it.len||6,2.4,.25,'#475569');break;
    case 'koord':{const c=new THREE.Mesh(new THREE.CylinderGeometry(.015,.015,it.len||1.6,6),mat('#e11d48'));c.rotation.x=Math.PI/2;c.position.y=1.3;g.add(c);break;}
    case 'korf':{const p=B(.04,1.6,.04,'#334155');const r=new THREE.Mesh(new THREE.TorusGeometry(.25,.03,8,20),mat('#fb923c'));r.rotation.x=Math.PI/2;r.position.y=1.6;g.add(r);break;}
-   case 'zone':{const z=new THREE.Mesh(new THREE.PlaneGeometry(2.1,1.6),new THREE.MeshBasicMaterial({color:'#fde047',transparent:true,opacity:.35}));z.rotation.x=-Math.PI/2;z.position.y=.012;g.add(z);break;}
+   case 'zone':{const z=new THREE.Mesh(new THREE.PlaneGeometry(2.1,1.6),new THREE.MeshBasicMaterial({color:'#fde047',transparent:true,opacity:.3}));z.rotation.x=-Math.PI/2;z.position.y=.012;g.add(z);break;}
    case 'ladder':{[-.25,.25].forEach(x=>{const p=B(.04,.02,4.7,'#fde047',.012);p.position.x=x;});for(let i=0;i<7;i++){const r=B(.55,.02,.04,'#fde047',.012);r.position.z=-2.35+i*.78;}break;}
    case 'lint':{B(.06,.5,.06,'#e11d48',2.05);break;}
    case 'hoepel':{const r=new THREE.Mesh(new THREE.TorusGeometry(.35,.025,8,24),mat('#f8fafc'));r.rotation.x=Math.PI/2;r.position.y=.03;g.add(r);break;}
    case 'pylon':{const k=model.mini?1:1.25;B(.34*k,.03,.34*k,'#f97316');const c=new THREE.Mesh(new THREE.ConeGeometry(.14*k,.4*k,18),mat('#f97316'));c.position.y=.2*k+.03;g.add(c);
     const r=new THREE.Mesh(new THREE.CylinderGeometry(.047*k,.066*k,.06*k,18),mat('#ffffff'));r.position.y=.25*k+.03;g.add(r);break;}
    default:return null;}
+  if(it.kind!=='zone'&&it.kind!=='ladder'&&it.kind!=='koord'&&it.kind!=='lint'){const s=new THREE.Mesh(blobG,new THREE.MeshBasicMaterial({map:blobT,transparent:true,depthWrite:false}));s.rotation.x=-Math.PI/2;s.position.y=.006;s.scale.setScalar(1.3);g.add(s);}
   return g;};
- model.items.forEach(it=>{
-  if(it.kind!=='player'){const g=objMesh(it);if(!g)return;scene.add(g);actors.push({it,g});return;}
-  const k=it.kid?.78:1,g=new THREE.Group(),body=new THREE.Group();
-  const torso=new THREE.Mesh(new THREE.CylinderGeometry(.2*k,.26*k,1.25*k,16),mat(it.color));torso.position.y=.63*k;body.add(torso);
-  const head=new THREE.Mesh(new THREE.SphereGeometry(.17*k,16,12),mat('#d9a066'));head.position.y=1.42*k;body.add(head);
-  g.add(body);
-  if(it.label){const lb=label(THREE,it.label,it.color);lb.position.y=2.05;g.add(lb);}
-  if(it.ring){const r=new THREE.Mesh(new THREE.RingGeometry(.42,.5,28),new THREE.MeshBasicMaterial({color:'#ffffff'}));r.rotation.x=-Math.PI/2;r.position.y=.015;g.add(r);}
-  const sh=new THREE.Mesh(shadowG,shadowM);sh.rotation.x=-Math.PI/2;sh.position.y=.01;sh.scale.setScalar(k);scene.add(sh);
-  scene.add(g);actors.push({it,g,sh,body});
+ // gestileerde speler naar het voorbeeld: shirt (met strepen en code op de rug), broek, hoofd met haar, armen en benen met schoenen.
+ // Per shirtkleur worden hoofd/broek/kraag, een arm en een been elk tot één vorm samengevoegd.
+ const rigs={};
+ const rig=(jersey,acc,shoe)=>{const key=jersey+acc+shoe;if(rigs[key])return rigs[key];
+  const Cy=(a,b,h,n)=>new THREE.CylinderGeometry(a,b,h,n||12);
+  const core=mergeCol(THREE,[[Cy(.165,.175,.24,14),C.shorts,0,.8,0,1.08,1,.82],[new THREE.TorusGeometry(.11,.022,6,16),acc,0,1.44,0,1,1,1,Math.PI/2],
+   [Cy(.055,.065,.1,10),C.skin,0,1.48,0],[new THREE.SphereGeometry(.135,16,12),C.skin,0,1.63,0,.92,1.06,.96],[new THREE.SphereGeometry(.139,14,8,0,Math.PI*2,0,Math.PI*.56),C.hair,0,1.645,.015,.93,1.04,.98]]);
+  const arm=mergeCol(THREE,[[Cy(.068,.058,.2),jersey,0,-.09,0],[Cy(.052,.042,.36),C.skin,0,-.35,0],[new THREE.SphereGeometry(.046,8,8),C.skin,0,-.54,0]]);
+  const leg=mergeCol(THREE,[[Cy(.082,.072,.22),C.shorts,0,-.1,0],[Cy(.062,.048,.44),C.skin,0,-.42,0],[new THREE.BoxGeometry(.095,.085,.22),shoe,0,-.69,-.045]]);
+  return rigs[key]={core,arm,leg};};
+ const torsoG=new THREE.CylinderGeometry(.21,.16,.56,16,1,false,Math.PI);
+ const nets=model.mini?model.mini.nets.map(n=>n.z):[0];
+ const shirt=(jersey,acc,print,text)=>{
+  const t=tex(THREE,256,128,(g,w,h)=>{g.fillStyle=jersey;g.fillRect(0,0,w,h);g.fillStyle=acc;g.fillRect(58,12,9,h-12);g.fillRect(189,12,9,h-12);
+   if(text){g.fillStyle=print;g.font='900 '+(text.length>3?32:42)+'px Poppins,system-ui,sans-serif';g.textAlign='center';g.textBaseline='middle';g.fillText(text,128,60);}});
+  return new THREE.MeshLambertMaterial({map:t});};
+ model.items.forEach(it0=>{
+  if(it0.kind!=='player'){const g=objMesh(it0);if(!g)return;scene.add(g);actors.push({it:it0,g});return;}
+  let col=String(it0.color||'#94a3b8').toLowerCase();col=BRIGHT[col]||(lum(col)<.28?'#'+new THREE.Color(col).lerp(new THREE.Color('#ffffff'),.45).getHexString():col);
+  const it=Object.assign({},it0,{color:col});
+  // shirts: zwart met gele strepen en de code in de rolkleur; de libero in geel; kinderen bij de mini's (zonder label) in hun teamkleur
+  const lib=/^(LIB|L)$/i.test(it.label||''),kid=!it.label;
+  const jersey=kid?col:lib?C.band:C.jersey,acc=kid?C.jersey:lib?C.jersey:C.band,shoe=lib||kid?C.jersey:C.band,print=lib?C.jersey:col;
+  const R=rig(jersey,acc,shoe);
+  const k=it.kid?.78:1,g=new THREE.Group(),body=new THREE.Group(),fig=new THREE.Group();
+  const M=(geo,m,x,y,z)=>{const o=new THREE.Mesh(geo,m);o.position.set(x||0,y||0,z||0);fig.add(o);return o;};
+  M(R.core,vcol);
+  const tor=M(torsoG,shirt(jersey,acc,print,it.label),0,1.16,0);tor.scale.set(1.12,1,.78);
+  const arms=[-1,1].map(s=>M(R.arm,vcol,s*.26,1.38,0));arms.forEach((a,i)=>{a.rotation.z=(i?1:-1)*.08;});
+  const legs=[-1,1].map(s=>M(R.leg,vcol,s*.105,.76,0));
+  fig.scale.setScalar(k);body.add(fig);g.add(body);
+  if(it.label){const lb=label(THREE,it.label,it.color);lb.position.y=2.12*k;g.add(lb);}
+  const ring=new THREE.Mesh(ringG,new THREE.MeshBasicMaterial({map:ringT,color:it.color,transparent:true,depthWrite:false}));ring.position.y=.018;ring.scale.setScalar(k);scene.add(ring);
+  let hl=null;if(it.ring){hl=new THREE.Mesh(new THREE.RingGeometry(.55,.62,40),new THREE.MeshBasicMaterial({color:'#ffffff',transparent:true,opacity:.9,depthWrite:false}));hl.rotation.x=-Math.PI/2;hl.position.y=.02;scene.add(hl);}
+  scene.add(g);actors.push({it,g,body,fig,legs,arms,ring,hl,k,ang:null,amp:0,dist:0,prev:null});
  });
- const br=model.mini?.12:.15;
- const balls=model.balls.map(b=>{const m=new THREE.Mesh(new THREE.SphereGeometry(br,18,14),mat('#fde047'));scene.add(m);
-  const sh=new THREE.Mesh(new THREE.CircleGeometry(br*.95,16),shadowM);sh.rotation.x=-Math.PI/2;sh.position.y=.012;scene.add(sh);
-  let ring=null;if(b.color){ring=new THREE.Mesh(new THREE.TorusGeometry(.17,.03,8,20),mat(b.color));scene.add(ring);}
-  return {b,m,sh,ring};});
+ // bal: geel met blauwe banen, draait mee; een taps toelopende gele lichtstreep erachter
+ const ballT=tex(THREE,256,128,(g,w,h)=>{g.fillStyle=C.ball;g.fillRect(0,0,w,h);
+  for(let s=0;s<3;s++){g.fillStyle=s===1?'#f8fafc':C.ball2;g.beginPath();const x0=s*85+10;g.moveTo(x0,0);for(let v=0;v<=h;v+=4)g.lineTo(x0+28*Math.sin(v/h*Math.PI),v);for(let v=h;v>=0;v-=4)g.lineTo(x0+34+28*Math.sin(v/h*Math.PI),v);g.closePath();g.fill();}
+  g.strokeStyle='rgba(0,0,0,.35)';g.lineWidth=2;for(let s=0;s<6;s++){g.beginPath();g.moveTo(s*43,0);g.lineTo(s*43,h);g.stroke();}});
+ const ballM=new THREE.MeshLambertMaterial({map:ballT,emissive:0x2a2200});
+ const br=model.mini?.12:.15,TR=16;
+ const balls=model.balls.map(b=>{const m=new THREE.Mesh(new THREE.SphereGeometry(br,22,16),ballM);scene.add(m);
+  const sh=new THREE.Mesh(blobG,new THREE.MeshBasicMaterial({map:blobT,transparent:true,depthWrite:false}));sh.rotation.x=-Math.PI/2;sh.position.y=.012;scene.add(sh);
+  let ring=null;if(b.color){ring=new THREE.Mesh(new THREE.TorusGeometry(.2,.025,8,24),new THREE.MeshBasicMaterial({color:b.color}));scene.add(ring);}
+  const tg=new THREE.BufferGeometry();tg.setAttribute('position',new THREE.BufferAttribute(new Float32Array(TR*2*3),3));
+  const col=new Float32Array(TR*2*3),tc=new THREE.Color(b.color||'#ffd100');for(let i=0;i<TR;i++){const a=Math.pow(1-i/TR,1.5)*.8;for(let j=0;j<2;j++){col[(i*2+j)*3]=tc.r*a;col[(i*2+j)*3+1]=tc.g*a;col[(i*2+j)*3+2]=tc.b*a;}}
+  tg.setAttribute('color',new THREE.BufferAttribute(col,3));
+  const idx=[];for(let i=0;i<TR-1;i++){const a=i*2;idx.push(a,a+1,a+2,a+1,a+3,a+2);}tg.setIndex(idx);
+  const trail=new THREE.Mesh(tg,new THREE.MeshBasicMaterial({vertexColors:true,blending:THREE.AdditiveBlending,transparent:true,depthWrite:false,side:THREE.DoubleSide}));trail.frustumCulled=false;scene.add(trail);
+  return {b,m,sh,ring,trail,hist:[]};});
+ const near=z=>{let best=nets[0]||0;nets.forEach(n=>{if(Math.abs(n-z)<Math.abs(best-z))best=n;});return best;};
+ const turn=(a,b,t)=>{let d=b-a;while(d>Math.PI)d-=2*Math.PI;while(d<-Math.PI)d+=2*Math.PI;return a+d*t;};
+ const V1=new THREE.Vector3(),V2=new THREE.Vector3(),V3=new THREE.Vector3();
  function update(f,camera){
   if(model.tick)model.tick();
-  for(const a of actors){const p=a.it.pos(f);a.g.visible=!!p;if(a.sh)a.sh.visible=!!p;if(!p)continue;
-   const h=a.it.lift?a.it.lift(f):0;a.g.position.set(p[0],h,p[1]);if(a.sh)a.sh.position.set(p[0],.01,p[1]);
-   if(a.it.tilt&&a.body){a.body.rotation.z=a.it.tilt(f);}}
-  for(const o of balls){const q=o.b.at(f);const vis=!!q;o.m.visible=o.sh.visible=vis;if(o.ring)o.ring.visible=vis;if(!q)continue;
-   o.m.position.set(q[0],q[1],q[2]);o.sh.position.set(q[0],.012,q[2]);if(o.ring){o.ring.position.copy(o.m.position);o.ring.lookAt(camera.position);}}
+  for(const a of actors){const p=a.it.pos(f);const vis=!!p;a.g.visible=vis;if(a.ring)a.ring.visible=vis;if(a.hl)a.hl.visible=vis;if(!p)continue;
+   const h=a.it.lift?a.it.lift(f):0;a.g.position.set(p[0],h,p[1]);
+   if(!a.fig)continue;
+   // lopen: benen en armen zwaaien mee met de verplaatsing; springen: armen omhoog
+   let step=a.prev?Math.hypot(p[0]-a.prev[0],p[1]-a.prev[1]):0;if(step>.8)step=0;
+   const dx=a.prev?p[0]-a.prev[0]:0,dz=a.prev?p[1]-a.prev[1]:0;a.prev=[p[0],p[1]];
+   a.dist+=step;a.amp=a.amp*.8+Math.min(.6,step*7/a.k)*.2;
+   let want;
+   if(a.it.kid&&step>.004)want=Math.atan2(-dx,-dz);
+   else if(a.it.kid)want=a.ang==null?(model.mini&&model.mini.nets.length?(p[1]>near(p[1])?0:Math.PI):-Math.PI/2):a.ang;
+   else want=p[1]>near(p[1])?0:Math.PI;
+   a.ang=a.ang==null?want:turn(a.ang,want,.25);a.fig.rotation.y=a.ang;
+   const sw=Math.sin(a.dist*5.2/a.k)*a.amp,up=Math.min(1,h/.45);
+   a.legs[0].rotation.x=sw*(1-up)+up*.35;a.legs[1].rotation.x=-sw*(1-up)+up*.15;
+   a.arms.forEach((m,i)=>{m.rotation.x=(.3-(i?sw:-sw)*.8)*(1-up)+up*2.8;});
+   if(a.it.tilt)a.body.rotation.z=a.it.tilt(f);
+   a.ring.position.set(p[0],.018,p[1]);a.ring.rotation.set(-Math.PI/2,0,a.ang);
+   if(a.hl){a.hl.position.set(p[0],.02,p[1]);a.hl.scale.setScalar(1+.08*Math.sin(performance.now()/180));}}
+  for(const o of balls){const q=o.b.at(f);const vis=!!q;o.m.visible=o.sh.visible=o.trail.visible=vis;if(o.ring)o.ring.visible=vis;if(!q){o.hist.length=0;continue;}
+   const last=o.hist[0];if(last&&Math.hypot(q[0]-last[0],q[1]-last[1],q[2]-last[2])>2.5)o.hist.length=0;
+   if(last){const d=Math.hypot(q[0]-last[0],q[2]-last[2]);o.m.rotation.x+=d*4;o.m.rotation.z+=d*1.5;}
+   o.hist.unshift([q[0],q[1],q[2]]);if(o.hist.length>TR)o.hist.length=TR;
+   // lichtstreep: lint dat naar de camera kijkt en smaller wordt naar achteren
+   const pa=o.trail.geometry.attributes.position,H=o.hist;
+   for(let i=0;i<TR;i++){const v=H[Math.min(i,H.length-1)],w=H[Math.min(i+1,H.length-1)];
+    V1.set(v[0]-w[0],v[1]-w[1],v[2]-w[2]);V2.set(camera.position.x-v[0],camera.position.y-v[1],camera.position.z-v[2]);V3.crossVectors(V1,V2);
+    const L=V3.length(),wd=br*.85*(1-i/TR);if(L>1e-6)V3.multiplyScalar(wd/L);else V3.set(0,0,0);
+    pa.setXYZ(i*2,v[0]+V3.x,v[1]+V3.y,v[2]+V3.z);pa.setXYZ(i*2+1,v[0]-V3.x,v[1]-V3.y,v[2]-V3.z);}
+   pa.needsUpdate=true;
+   o.m.position.set(q[0],q[1],q[2]);const sz=Math.max(.3,1-q[1]/6);o.sh.position.set(q[0],.012,q[2]);o.sh.scale.setScalar(br*4.5*(1.3-sz*.3));o.sh.material.opacity=sz;
+   if(o.ring){o.ring.position.copy(o.m.position);o.ring.lookAt(camera.position);}}
   for(const P of polys)if(P.p.vis)P.m.visible=P.p.vis(f);
  }
- function dispose(){scene.traverse(o=>{if(o.geometry)o.geometry.dispose();if(o.material){if(o.material.map)o.material.map.dispose();o.material.dispose();}});}
+ function dispose(){scene.traverse(o=>{if(o.geometry)o.geometry.dispose();if(o.material){[].concat(o.material).forEach(m=>{if(m.map)m.map.dispose();m.dispose();});}});}
  return {scene,update,dispose};
 }
 // standpunten: afstand, draaiing om het veld, hoek vanaf boven, middelpunt (meters); k = schaal (mini's kleiner)
@@ -263,7 +436,7 @@ const CSS='#d3{border:0;padding:0;margin:0;width:100vw;max-width:100vw;height:10
  +'#d3[open]{display:flex;flex-direction:column}#d3::backdrop{background:rgba(0,0,0,.6)}'
  +'#d3 .d3h{display:flex;align-items:center;gap:10px;padding:10px 12px 6px}#d3 .d3h b{flex:1;font-size:16px;line-height:1.25}'
  +'#d3 button{min-height:40px;padding:6px 12px;font-weight:700;border-radius:10px}'
- +'#d3 .d3c{position:relative;flex:1;min-height:200px;margin:0 12px;border-radius:14px;overflow:hidden;background:#1d1d1b;touch-action:none}'
+ +'#d3 .d3c{position:relative;flex:1;min-height:200px;margin:0 12px;border-radius:14px;overflow:hidden;background:#0c0e12;touch-action:none}'
  +'#d3 canvas{display:block;width:100%;height:100%;cursor:grab}#d3 .d3msg{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;text-align:center;padding:20px}'
  +'#d3 .d3cap{margin:8px 12px 0;font-size:15px;min-height:1.3em}'
  +'#d3 .d3bar{display:flex;flex-wrap:wrap;gap:6px;padding:6px 12px}#d3 .d3bar .on{outline:2px solid var(--acc,#0089fe)}'
