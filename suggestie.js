@@ -334,7 +334,8 @@ if(ON)window.vvwFire={
  login:()=>AUTH.login(),logout:()=>AUTH.logout(),
  async user(){try{const {auth}=await fb();const u=auth.currentUser;return u?{uid:u.uid,email:u.email||''}:null;}catch(e){return null;}},
  async lees(col,id){try{return await authed(DB+'/'+col+'/'+encodeURIComponent(id)+KEY);}catch(e){if(e.status===404)return null;throw e;}},
- schrijf:(col,id,fields)=>authed(DB+'/'+col+'/'+encodeURIComponent(id)+KEY,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({fields})})
+ schrijf:(col,id,fields)=>authed(DB+'/'+col+'/'+encodeURIComponent(id)+KEY,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({fields})}),
+ wis:(col,id)=>authed(DB+'/'+col+'/'+encodeURIComponent(id)+KEY,{method:'DELETE'})
 };
 // beheer direct openen met #beheer achter de link
 const hash=()=>{if(ON&&location.hash==='#beheer')admin();};

@@ -254,11 +254,12 @@ function asText(){let t='Training jeugd/senioren (90 min, '+T.n+' spelers'+(T.pm
  return t+'\nVV Woudenberg trainingsapp';}
 window.senShare=()=>{const t=asText();(navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>toast('Training gekopieerd als tekst'),()=>{const e=$('s_box');e.style.display='';e.value=t;e.select();toast('Selecteer en kopieer de tekst');});};
 const KEY='vvw.senioren.bewaard';
-function savedUI(){const L=LS.get(KEY,[]);$('s_saved').innerHTML=L.map((s,i)=>'<div class="row"><button style="flex:3" onclick="senLoad('+i+')">'+esc(s.name)+'</button><button aria-label="Verwijder '+esc(s.name)+'" onclick="senForget('+i+')">×</button></div>').join('');}
+function savedUI(){const L=LS.get(KEY,[]);$('s_saved').innerHTML=L.map((s,i)=>'<div class="row"><button style="flex:3" onclick="senLoad('+i+')">'+esc(s.name)+'</button><button aria-label="Verwijder '+esc(s.name)+'" onclick="senForget('+i+')">×</button></div>').join('');if(window.vvwAcc)vvwAcc.ui();}
+window.senSavedUI=()=>{if($('s_saved'))savedUI();};
 window.senSave=()=>{if(!T.slots.flat().length){toast('Deze training is nog leeg');return;}const name=$('s_name').value.trim()||'Training '+new Date().toLocaleDateString('nl-NL');
- const L=LS.get(KEY,[]);L.unshift({name,th:T.th.slice(),n:T.n,pm:T.pm,R:Object.assign({},T.R),slots:T.slots.map(a=>a.map(d=>d.id))});if(LS.set(KEY,L.slice(0,20))){toast('Bewaard op dit apparaat');$('s_name').value='';savedUI();}else toast('Bewaren lukt niet in deze browser');};
+ const L=LS.get(KEY,[]);L.unshift({name,th:T.th.slice(),n:T.n,pm:T.pm,R:Object.assign({},T.R),slots:T.slots.map(a=>a.map(d=>d.id))});if(LS.set(KEY,L.slice(0,20))){toast(window.vvwAcc&&vvwAcc.aan()?'Training bewaard (ook online)':'Bewaard op dit apparaat');$('s_name').value='';savedUI();if(window.vvwAcc)vvwAcc.bewaard();}else toast('Bewaren lukt niet in deze browser');};
 window.senLoad=i=>{const s=LS.get(KEY,[])[i];if(!s)return;const old=s.slots.length===5;T.th=Array.isArray(s.th)?s.th.slice():BLOK.map(()=>'all');if(old){T.th.splice(1,0,'all');s.slots.splice(1,0,[]);}T.n=Math.max(NMIN,Math.min(NMAX,s.n||12));T.pm=!!s.pm&&!!s.R;if(T.pm){T.R=Object.assign({sv:0,dia:0,pl:0,mid:0,lib:0},s.R);T.n=Math.max(NMIN,Math.min(NMAX,rsum(T.R)));}T.slots=s.slots.map(a=>a.map(id=>byId.get(id)).filter(Boolean));T.pins=new Set();controls();render();toast('Training geladen');};
-window.senForget=i=>{const L=LS.get(KEY,[]);L.splice(i,1);LS.set(KEY,L);savedUI();};
+window.senForget=i=>{const L=LS.get(KEY,[]);L.splice(i,1);LS.set(KEY,L);savedUI();if(window.vvwAcc)vvwAcc.bewaard();};
 function controls(){
  const same=T.th.every(x=>x===T.th[0]);$('s_th').value=same?T.th[0]:'mix';$('s_n').value=T.n;$('s_nv').textContent=T.n;
  $('s_pm').checked=T.pm;$('s_slw').style.display=T.pm?'none':'';$('s_pos').style.display=T.pm?'':'none';
