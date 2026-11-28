@@ -522,10 +522,6 @@ function teamKaart(team){
   +(meerStat?'<section class="card hm-ms"><div class="hm-stab" role="tablist">'+tabs.map(t=>'<button type="button" role="tab" data-s="'+t[0]+'" aria-selected="'+(statTab===t[0])+'">'+t[1]+'</button>').join('')+'</div>'+statSectie(team,st)+'</section>':'');
 }
 
-// stuiterende volleybal in het welkomstblok (staat stil bij "minder beweging")
-const BAL='<div class="hm-bal" aria-hidden="true"><svg viewBox="0 0 100 100"><defs><clipPath id="hmBalC"><circle cx="50" cy="50" r="46"/></clipPath></defs><circle cx="50" cy="50" r="46" fill="#fff"/><g class="hm-rol"><g clip-path="url(#hmBalC)">'
- +'<g transform="rotate(0 50 50)"><g class="hm-bal-b"><path d="M50 50Q78 46 84 2L112 2L112 30L100 30Q90 60 50 50Z" class="hm-bal-v"/><path d="M50 50Q78 46 84 2M50 50Q90 60 100 30" fill="none" stroke="#1d1d1b" stroke-width="3.5"/></g></g>'+'<g transform="rotate(120 50 50)"><g class="hm-bal-b"><path d="M50 50Q78 46 84 2L112 2L112 30L100 30Q90 60 50 50Z" class="hm-bal-v"/><path d="M50 50Q78 46 84 2M50 50Q90 60 100 30" fill="none" stroke="#1d1d1b" stroke-width="3.5"/></g></g>'+'<g transform="rotate(240 50 50)"><g class="hm-bal-b"><path d="M50 50Q78 46 84 2L112 2L112 30L100 30Q90 60 50 50Z" class="hm-bal-v"/><path d="M50 50Q78 46 84 2M50 50Q90 60 100 30" fill="none" stroke="#1d1d1b" stroke-width="3.5"/></g></g>'
- +'</g><circle cx="50" cy="50" r="46" fill="none" stroke="#1d1d1b" stroke-width="4"/></g></svg><i></i></div>';
 function teken(){
  const naam=(()=>{try{return localStorage.getItem('vvw.account.naam')||'';}catch(e){return '';}})();
  const el=$('v_home');if(!el)return;
@@ -535,7 +531,7 @@ function teken(){
  const o=t=>'<option'+(t===team?' selected':'')+'>'+esc(t)+'</option>',ex=ts.filter(extraTeam);
  const opt='<option value="">Alle teams</option>'+ts.filter(t=>!extraTeam(t)).map(o).join('')+(ex.length?'<optgroup label="Andere clubs">'+ex.map(o).join('')+'</optgroup>':'');
  const bij=D?'Bijgewerkt '+new Date(D.bij).toLocaleString('nl-NL',{...TZ,weekday:'short',hour:'2-digit',minute:'2-digit'}):'';
- el.innerHTML='<section class="hm-welkom">'+BAL+'<h2>'+esc(WELKOM_TITEL)+(naam?', <span class="hm-naam">'+esc(naam)+'</span>':'')+'!</h2><p class="hm-lang">'+esc(WELKOM_TEKST)+'</p><p class="hm-kort">'+esc(WELKOM_KORT)+'</p>'
+ el.innerHTML='<section class="hm-welkom"><h2>'+esc(WELKOM_TITEL)+(naam?', <span class="hm-naam">'+esc(naam)+'</span>':'')+'!</h2><p class="hm-lang">'+esc(WELKOM_TEKST)+'</p><p class="hm-kort">'+esc(WELKOM_KORT)+'</p>'
   +'<div class="hm-snel"><button type="button" data-v="gen">Training mini’s</button><button type="button" data-v="sen">Training jeugd &amp; senioren</button>'
   +'<button type="button" data-v="rot">5-1 rotaties</button><button type="button" data-v="def">Verdediging</button><button type="button" data-v="aanval">Aanval</button></div></section>'
   +'<div class="hm-kop"><label for="hm_team">Team</label><select id="hm_team">'+opt+'</select><button type="button" id="hm_ver" class="hm-ver" aria-label="Vernieuwen" title="Vernieuwen"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a9 9 0 1 1-3-6.7M21 4v5h-5"/></svg><span>Vernieuwen</span></button>'
