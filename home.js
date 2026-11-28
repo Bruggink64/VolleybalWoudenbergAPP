@@ -202,22 +202,6 @@ function bewaarVerloop(k,d){
  alle[k]=r;put(VLK,alle);
  return {set:i,sets:r.sets};
 }
-// grafiek van het verschil in punten binnen een set, gezien vanuit ons team (boven de lijn = wij staan voor)
-function verloopSvg(l,wijA){
- const pt=l.map(p=>({n:p[0]+p[1],d:wijA?p[0]-p[1]:p[1]-p[0]}));
- if(pt[0].n>0)pt.unshift({n:0,d:0,gok:1});
- const N=Math.max(pt[pt.length-1].n,20),M=Math.max(3,...pt.map(p=>Math.abs(p.d))),W=320,H=96,m=H/2-6;
- const X=n=>(n/N*W).toFixed(1),Y=d=>(H/2-d/M*m).toFixed(1);
- let pad='',start=pt[0].gok?1:0,gok='';
- if(start)gok='<path class="hm-vg-gok" d="M0 '+Y(0)+'L'+X(pt[1].n)+' '+Y(pt[1].d)+'"/>';
- pt.slice(start).forEach((p,j)=>{pad+=(j?'H'+X(p.n)+'V':'M'+X(p.n)+' ')+Y(p.d);});
- const vlak='M'+X(pt[start].n)+' '+Y(0)+pad.replace(/^M[^ ]+ /,'V')+'V'+Y(0)+'Z';
- return '<svg class="hm-vg" viewBox="-2 0 '+(W+4)+' '+H+'" preserveAspectRatio="none" role="img" aria-label="Puntenverloop">'
-  +'<defs><clipPath id="hmvgO"><rect x="-2" y="0" width="'+(W+4)+'" height="'+Y(0)+'"/></clipPath><clipPath id="hmvgN"><rect x="-2" y="'+Y(0)+'" width="'+(W+4)+'" height="'+H+'"/></clipPath></defs>'
-  +'<line class="hm-vg-0" x1="0" x2="'+W+'" y1="'+Y(0)+'" y2="'+Y(0)+'"/>'
-  +'<path class="hm-vg-voor" clip-path="url(#hmvgO)" d="'+vlak+'"/><path class="hm-vg-achter" clip-path="url(#hmvgN)" d="'+vlak+'"/>'
-  +gok+'<path class="hm-vg-lijn" d="'+pad+'"/></svg>';
-}
 function verloopBlok(w,v){
  if(!v||!v.sets)return '';
  let i=v.set,l=v.sets[i];
@@ -225,9 +209,8 @@ function verloopBlok(w,v){
  let vorige=false;if((!l||l.length<2&&!(l[0]&&(l[0][0]||l[0][1])))&&v.sets[i-1]&&v.sets[i-1].length>1){i--;l=v.sets[i];vorige=true;}
  if(!l||!l.length||!(l[l.length-1][0]+l[l.length-1][1]))return '';
  const wijA=isW(w.a),eerste=l[0],e=l[l.length-1];
- const ons=p=>wijA?p[0]-p[1]:p[1]-p[0];let max=0,min=0;l.forEach(p=>{max=Math.max(max,ons(p));min=Math.min(min,ons(p));});
  const wie=t=>esc(isWb(t)?'Woudenberg '+teamVan(t):teamVan(t)),wij=wie(wijA?w.a:w.b),zij=wie(wijA?w.b:w.a);
- // wie maakte elk punt: w = wij, z = zij, ? = onbekend (beide teams scoorden tussen twee peilingen)
+ // wie maakte elk punt (bolletje geel = wij, rood = zij): w = wij, z = zij, ? = onbekend (beide teams scoorden tussen twee peilingen)
  const pn=[];
  for(let j=1;j<l.length;j++){
   const da=l[j][0]-l[j-1][0],db=l[j][1]-l[j-1][1],wd=wijA?da:db,zd=wijA?db:da;
@@ -243,12 +226,11 @@ function verloopBlok(w,v){
  const al=eerste[0]+eerste[1];
  const bol=pn.length?'<div class="hm-vb-pn" aria-label="Punten in volgorde">'+(al?'<span class="hm-pn-voor">'+al+' eerder</span>':'')
    +pn.map(c=>'<i class="'+c+'"></i>').join('')+'</div>':'';
- return '<div class="hm-vb"><div class="hm-vb-kop"><b>Puntenverloop set '+(i+1)+(vorige?' (afgelopen)':'')+'</b><span>'+e[0]+'-'+e[1]+'</span></div>'
-  +reeks+verloopSvg(l,wijA)
-  +'<div class="hm-vb-as"><span>▲ '+wij+(max>0?' max +'+max:'')+'</span><span>▼ '+zij+(min<0?' max +'+(-min):'')+'</span></div>'
-  +bol
+ return '<div class="hm-vb"><div class="hm-vb-kop"><b>Punten set '+(i+1)+(vorige?' (afgelopen)':'')+'</b><span>'+e[0]+'-'+e[1]+'</span></div>'
+  +'<div class="hm-vb-leg"><span><i class="w"></i>'+wij+'</span><span><i class="z"></i>'+zij+'</span></div>'
+  +bol+reeks
   +((rkW>1||rkZ>1)?'<p class="hm-vb-noot">Langste reeks: '+wij+' '+rkW+', '+zij+' '+rkZ+'.</p>':'')
-  +(al>0?'<p class="hm-vb-noot">Bijgehouden vanaf '+eerste[0]+'-'+eerste[1]+' ('+tijd(new Date(eerste[2]))+'); de stippellijn is daarvoor.</p>':'')
+  +(al>0?'<p class="hm-vb-noot">Bijgehouden vanaf '+eerste[0]+'-'+eerste[1]+' ('+tijd(new Date(eerste[2]))+').</p>':'')
   +'</div>';
 }
 let liveBezig=false,livePeil=0;
