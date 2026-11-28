@@ -1,12 +1,12 @@
 // Trainingen online bewaren met een Google-account (optioneel, voor alle trainers).
 // Zonder inloggen blijft alles op het apparaat, zoals altijd. Na inloggen staan de bewaarde trainingen
-// (Mini's: vvw.trainingen, Jeugd & Senioren: vvw.senioren.bewaard) ook online in Firestore, in één document
+// (Mini's: vvw.trainingen, Jeugd & Senioren: vvw.senioren.bewaard) en de favoriete teams van de homepagina (vvw.favteams) ook online in Firestore, in één document
 // per trainer: trainersopslag/<uid>. Alleen die trainer zelf kan het lezen of wijzigen (zie tools/firestore.rules).
 // De lijst op het apparaat blijft een kopie, zodat bewaarde trainingen ook zonder internet te openen zijn.
 // Gebruikt window.vvwFire uit suggestie.js (Google-inlog via Firebase). Laadt na app.js en senioren-app.js.
 (function(){
 const COL='trainersopslag',VLAG='vvw.account',VUIL='vvw.account.nietbewaard';
-const LIJST={minis:{k:'vvw.trainingen',max:50},senioren:{k:'vvw.senioren.bewaard',max:20}};
+const LIJST={minis:{k:'vvw.trainingen',max:50},senioren:{k:'vvw.senioren.bewaard',max:20},teams:{k:'vvw.favteams',max:10}};
 const get=(k,d)=>{try{const v=localStorage.getItem(k);return v?JSON.parse(v):d;}catch(e){return d;}};
 const put=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v));return true;}catch(e){return false;}};
 const vlag=k=>({get(){try{return localStorage.getItem(k)==='1';}catch(e){return false;}},set(v){try{if(v)localStorage.setItem(k,'1');else localStorage.removeItem(k);}catch(e){}}});
@@ -20,6 +20,7 @@ function samen(online,lokaal,max){const s=new Set(online.map(x=>JSON.stringify(x
 function herteken(){
  try{if(typeof savedUI==='function')savedUI();}catch(e){}
  try{if(window.senSavedUI)window.senSavedUI();}catch(e){}
+ try{if(window.vvwHomeTeken)window.vvwHomeTeken();}catch(e){}
  ui();
 }
 async function start(inloggen){
@@ -73,7 +74,7 @@ function html(){
  if(user){
   h='<p class="note acc-on">&#9729; Online bewaard in je account ('+esc(user.email)+'). Je ziet deze trainingen op elk apparaat waar je inlogt.</p>'
    +'<div class="row"><button type="button" data-a="uit">Uitloggen</button><button type="button" data-a="info">'+(open?'Minder':'Wat wordt er bewaard?')+'</button></div>';
-  if(open)h+='<div class="note acc-info"><p>Online staan alleen de namen en de inhoud van je bewaarde trainingen, in een eigen opslag die alleen jij met je Google-account kunt openen. Andere trainers zien ze niet. De opslag staat bij Google Firebase in Nederland.</p>'
+  if(open)h+='<div class="note acc-info"><p>Online staan alleen de namen en de inhoud van je bewaarde trainingen en je favoriete teams, in een eigen opslag die alleen jij met je Google-account kunt openen. Andere trainers zien ze niet. De opslag staat bij Google Firebase in Nederland.</p>'
    +'<div class="row"><button type="button" data-a="wis">Mijn online trainingen wissen</button></div></div>';
  }else{
   h='<div class="row"><button type="button" data-a="in">Inloggen met Google</button></div>'
