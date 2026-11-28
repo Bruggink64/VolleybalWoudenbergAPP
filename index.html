@@ -13,6 +13,11 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" media="print" onload="this.media='all'">
 <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&family=Inter:wght@400;500;600&display=swap"></noscript>
+<script>
+// thema: Automatisch (volgt het apparaat), Licht of Donker; de keuze staat op dit apparaat (vvw.thema)
+(function(){var t='';try{t=localStorage.getItem('vvw.thema')||'';}catch(e){}
+ if(t==='light'||t==='dark')document.documentElement.setAttribute('data-theme',t);})();
+</script>
 <style>
 :root{--bg:#eef1f6;--card:#fff;--ink:#0b1b33;--mut:#55637c;--line:#d8deea;--acc:#ffd100;--navy:#1d1d1b;--navy2:#0b2b4f;--blue:#0089fe;--court:#3b97d6;--a:#1d4ed8;--b:#059669;--ball:#f59e0b;--chip:#edf1f7;--link:#006fd1;--rail:#1d1d1b;
 --disp:Poppins,"Century Gothic","Avenir Next","Segoe UI",system-ui,sans-serif;
@@ -156,6 +161,21 @@ dialog#pick::backdrop,dialog#s_pick::backdrop{background:rgba(0,0,0,.45)}
 @media print{#hall,#toast,dialog{display:none!important}}
 @media(max-width:560px){header{padding:12px 12px 0}.logo{height:46px}.brand{flex:1;min-width:0}header h1{font-size:18px}header p{font-size:12px}.tabs{margin-left:0;width:100%}.tabs button{flex:1;padding:8px 4px 10px;font-size:14px}.blk{grid-template-columns:42px 1fr;gap:0 8px}.tm{width:42px;height:42px;font-size:15px}.blk::before{left:20px}.bh h2{font-size:20px}}
 @media print{aside,.noprint,header p,.net{display:none!important}.wrap{display:block}.dt details{display:block}.dt details>*{display:block}.dr{break-inside:avoid}}
+/* themaknop in de kop */
+header .thm{position:relative;order:20;flex:none;align-self:center;margin-left:8px}
+header .thm .thm-b{display:grid;place-items:center;width:38px;height:38px;border-radius:12px;border:0;background:#fff;color:#1d1d1b;cursor:pointer;padding:0}
+.thm-m{position:absolute;right:0;top:calc(100% + 8px);z-index:60;min-width:250px;background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:14px;padding:6px;box-shadow:0 10px 30px rgba(0,0,0,.25)}
+.thm-m p{margin:4px 10px 6px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--mut)}
+.thm .thm-m button{display:flex;align-items:center;gap:10px;width:100%;text-align:left;background:none;border:0;border-radius:10px;padding:9px 10px;color:inherit;font:inherit;cursor:pointer}
+.thm .thm-m button:hover{background:var(--chip)}
+.thm .thm-m button[aria-checked="true"]{background:var(--chip);box-shadow:inset 3px 0 0 var(--acc)}
+.thm-m span{display:flex;flex-direction:column;line-height:1.25}.thm-m small{color:var(--mut);font-size:12px}
+header .sugg{order:19}
+.thm svg{width:18px;height:18px;flex:none;display:block;background:none;border-radius:0;max-height:none}
+.thm .thm-b:hover{box-shadow:0 0 0 2px #1d1d1b33}
+@media (min-width:701px) and (max-width:1500px){header{column-gap:8px}header .thm{margin-left:0}header .thm .thm-b{width:34px;height:34px}}
+@media(max-width:700px){header .thm{margin-left:6px}header .thm .thm-b{width:34px;height:34px}}
+@media print{.thm{display:none!important}}
 </style>
 <link rel="stylesheet" href="ontwerp.css">
 <link rel="stylesheet" href="home.css">
@@ -169,6 +189,35 @@ dialog#pick::backdrop,dialog#s_pick::backdrop{background:rgba(0,0,0,.45)}
  <div class="brand"><h1>Trainingsgenerator Mini’s</h1><p>Volleybalvereniging Woudenberg</p></div>
  <nav class="noprint tabs"><button id="t_home" onclick="setView('home')">Home</button><button id="t_gen" class="on" onclick="setView('gen')">Mini’s</button><button id="t_sen" onclick="setView('sen')">Jeugd &amp; Senioren</button><button id="t_rot" onclick="setView('rot')">5-1 rotaties</button><button id="t_def" onclick="setView('def')">Verdediging</button><button id="t_aanval" onclick="setView('aanval')">Aanval</button></nav>
 </header>
+<script>
+// knop in de kop om het thema te kiezen: Automatisch / Licht / Donker
+(function(){var hd=document.querySelector('header');if(!hd)return;
+ var K='vvw.thema',root=document.documentElement,
+  I={auto:'<path d="M12 3a9 9 0 1 0 0 18z" fill="currentColor"/><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/>',
+   light:'<circle cx="12" cy="12" r="4.5" fill="currentColor"/><g stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8"/></g>',
+   dark:'<path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z" fill="currentColor"/>'},
+  N={auto:'Automatisch',light:'Licht',dark:'Donker'},
+  U={auto:'volgt de instelling van je telefoon of computer',light:'altijd licht',dark:'altijd donker'};
+ var svg=function(k){return '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">'+I[k]+'</svg>';};
+ var lees=function(){var t='';try{t=localStorage.getItem(K)||'';}catch(e){}return t==='light'||t==='dark'?t:'auto';};
+ var w=document.createElement('div');w.className='thm noprint';
+ w.innerHTML='<button type="button" class="thm-b" aria-haspopup="true" aria-expanded="false"></button><div class="thm-m" role="menu" hidden></div>';
+ var b=w.firstChild,m=w.lastChild;
+ function zet(t){if(t==='auto')root.removeAttribute('data-theme');else root.setAttribute('data-theme',t);
+  b.innerHTML=svg(t);b.title='Weergave: '+N[t]+' (tik om te kiezen)';b.setAttribute('aria-label','Weergave: '+N[t]);
+  m.innerHTML='<p>Weergave</p>'+['auto','light','dark'].map(function(k){return '<button type="button" role="menuitemradio" aria-checked="'+(k===t)+'" data-t="'+k+'">'+svg(k)+'<span><b>'+N[k]+'</b><small>'+U[k]+'</small></span></button>';}).join('');}
+ function dicht(){m.hidden=true;b.setAttribute('aria-expanded','false');}
+ b.onclick=function(e){e.stopPropagation();m.hidden=!m.hidden;b.setAttribute('aria-expanded',String(!m.hidden));if(!m.hidden){var c=m.querySelector('[aria-checked="true"]');if(c)c.focus();}};
+ m.onclick=function(e){var k=e.target.closest('[data-t]');if(!k)return;var t=k.getAttribute('data-t');
+  try{if(t==='auto')localStorage.removeItem(K);else localStorage.setItem(K,t);}catch(x){}
+  zet(t);dicht();b.focus();
+  try{window.dispatchEvent(new CustomEvent('vvwthema',{detail:t}));}catch(x){}};
+ document.addEventListener('click',function(e){if(!m.hidden&&!w.contains(e.target))dicht();});
+ document.addEventListener('keydown',function(e){if(e.key==='Escape'&&!m.hidden){dicht();b.focus();}});
+ // keuze in een ander venster van de app gewijzigd: hier ook overnemen
+ window.addEventListener('storage',function(e){if(e.key===K)zet(lees());});
+ zet(lees());hd.appendChild(w);})();
+</script>
 <div class="net" aria-hidden="true"></div>
 <div id="v_home" style="display:none"></div>
 <div class="wrap" id="v_gen">
