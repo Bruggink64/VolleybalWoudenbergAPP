@@ -3,10 +3,7 @@
 .hm-welkom{background:#1d1d1b;color:#fff;border-radius:var(--r,16px);padding:20px 20px 18px;box-shadow:var(--shadow);position:relative;overflow:hidden}
 .hm-welkom::after{content:"";position:absolute;right:-60px;top:-60px;width:200px;height:200px;border-radius:50%;border:26px solid var(--acc);opacity:.9;pointer-events:none}
 .hm-welkom h2{font:800 24px/1.15 var(--disp);margin:0 0 6px;color:var(--acc);position:relative;max-width:80%}
-.hm-welkom .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
-.hm-wissel{display:inline-block;color:#fff;transition:transform .28s ease,opacity .28s ease}
-.hm-wissel.uit{transform:translateY(-.5em);opacity:0}
-.hm-wissel.in{transform:translateY(.5em);opacity:0;transition:none}
+.hm-naam{color:#fff}
 /* stuiterende bal rechtsboven (in de ring) */
 .hm-bal{position:absolute;right:190px;top:14px;width:62px;height:118px;pointer-events:none;z-index:1}
 .hm-bal svg{position:absolute;left:0;top:0;width:62px;height:62px;animation:hmBal 1.6s cubic-bezier(.5,0,.5,1) infinite;transform-origin:50% 100%;background:none;border:0;border-radius:0;max-height:none}
@@ -16,7 +13,7 @@
 .hm-rol{transform-origin:50px 50px;animation:hmRol 3.2s linear infinite}
 @keyframes hmRol{to{transform:rotate(360deg)}}
 @keyframes hmSchaduw{0%,100%{transform:scale(.45);opacity:.35}50%{transform:scale(1);opacity:1}}
-@media (prefers-reduced-motion:reduce){.hm-bal svg,.hm-bal i,.hm-rol{animation:none}.hm-bal svg{transform:translateY(54px)}.hm-wissel{transition:none}}
+@media (prefers-reduced-motion:reduce){.hm-bal svg,.hm-bal i,.hm-rol{animation:none}.hm-bal svg{transform:translateY(54px)}}
 .hm-welkom p{margin:0 0 14px;max-width:640px;color:#e9e9e4;position:relative}
 .hm-snel{display:flex;flex-wrap:wrap;gap:8px;position:relative}
 .hm-snel button{border:0;border-radius:12px;background:var(--acc);color:#1d1d1b;font:600 14px var(--disp);padding:10px 14px}
