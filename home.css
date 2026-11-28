@@ -18,6 +18,12 @@
 .hm-ver{border-radius:10px;padding:8px 12px;display:inline-flex;align-items:center;gap:6px}
 .hm-ver svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;background:none;border-radius:0;max-height:none}
 .hm-ver.laadt svg{animation:hmdraai 1s linear infinite}
+/* favoriete teams */
+.hm-favknop.aan{background:var(--acc);color:#1d1d1b;border-color:var(--acc)}
+.hm-favknop.aan svg{fill:currentColor}
+.hm-favs{display:flex;flex-wrap:wrap;gap:6px;margin:-4px 0 12px}
+.hm-favs button{border-radius:999px;padding:6px 12px;font-size:13px}
+.hm-favs button[aria-pressed="true"]{background:var(--acc);color:#1d1d1b;border-color:var(--acc)}
 @keyframes hmdraai{to{transform:rotate(360deg)}}
 .hm-kort,.hm-seg{display:none}
 .hm-stats i{font-style:normal}
