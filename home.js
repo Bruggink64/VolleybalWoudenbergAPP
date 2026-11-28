@@ -177,7 +177,8 @@ async function wedstrijdenVandaag(){
  const dt='&datum[after]='+dk+'&datum[before]='+dk+'T23:59:59';
  const l=(await allePaginas('/competitie/wedstrijden?vereniging=/relatiebeheer/verenigingen/'+CLUB.toLowerCase()+dt))
   .concat(...(await Promise.all(EXTRA.map(e=>allePaginas('/competitie/wedstrijden?team='+teamPad(e)+dt).catch(()=>[])))));
- vandaag={dag:dk,bij:Date.now(),w:l.map(m=>({id:m['@id'],t:Date.parse(m.tijdstip||''),teams:m.teams||[]}))};return vandaag.w;
+ // alleen wedstrijden met een digitaal wedstrijdformulier (mini's hebben dat niet, hun .../live geeft altijd 404) die nog niet gespeeld zijn
+ vandaag={dag:dk,bij:Date.now(),w:l.filter(m=>m.urlDwf&&!(m.status&&m.status.waarde==='gespeeld')).map(m=>({id:m['@id'],t:Date.parse(m.tijdstip||''),teams:m.teams||[]}))};return vandaag.w;
 }
 // ---- puntenverloop ----
 // De Nevobo geeft alleen de huidige stand, geen lijst met punten. Daarom bouwt de app het verloop zelf op:

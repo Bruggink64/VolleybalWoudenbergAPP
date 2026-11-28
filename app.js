@@ -251,7 +251,7 @@ function rotP4(n,k,lt){
 }
 const rotCap4=n=>'Fase 4: punt gescoord! Het team draait een positie door: '+rotSrv(n)+' (Pos 2) loopt naar Pos 1 en serveert';
 let rotN=1,rotF=0,rotPlay=true;
-function setView(v){if(v==='gen'&&S.later){S.later=false;gen();}document.querySelector('header h1').textContent=v==='home'?'Trainersapp':v==='sen'?'Trainingsgenerator Jeugd & Senioren':v==='aanval'?'Aanval: codes en combinaties':'Trainingsgenerator Mini’s';['home','gen','sen','rot','def','aanval'].forEach(k=>{$('v_'+k).style.display=k===v?'':'none';$('t_'+k).className=k===v?'on':'';});if(v==='sen')senView();if(v==='rot')rotView();if(v==='def')defView();if(window.aanvalView)aanvalView(v==='aanval');}
+function setView(v){if(v==='gen'&&S.later){S.later=false;gen();}document.querySelector('header h1').textContent=v==='home'?'Trainersapp':v==='sen'?'Trainingsgenerator Jeugd & Senioren':v==='aanval'?'Aanval: codes en combinaties':'Trainingsgenerator Mini’s';document.title='VV Woudenberg: '+({home:'Trainersapp',gen:'Mini’s',sen:'Jeugd & Senioren',rot:'5-1 rotaties',def:'Verdediging',aanval:'Aanval'}[v]||'Trainersapp');['home','gen','sen','rot','def','aanval'].forEach(k=>{$('v_'+k).style.display=k===v?'':'none';$('t_'+k).className=k===v?'on':'';});if(v==='sen')senView();if(v==='rot')rotView();if(v==='def')defView();if(window.aanvalView)aanvalView(v==='aanval');}
 function rotView(){
  $('rotBtns').innerHTML=[1,2,3,4,5,6].map(r=>'<button class="'+(r===rotN?'on':'')+'" onclick="rotN='+r+';rotF=0;rotView()">Rotatie '+r+' (SV pos '+[1,6,5,4,3,2][r-1]+')</button>').join('');
  const R=ROT[rotN];
