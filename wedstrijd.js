@@ -224,7 +224,7 @@ function deel(c,b){
 
 function open(w){
  if(!dlg){dlg=document.createElement('dialog');dlg.className='wd noprint';dlg.setAttribute('aria-label','Wedstrijd');document.body.appendChild(dlg);
-  dlg.addEventListener('click',e=>{if(e.target===dlg)dlg.close();});dlg.addEventListener('close',()=>{cur=null;dlg.innerHTML='';});}
+  dlg.addEventListener('click',e=>{if(e.target===dlg)dlg.close();});dlg.addEventListener('close',()=>{if(!dlg.open){cur=null;dlg.innerHTML='';}});}
  const k=H.liveKey(w);cur=cache[k]||(cache[k]={w});cur.w=w;
  // na 10 minuten opnieuw ophalen (stand kan veranderd zijn)
  if(cur.klaar&&Date.now()-(cur.bij||0)>10*60e3){cur.klaar=false;}
