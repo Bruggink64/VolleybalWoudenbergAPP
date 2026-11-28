@@ -64,31 +64,35 @@ async function wissen(btn){
  if(!btn.dataset.sure){btn.dataset.sure=1;btn.textContent='Zeker weten? Wis online';return;}
  const F=window.vvwFire;if(!F||!user)return;
  try{await F.wis(COL,user.uid);}catch(e){if(!e||e.status!==404){melding('Wissen lukt nu niet, probeer het later opnieuw');return;}}
- await uitloggen();melding('Je online trainingen zijn gewist. Ze staan nog wel op dit apparaat');
+ await uitloggen();melding('Je online gegevens zijn gewist. Ze staan nog wel op dit apparaat');
 }
 
 // het blokje onder de bewaarde trainingen (bij Mini's en bij Jeugd & Senioren)
-function html(){
- if(bezig)return '<p class="note">Je online trainingen ophalen&hellip;</p>';
- let h;
+function html(home){
+ const kop=home?'<h3>Mijn account</h3>':'';
+ if(bezig)return kop+'<p class="note">Je online gegevens ophalen&hellip;</p>';
+ let h=kop;
  if(user){
-  h='<p class="note acc-on">&#9729; Online bewaard in je account ('+esc(user.email)+'). Je ziet deze trainingen op elk apparaat waar je inlogt.</p>'
+  h+='<p class="note acc-on">&#9729; Ingelogd als '+esc(user.email)+'. Je favoriete teams en bewaarde trainingen staan in je account; je ziet ze op elk apparaat waar je inlogt.</p>'
    +'<div class="row"><button type="button" data-a="uit">Uitloggen</button><button type="button" data-a="info">'+(open?'Minder':'Wat wordt er bewaard?')+'</button></div>';
   if(open)h+='<div class="note acc-info"><p>Online staan alleen de namen en de inhoud van je bewaarde trainingen en je favoriete teams, in een eigen opslag die alleen jij met je Google-account kunt openen. Andere trainers zien ze niet. De opslag staat bij Google Firebase in Nederland.</p>'
-   +'<div class="row"><button type="button" data-a="wis">Mijn online trainingen wissen</button></div></div>';
+   +'<div class="row"><button type="button" data-a="wis">Mijn online gegevens wissen</button></div></div>';
  }else{
-  h='<div class="row"><button type="button" data-a="in">Inloggen met Google</button></div>'
-   +'<p class="note">Zonder inloggen staan je bewaarde trainingen alleen op dit apparaat. Met inloggen heb je ze op je telefoon, tablet en computer.</p>';
+  h+='<div class="row"><button type="button" data-a="in">Inloggen met Google</button></div>'
+   +'<p class="note">'+(home?'Log in om je favoriete teams en bewaarde trainingen op je telefoon, tablet en computer te hebben. Zonder inloggen blijft alles op dit apparaat.':'Zonder inloggen staan je bewaarde trainingen alleen op dit apparaat. Met inloggen heb je ze op je telefoon, tablet en computer.')+'</p>';
  }
  return h+(fout?'<p class="note acc-warn">'+esc(fout)+'</p>':'');
 }
 function ui(){
  if(!window.vvwFire)return;
  ['saved','s_saved'].forEach(id=>{
-  const lijst=document.getElementById(id);if(!lijst)return;
-  let el=document.getElementById(id+'_acc');
-  if(!el){el=document.createElement('div');el.id=id+'_acc';el.className='acc noprint';lijst.insertAdjacentElement('afterend',el);}
-  el.innerHTML=html();
+  const lijst=document.getElementById(id);
+  if(lijst&&!document.getElementById(id+'_acc')){const el=document.createElement('div');el.id=id+'_acc';el.className='acc noprint';lijst.insertAdjacentElement('afterend',el);}
+ });
+ ['hm_acc','saved_acc','s_saved_acc'].forEach(id=>{
+  const el=document.getElementById(id);if(!el)return;
+  if(id==='hm_acc')el.style.display='';
+  el.innerHTML=html(id==='hm_acc');
   el.querySelectorAll('[data-a]').forEach(b=>b.onclick=()=>{const a=b.dataset.a;
    if(a==='in')start(true);else if(a==='uit')uitloggen();else if(a==='info'){open=!open;ui();}else if(a==='wis')wissen(b);});
  });
