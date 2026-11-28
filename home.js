@@ -242,12 +242,17 @@ async function haalVerloop(id,k){
   if(sets&&LIVE[k]&&LIVE[k].v){LIVE[k]={...LIVE[k],v:{...LIVE[k].v,sets}};teken();}
  }catch(e){}
 }
-function verloopBlok(w,v){
+// gekozen set per wedstrijd (tik op een set-blokje) en of de uitleg bij "N eerder" open staat
+const setKeuze={},eerderOpen={};
+function verloopBlok(w,v,k){
  if(!v||!v.sets)return '';
- let i=v.set,l=v.sets[i];
+ const kz=setKeuze[k];
+ let i=kz!=null?kz:v.set,l=v.sets[i];
  // nieuwe set nog op 0-0: laat het verloop van de vorige set zien
- let vorige=false;if((!l||l.length<2&&!(l[0]&&(l[0][0]||l[0][1])))&&v.sets[i-1]&&v.sets[i-1].length>1){i--;l=v.sets[i];vorige=true;}
- if(!l||!l.length||!(l[l.length-1][0]+l[l.length-1][1]))return '';
+ let vorige=false;if(kz==null&&(!l||l.length<2&&!(l[0]&&(l[0][0]||l[0][1])))&&v.sets[i-1]&&v.sets[i-1].length>1){i--;l=v.sets[i];vorige=true;}
+ if(kz!=null&&kz!==v.set)vorige=true;
+ if(!l||!l.length||!(l[l.length-1][0]+l[l.length-1][1]))
+  return kz!=null?'<div class="hm-vb"><div class="hm-vb-kop"><b>Punten set '+(i+1)+'</b></div><p class="hm-vb-noot">Van deze set zijn geen punten bijgehouden: niemand had de app open tijdens deze set.</p></div>':'';
  const wijA=isW(w.a),eerste=l[0],e=l[l.length-1];
  const wie=t=>esc(isWb(t)?'Woudenberg '+teamVan(t):teamVan(t)),wij=wie(wijA?w.a:w.b),zij=wie(wijA?w.b:w.a);
  // wie maakte elk punt (bolletje geel = wij, rood = zij): w = wij, z = zij, ? = onbekend (beide teams scoorden tussen twee peilingen; geen bolletje, maar breekt wel een reeks)
@@ -264,11 +269,13 @@ function verloopBlok(w,v){
  rk=vorig&&vorig!=='?'?run:0;
  const reeks=rk>=3?'<p class="hm-vb-reeks '+vorig+'">'+(vorig==='w'?wij:zij)+' maakt '+rk+' punten op rij</p>':'';
  const al=eerste[0]+eerste[1];
- const bol=pn.length?'<div class="hm-vb-pn" aria-label="Punten in volgorde">'+(al?'<span class="hm-pn-voor">'+al+' eerder</span>':'')
+ const bol=pn.length?'<div class="hm-vb-pn" aria-label="Punten in volgorde">'+(al?'<button type="button" class="hm-pn-voor" data-k="'+esc(k)+'" aria-expanded="'+!!eerderOpen[k]+'">'+al+' eerder</button>':'')
    +pn.filter(c=>c!=='?').map(c=>'<i class="'+c+'"></i>').join('')+'</div>':'';
  return '<div class="hm-vb"><div class="hm-vb-kop"><b>Punten set '+(i+1)+(vorige?' (afgelopen), '+e[0]+'-'+e[1]:'')+'</b></div>'
   +'<div class="hm-vb-leg"><span><i class="w"></i>'+wij+'</span><span><i class="z"></i>'+zij+'</span></div>'
-  +bol+reeks
+  +bol
+  +(al&&eerderOpen[k]?'<p class="hm-vb-eerder">Deze '+al+' punten ('+wij+' '+(wijA?eerste[0]:eerste[1])+', '+zij+' '+(wijA?eerste[1]:eerste[0])+') zijn gespeeld voordat iemand de app open had. De volgorde is daarom niet bekend.</p>':'')
+  +reeks
   +((rkW>1||rkZ>1)?'<p class="hm-vb-noot">Langste reeks: '+wij+' '+rkW+', '+zij+' '+rkZ+'.</p>':'')
   +(al>0?'<p class="hm-vb-noot">Bijgehouden vanaf '+eerste[0]+'-'+eerste[1]+' ('+tijd(new Date(eerste[2]))+').</p>':'')
   +'</div>';
@@ -310,7 +317,10 @@ function liveBlok(lijst){
   return '<a class="hm-w" href="'+esc(w.url)+'" target="_blank" rel="noopener"><span class="hm-s hm-ls">'+v.stand[0]+'–'+v.stand[1]+'</span>'
    +'<span class="hm-m"><span class="hm-ts">'+naam(w.a,w)+' <i>–</i> '+naam(w.b,w)+'</span>'
    +'<span class="hm-z">'+bekerTag(w)+'</span>'
-   +'<span class="hm-sets">'+v.sets.map((x,i)=>'<span class="hm-set'+(i===n-1?' nu':'')+'"><small>Set '+(i+1)+'</small>'+x[0]+'-'+x[1]+'</span>').join('')+'</span></span></a>'+verloopBlok(w,v.v);}).join('')
+   +'</span></a>'
+   +'<div class="hm-sets">'+v.sets.map((x,i)=>{const k=liveKey(w),gek=setKeuze[k]!=null?setKeuze[k]===i:(v.v&&v.v.set===i);
+     return '<button type="button" class="hm-set'+(i===n-1?' nu':'')+(gek?' gekozen':'')+'" data-k="'+esc(k)+'" data-s="'+i+'" aria-pressed="'+gek+'"><small>Set '+(i+1)+'</small>'+x[0]+'-'+x[1]+'</button>';}).join('')+'</div>'
+   +verloopBlok(w,v.v,liveKey(w));}).join('')
   +'</section>';
 }
 
@@ -489,6 +499,8 @@ function teken(){
  $('hm_ver').onclick=ververs;
  el.querySelectorAll('.hm-meerstat').forEach(b=>b.onclick=()=>{meerStat=!meerStat;teken();});
  el.querySelectorAll('.hm-stab button').forEach(b=>b.onclick=()=>{statTab=b.dataset.s;teken();});
+ el.querySelectorAll('.hm-set[data-k]').forEach(b=>b.onclick=()=>{const k=b.dataset.k,i=+b.dataset.s,v=LIVE[k]&&LIVE[k].v;setKeuze[k]=(setKeuze[k]===i||(setKeuze[k]==null&&v&&v.set===i))?null:i;teken();});
+ el.querySelectorAll('.hm-pn-voor[data-k]').forEach(b=>b.onclick=()=>{eerderOpen[b.dataset.k]=!eerderOpen[b.dataset.k];teken();});
  el.querySelectorAll('.hm-seg button').forEach(b=>b.onclick=()=>{tab=b.dataset.t;teken();});
  el.querySelectorAll('.hm-meer').forEach(b=>b.onclick=()=>{if(b.dataset.m==='p')meerP=!meerP;else meerU=!meerU;teken();});
 }
