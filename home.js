@@ -51,7 +51,7 @@ function parse(xml,soort){
    const m=/^[^:]+:\d\d:\s*(.+?)\s+-\s+(.+)$/.exec(t)||/^(.+?)\s+-\s+(.+)$/.exec(t);
    if(!m)return null;w.a=m[1].trim();w.b=m[2].replace(/,\s*Uitslag:.*$/,'').trim(); // net gespeeld: uitslag staat al in de titel
    const loc=/Speellocatie:\s*(.+)$/.exec(ds);
-   if(loc){const p=loc[1].split(',').map(x=>x.trim());w.zaal=p[0];const pc=/\d{4}\s?[A-Z]{2}\s+(.+)$/.exec(p[p.length-1]);w.plaats=pc?pc[1].trim():'';}
+   if(loc){w.adres=loc[1].trim();const p=loc[1].split(',').map(x=>x.trim());w.zaal=p[0];const pc=/\d{4}\s?[A-Z]{2}\s+(.+)$/.exec(p[p.length-1]);w.plaats=pc?pc[1].trim():'';}
   }else{
    const m=/^(.+?)\s+-\s+(.+?),\s*Uitslag:\s*(\d+)-(\d+)/.exec(t);
    if(!m)return null;w.a=m[1].trim();w.b=m[2].trim();w.sa=+m[3];w.sb=+m[4];
@@ -358,7 +358,7 @@ async function checkLive(){
 function liveBlok(lijst){
  const l=lijst.filter(w=>LIVE[liveKey(w)]).sort((a,b)=>a.t-b.t);if(!l.length)return '';
  return '<section class="card hm-live"><h3><i class="hm-puls"></i>Nu live</h3>'+l.map(w=>{const v=LIVE[liveKey(w)],n=v.sets.length;
-  return '<a class="hm-w" href="'+esc(w.url)+'" target="_blank" rel="noopener"><span class="hm-s hm-ls">'+v.stand[0]+'–'+v.stand[1]+'</span>'
+  return '<a class="hm-w" href="'+esc(w.url)+'" data-wk="'+esc(liveKey(w))+'" target="_blank" rel="noopener"><span class="hm-s hm-ls">'+v.stand[0]+'–'+v.stand[1]+'</span>'
    +'<span class="hm-m"><span class="hm-ts">'+naam(w.a,w)+' <i>–</i> '+naam(w.b,w)+'</span>'
    +'<span class="hm-z">'+bekerTag(w)+'</span>'
    +'</span></a>'
@@ -375,7 +375,7 @@ function programma(lijst){
  toon.forEach(w=>{const d=new Date(w.t),k=dagKey(d);
   if(k!==dk){dk=k;h+='<h4 class="hm-dag">'+esc(dag(d))+'</h4>';}
   const thuis=isThuis(w);
-  h+='<a class="hm-w" href="'+esc(w.url)+'" target="_blank" rel="noopener"><span class="hm-t">'+esc(tijd(d))+'</span>'
+  h+='<a class="hm-w" href="'+esc(w.url)+'" data-wk="'+esc(liveKey(w))+'" target="_blank" rel="noopener"><span class="hm-t">'+esc(tijd(d))+'</span>'
    +'<span class="hm-m"><span class="hm-ts">'+naam(w.a,w)+' <i>–</i> '+naam(w.b,w)+'</span>'
    +'<span class="hm-z">'+(LIVE[liveKey(w)]?'<em class="hm-livetag">Live '+LIVE[liveKey(w)].stand.join('–')+'</em>':'')+bekerTag(w)+(thuis?'<em class="hm-thuis">Thuis</em>':'<em class="hm-uit">Uit</em>')+esc([w.zaal,w.plaats].filter(Boolean).join(', '))+'</span></span></a>';});
  if(rest.length>toon.length||meerP)h+='<button type="button" class="hm-meer" data-m="p">'+(meerP?'Minder tonen':'Meer tonen ('+(rest.length-toon.length)+' meer)')+'</button>';
@@ -555,6 +555,10 @@ function teken(){
  el.querySelectorAll('.hm-pn-voor[data-k]').forEach(b=>b.onclick=()=>{eerderOpen[b.dataset.k]=!eerderOpen[b.dataset.k];teken();});
  el.querySelectorAll('.hm-seg button').forEach(b=>b.onclick=()=>{tab=b.dataset.t;teken();});
  el.querySelectorAll('.hm-meer').forEach(b=>b.onclick=()=>{if(b.dataset.m==='p')meerP=!meerP;else meerU=!meerU;teken();});
+ // tik op een wedstrijd uit het programma: de wedstrijdpagina (wedstrijd.js) openen; is die er (nog) niet, dan de Nevobo-site
+ el.querySelectorAll('.hm-w[data-wk]').forEach(a=>a.onclick=e=>{const w=D&&D.p.find(x=>liveKey(x)===a.dataset.wk);
+  if(w&&window.VVW_WED){e.preventDefault();window.VVW_WED.open(w);}});
+ if(window.VVW_WED)window.VVW_WED.ververs();
 }
 let bezig=false;
 async function ververs(){
@@ -565,6 +569,8 @@ async function ververs(){
  finally{bezig=false;teken();}
 }
 
+// voor de wedstrijdpagina (wedstrijd.js)
+window.HM={get D(){return D;},get S(){return S;},get LIVE(){return LIVE;},API,CLUB,EXTRA,allePaginas,teamPad,isW,isWb,isX,teamVan,naam,esc,dag,tijd,dagKey,isThuis,isBeker,bekerTag,liveKey,plek,sleutel,verloopBlok,bolL,mini,seizoen};
 D=get(LSK,null);S=get(STK,null);teken();ververs().then(checkLive);
 setInterval(checkLive,10000);
 // uitslagen elke 5 minuten opnieuw ophalen zolang de homepagina open staat; de statistieken worden daarna vanzelf opnieuw berekend
