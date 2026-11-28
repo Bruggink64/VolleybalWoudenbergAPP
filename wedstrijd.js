@@ -97,7 +97,9 @@ function analyse(c){
  let prog=null;
  if(wij.res.length&&zij.res.length&&wij.bv+wij.bt>0&&zij.bv+zij.bt>0){
   const rho=t=>(t.bv+150)/(t.bv+t.bt+300),ra=rho(wij),rb=rho(zij);
-  let q=ra*(1-rb)/(ra*(1-rb)+rb*(1-ra));q+=H.isThuis(w)?0.008:-0.008;q=Math.min(.95,Math.max(.05,q));
+  let q=ra*(1-rb)/(ra*(1-rb)+rb*(1-ra));
+  q=.5+(q-.5)*.8; // iets voorzichtiger: teams hebben goede en slechte dagen
+  q+=H.isThuis(w)?0.008:-0.008;q=Math.min(.95,Math.max(.05,q));
   const k=uitslagKansen(setKans(q,25),setKans(q,15),vorm);
   const lijst=Object.keys(k).map(u=>{const [a,b]=u.split('-').map(Number);return {u,a,b,kans:k[u]};}).sort((x,y)=>(y.a-y.b)-(x.a-x.b));
   const winst=lijst.filter(x=>x.a>x.b).reduce((s,x)=>s+x.kans,0),gelijk=lijst.filter(x=>x.a===x.b).reduce((s,x)=>s+x.kans,0);
@@ -115,7 +117,7 @@ function analyse(c){
 }
 
 // ---- weergave ----
-const pct=x=>Math.round(100*x)+'%';
+const pct=x=>x>.995?'>99%':x>0&&x<.005?'<1%':Math.round(100*x)+'%';
 const km=(a,b)=>{if(!a||!b||!a.lat||!b.lat)return null;const r=Math.PI/180,d=Math.sin((b.lat-a.lat)*r/2)**2+Math.cos(a.lat*r)*Math.cos(b.lat*r)*Math.sin((b.lon-a.lon)*r/2)**2;return 12742*Math.asin(Math.sqrt(d));};
 const kort=s=>H.isWb(s)?'Woudenberg '+H.teamVan(s):H.isX(s)?H.teamVan(s):String(s);
 const chip=r=>'<i class="wd-c '+(r.u==='W'?'win':r.u==='V'?'verlies':'gelijk')+'" title="'+esc(r.sets.join(', '))+'">'+r.a+'-'+r.b+'</i>';
