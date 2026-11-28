@@ -199,3 +199,10 @@
 .hm-set:not(.nu):hover{filter:brightness(1.1)}
 button.hm-pn-voor{background:none;font:inherit;font-size:11px;line-height:14px;cursor:pointer}
 .hm-vb-eerder{font-size:12px;color:var(--ink);background:var(--card);border-radius:8px;padding:6px 9px;margin:0 0 6px}
+.hm-uv-knop{display:block;margin:-4px 0 8px 56px;padding:2px 0;border:0;background:none;color:var(--link,#1f6feb);font:600 12.5px var(--disp);cursor:pointer}
+.hm-uv-knop::after{content:" ▾"}
+.hm-uv-knop.open::after{content:" ▴"}
+.hm-uv.hm-vb-noot{margin:-4px 0 10px 56px}
+.hm-lijst .hm-vb{margin-left:56px}
+@media (max-width:600px){.hm-uv-knop,.hm-uv.hm-vb-noot,.hm-lijst .hm-vb{margin-left:54px}}
+.hm-lijst .hm-uv-knop+.hm-w,.hm-lijst .hm-vb+.hm-w,.hm-lijst .hm-uv.hm-vb-noot+.hm-w{border-top:1px solid var(--line)}
