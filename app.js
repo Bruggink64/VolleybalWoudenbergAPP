@@ -243,19 +243,24 @@ Object.values(ROT).forEach(R=>{const l=R.players.LIB;if(l)l.via=[(l.kf[1][0]+l.k
 const RPOS={1:[396,266],2:[404,186],3:[276,186],4:[150,186],5:[164,266],6:[276,266]},RNEXT={1:6,6:5,5:4,4:3,3:2,2:1};
 function rotPos(n){const o={};Object.entries(ROT[n].players).forEach(([k,p])=>{const m=/^Pos (\d)/.exec(p.role);if(m)o[k]=+m[1];});return o;}
 function rotSrv(n){const o=rotPos(n);return Object.keys(o).find(k=>o[k]===2);}
+// Fase 4 begint met een kontje tik: het team komt na het punt even samen in het midden en geeft elkaar een tikje.
+const RHUD=[276,228];
 function rotP4(n,k,lt){
  const p=ROT[n].players[k],pos=rotPos(n)[k],a=p.kf[p.kf.length-1],b=RPOS[pos],c=RPOS[RNEXT[pos]],e=t=>ease(Math.max(0,Math.min(1,t)));
- if(lt<.3){const s=e(lt/.3);return [lerp(a[0],b[0],s),lerp(a[1],b[1],s)];}
- if(lt<.4)return b;
- const s=e((lt-.4)/.45);return [lerp(b[0],c[0],s),lerp(b[1],c[1],s)];
+ const ks=Object.keys(ROT[n].players),w=ks.indexOf(k)/ks.length*2*Math.PI,h=[RHUD[0]+Math.cos(w)*40,RHUD[1]+Math.sin(w)*30];
+ if(lt<.16){const s=e(lt/.16);return [lerp(a[0],h[0],s),lerp(a[1],h[1],s)];}
+ if(lt<.27)return h;
+ if(lt<.38){const s=e((lt-.27)/.11);return [lerp(h[0],b[0],s),lerp(h[1],b[1],s)];}
+ if(lt<.43)return b;
+ const s=e((lt-.43)/.42);return [lerp(b[0],c[0],s),lerp(b[1],c[1],s)];
 }
-const rotCap4=n=>'Fase 4: punt gescoord! Het team draait een positie door: '+rotSrv(n)+' (Pos 2) loopt naar Pos 1 en serveert';
+const rotCap4=n=>'Fase 4: punt gescoord! Eerst een kontje tik in het midden, dan draait het team een positie door: '+rotSrv(n)+' (Pos 2) loopt naar Pos 1 en serveert';
 let rotN=1,rotF=0,rotPlay=true;
 function setView(v){if(v==='gen'&&S.later){S.later=false;gen();}document.querySelector('header h1').textContent=v==='home'?'Trainersapp':v==='sen'?'Trainingsgenerator Jeugd & Senioren':v==='aanval'?'Aanval: codes en combinaties':'Trainingsgenerator Mini’s';document.title='VV Woudenberg: '+({home:'Trainersapp',gen:'Mini’s',sen:'Jeugd & Senioren',rot:'5-1 rotaties',def:'Verdediging',aanval:'Aanval'}[v]||'Trainersapp');['home','gen','sen','rot','def','aanval'].forEach(k=>{$('v_'+k).style.display=k===v?'':'none';$('t_'+k).className=k===v?'on':'';});if(v==='sen')senView();if(v==='rot')rotView();if(v==='def')defView();if(window.aanvalView)aanvalView(v==='aanval');}
 function rotView(){
  $('rotBtns').innerHTML=[1,2,3,4,5,6].map(r=>'<button class="'+(r===rotN?'on':'')+'" onclick="rotN='+r+';rotF=0;rotView()">Rotatie '+r+' (SV pos '+[1,6,5,4,3,2][r-1]+')</button>').join('');
  const R=ROT[rotN];
- $('rotTitle').textContent=R.title;$('rotSummary').textContent=R.summary+' Na een gescoord punt (fase 4) draait het team door: '+rotSrv(rotN)+' staat dan op Pos 2, loopt naar Pos 1 en serveert. Scoort het team op eigen service, dan serveert dezelfde speler gewoon opnieuw.';
+ $('rotTitle').textContent=R.title;$('rotSummary').textContent=R.summary+' Na een gescoord punt (fase 4) komt het team eerst even samen in het midden voor een kontje tik en draait dan door: '+rotSrv(rotN)+' staat dan op Pos 2, loopt naar Pos 1 en serveert. Scoort het team op eigen service, dan serveert dezelfde speler gewoon opnieuw.';
  $('rotRoles').innerHTML=Object.entries(R.players).map(([k,o])=>'<div class="rl"><span class="tag" style="background:'+o.c+'">'+k+'</span><span>'+esc(o.role)+'</span></div>').join('');
  rotDraw();
 }
@@ -270,9 +275,9 @@ function rotDraw(){
  Object.entries(R.players).forEach(([k,o])=>{
   if(seg===3){
    const q=rotP4(rotN,k,lt),px=q[0],py=mapY(q[1]),pos=rotPos(rotN)[k],b0=RPOS[pos],c0=RPOS[RNEXT[pos]],isS=k===rotSrv(rotN);
-   if(lt>=.3&&lt<.9)ps+='<line x1="'+b0[0]+'" y1="'+mapY(b0[1])+'" x2="'+c0[0]+'" y2="'+mapY(c0[1])+'" stroke="'+o.c+'" stroke-width="2.4" stroke-dasharray="5,4" opacity=".7"/>';
+   if(lt>=.38&&lt<.9)ps+='<line x1="'+b0[0]+'" y1="'+mapY(b0[1])+'" x2="'+c0[0]+'" y2="'+mapY(c0[1])+'" stroke="'+o.c+'" stroke-width="2.4" stroke-dasharray="5,4" opacity=".7"/>';
    ps+=S2D.tok(px,py,k,o.c,16,{fs:10.5});
-   if(isS&&lt>=.4)ps+='<circle cx="'+px+'" cy="'+py+'" r="22" fill="none" stroke="#fff" stroke-width="3" stroke-dasharray="4 3"/>'+S2D.ball(px+21,py-14);
+   if(isS&&lt>=.43)ps+='<circle cx="'+px+'" cy="'+py+'" r="22" fill="none" stroke="#fff" stroke-width="3" stroke-dasharray="4 3"/>'+S2D.ball(px+21,py-14);
    if(isS&&lt>=.85)ps+='<rect x="'+(px-36)+'" y="'+(py+25)+'" width="72" height="15" rx="3" fill="#1d1d1b" fill-opacity=".9" stroke="#fde047"/><text x="'+px+'" y="'+(py+36)+'" fill="#fde047" font-size="8.5" font-weight="900" text-anchor="middle">SERVEERT</text>';
    return;}
   const a=o.kf[seg],b=o.kf[seg+1]||a,ax=a[0],ay=mapY(a[1]),bx=b[0],by=mapY(b[1]);
@@ -285,7 +290,8 @@ function rotDraw(){
  });
  const rv=R.players[R.recv].kf[0],pass=[rv[0],mapY(rv[1])],sv=[336,mapY(188)],srv=[280,48];
  let bs='';
- if(seg===3){if(lt<.4)bs='<rect x="150" y="318" width="260" height="20" rx="4" fill="#1d1d1b" fill-opacity=".9" stroke="#fde047"/><text x="280" y="332" fill="#fde047" font-size="10.5" font-weight="900" text-anchor="middle">PUNT GESCOORD!</text>';}
+ if(seg===3){if(lt<.43)bs='<rect x="150" y="318" width="260" height="20" rx="4" fill="#1d1d1b" fill-opacity=".9" stroke="#fde047"/><text x="280" y="332" fill="#fde047" font-size="10.5" font-weight="900" text-anchor="middle">PUNT GESCOORD! KONTJE TIK!</text>';
+  if(lt>=.16&&lt<.29){const hy=mapY(RHUD[1]);bs+='<text x="'+RHUD[0]+'" y="'+(hy+5)+'" fill="#fde047" stroke="#1d1d1b" stroke-width="3" paint-order="stroke" font-size="15" font-weight="900" text-anchor="middle">TIK!</text>';}}
  else if(seg===0)bs='<line x1="'+srv[0]+'" y1="'+srv[1]+'" x2="'+pass[0]+'" y2="'+pass[1]+'" stroke="#fde047" stroke-width="2" stroke-dasharray="5,4" opacity=".75"/>'+S2D.ball(lerp(srv[0],pass[0],lt),lerp(srv[1],pass[1],lt));
  else if(seg===1)bs='<line x1="'+pass[0]+'" y1="'+pass[1]+'" x2="'+sv[0]+'" y2="'+sv[1]+'" stroke="#34d399" stroke-width="2.2" stroke-dasharray="5,4" opacity=".8"/>'+S2D.ball(lerp(pass[0],sv[0],lt),lerp(pass[1],sv[1],lt)-Math.sin(lt*Math.PI)*24);
  else if(seg===2)bs=R.tg.map(t=>{const tx=t.to[0],ty=mapY(t.to[1]);return '<line x1="'+sv[0]+'" y1="'+sv[1]+'" x2="'+tx+'" y2="'+ty+'" stroke="'+t.col+'" stroke-width="2.2" stroke-dasharray="4,3" opacity=".85"/>'+S2D.ball(lerp(sv[0],tx,lt),lerp(sv[1],ty,lt)-Math.sin(lt*Math.PI)*18,8.5)+'<rect x="'+(tx-32)+'" y="'+(ty-30)+'" width="64" height="14" rx="3" fill="#1d1d1b" fill-opacity=".88" stroke="'+t.col+'"/><text x="'+tx+'" y="'+(ty-20)+'" fill="#fff" font-size="7.5" font-weight="900" text-anchor="middle">'+t.label+'</text>';}).join('');
