@@ -541,10 +541,12 @@ function teken(){
   +'<div class="hm-cols" data-tab="'+tab+'"><section class="card hm-lijst hm-p"><h3>Programma</h3>'+(D?programma(f(D.p)):'<p class="hm-leeg">Wedstrijden laden…</p>')+'</section>'
   +'<section class="card hm-lijst hm-u"><h3>Uitslagen</h3>'+(D?uitslagen(f(D.u)):'<p class="hm-leeg">Uitslagen laden…</p>')+'</section></div>'
   +stand(team)
+  +'<section class="card hm-acc noprint" id="hm_acc" style="display:none"></section>'
   +'<p class="note hm-bron">'+((fout||bij)?esc(fout||bij)+'. ':'')+(S?'#3 = huidige plek in de competitiestand. ':'')+'Wedstrijdgegevens: Nevobo (volleybal.nl). Tik op een wedstrijd voor alle details. Meer over de club op <a href="https://www.volleybalwoudenberg.nl" target="_blank" rel="noopener">volleybalwoudenberg.nl</a>.</p>';
  el.querySelectorAll('.hm-snel button').forEach(b=>b.onclick=()=>{setView(b.dataset.v);window.scrollTo(0,0);});
  $('hm_team').onchange=e=>{put(TEAMK,e.target.value);meerP=meerU=false;teken();};
  $('hm_ver').onclick=ververs;
+ if(window.vvwAcc)vvwAcc.ui();
  if($('hm_fav'))$('hm_fav').onclick=()=>{const L=get(FAVK,[]),i=L.indexOf(team);if(i<0)L.push(team);else L.splice(i,1);put(FAVK,L.slice(0,10));
   try{toast(i<0?team+' staat nu bij je favorieten':team+' is geen favoriet meer');}catch(e){}if(window.vvwAcc)vvwAcc.bewaard();teken();};
  el.querySelectorAll('.hm-favs button').forEach(b=>b.onclick=()=>{put(TEAMK,b.dataset.fav);meerP=meerU=false;teken();});
