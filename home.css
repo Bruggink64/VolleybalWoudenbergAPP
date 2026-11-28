@@ -6,10 +6,9 @@
 /* stuiterende bal rechtsboven (in de ring) */
 .hm-bal{position:absolute;right:190px;top:14px;width:62px;height:118px;pointer-events:none;z-index:1}
 .hm-bal svg{position:absolute;left:0;top:0;width:62px;height:62px;animation:hmBal 1.6s cubic-bezier(.5,0,.5,1) infinite;transform-origin:50% 100%;background:none;border:0;border-radius:0;max-height:none}
-.hm-bal .hm-bal-v{fill:var(--acc)}
 .hm-bal i{position:absolute;left:11px;bottom:0;width:40px;height:8px;border-radius:50%;background:rgba(255,255,255,.22);animation:hmSchaduw 1.6s cubic-bezier(.5,0,.5,1) infinite}
 @keyframes hmBal{0%,100%{transform:translateY(0)}45%{transform:translateY(52px)}50%{transform:translateY(54px) scaleY(.86) scaleX(1.08)}55%{transform:translateY(52px)}}
-.hm-rol{transform-origin:50px 50px;animation:hmRol 3.2s linear infinite}
+.hm-rol{transform-origin:32px 32px;animation:hmRol 3.2s linear infinite}
 @keyframes hmRol{to{transform:rotate(360deg)}}
 @keyframes hmSchaduw{0%,100%{transform:scale(.45);opacity:.35}50%{transform:scale(1);opacity:1}}
 @media (prefers-reduced-motion:reduce){.hm-bal svg,.hm-bal i,.hm-rol{animation:none}.hm-bal svg{transform:translateY(54px)}}
