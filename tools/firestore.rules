@@ -31,5 +31,20 @@ service cloud.firestore {
         && request.resource.data.lijst is string && request.resource.data.lijst.size() <= 50000
         && request.resource.data.tijd is timestamp;
     }
+    // puntenverloop van live wedstrijden (homepagina): iedereen mag een stand toevoegen en alles lezen,
+    // nooit wijzigen of verwijderen. Document-id = wedstrijd-id (/ wordt _) + _set_a_b, zodat elke stand maar één keer bestaat.
+    match /liveverloop/{id} {
+      allow read: if true;
+      allow create: if request.resource.data.keys().hasOnly(['w','s','a','b','t'])
+        && request.resource.data.w is string && request.resource.data.w.size() <= 200
+        && request.resource.data.w.matches('/competitie/wedstrijden/[A-Za-z0-9/_-]+')
+        && request.resource.data.s is int && request.resource.data.s >= 0 && request.resource.data.s <= 4
+        && request.resource.data.a is int && request.resource.data.a >= 0 && request.resource.data.a <= 60
+        && request.resource.data.b is int && request.resource.data.b >= 0 && request.resource.data.b <= 60
+        && request.resource.data.t is timestamp
+        && request.resource.data.t > request.time - duration.value(10, 'm')
+        && request.resource.data.t < request.time + duration.value(10, 'm')
+        && id == request.resource.data.w.replace('/', '_') + '_' + string(request.resource.data.s) + '_' + string(request.resource.data.a) + '_' + string(request.resource.data.b);
+    }
   }
 }

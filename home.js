@@ -199,8 +199,48 @@ function bewaarVerloop(k,d){
   while(l.length&&(l[l.length-1][0]>cur[0]||l[l.length-1][1]>cur[1]))l.pop();
   l.push([cur[0],cur[1],nu]);
  }
+ const veranderd=!laatst||laatst[0]!==cur[0]||laatst[1]!==cur[1];
  alle[k]=r;put(VLK,alle);
- return {set:i,sets:r.sets};
+ return {set:i,sets:r.sets,cur,veranderd};
+}
+// ---- verloop delen tussen apparaten (Firebase, hetzelfde gratis project als de suggesties) ----
+// Elk apparaat met de live stand open zet elke nieuwe stand in de verzameling "liveverloop" (alleen toevoegen,
+// zie tools/firestore.rules). Wie de pagina later opent, haalt eerst op wat anderen al zagen.
+const FS='https://firestore.googleapis.com/v1/projects/vv-woudenberg-trainersapp/databases/(default)/documents';
+const FSKEY='?key=AIzaSyCrzJ9_EqRrELhFap4Aumte7a4P_Z_eVDY';
+const fsId=(id,s,a,b)=>id.replace(/\//g,'_')+'_'+s+'_'+a+'_'+b;
+function deelStand(id,s,a,b){
+ if(!/^\/competitie\/wedstrijden\//.test(id)||id.length>200)return;
+ const iv=n=>({integerValue:String(n)});
+ fetch(FS+'/liveverloop'+FSKEY+'&documentId='+encodeURIComponent(fsId(id,s,a,b)),{method:'POST',headers:{'Content-Type':'application/json'},
+  body:JSON.stringify({fields:{w:{stringValue:id},s:iv(s),a:iv(a),b:iv(b),t:{timestampValue:new Date().toISOString()}}})}).catch(()=>{});
+}
+async function haalGedeeld(id){
+ const r=await fetch(FS+':runQuery'+FSKEY,{method:'POST',headers:{'Content-Type':'application/json'},
+  body:JSON.stringify({structuredQuery:{from:[{collectionId:'liveverloop'}],where:{fieldFilter:{field:{fieldPath:'w'},op:'EQUAL',value:{stringValue:id}}},limit:400}})});
+ if(!r.ok)return [];
+ const j=await r.json().catch(()=>[]);
+ return (Array.isArray(j)?j:[]).map(x=>x.document&&x.document.fields).filter(Boolean)
+  .map(f=>({s:+f.s.integerValue,a:+f.a.integerValue,b:+f.b.integerValue,t:Date.parse(f.t.timestampValue)||0}));
+}
+// gedeelde standen samenvoegen met de eigen: op volgorde van het aantal punten, en alleen standen die bij elkaar passen
+function voegSamen(k,lijst){
+ const alle=get(VLK,{}),r=alle[k];if(!r)return null;
+ lijst.forEach(x=>{const l=r.sets[x.s]||(r.sets[x.s]=[]);if(!l.some(p=>p[0]===x.a&&p[1]===x.b))l.push([x.a,x.b,x.t]);});
+ Object.keys(r.sets).forEach(i=>{
+  const l=r.sets[i].sort((p,q)=>(p[0]+p[1])-(q[0]+q[1])||p[2]-q[2]),uit=[];
+  l.forEach(p=>{const v=uit[uit.length-1];if(!v||(p[0]>=v[0]&&p[1]>=v[1]&&p[0]+p[1]>v[0]+v[1]))uit.push(p);});
+  r.sets[i]=uit;
+ });
+ alle[k]=r;put(VLK,alle);return r.sets;
+}
+const gehaald={};let verborgenSinds=0,verborgen=0;
+async function haalVerloop(id,k){
+ gehaald[id]=Date.now();
+ try{
+  const sets=voegSamen(k,await haalGedeeld(id));
+  if(sets&&LIVE[k]&&LIVE[k].v){LIVE[k]={...LIVE[k],v:{...LIVE[k].v,sets}};teken();}
+ }catch(e){}
 }
 function verloopBlok(w,v){
  if(!v||!v.sets)return '';
@@ -251,7 +291,11 @@ async function checkLive(){
     const r=await fetch(API+m.id+'/live',{cache:'no-cache'}).catch(()=>null);if(!r||r.status!==200)return;
     const d=await r.json().catch(()=>null);if(!d||!d.stand)return;
     const k=m.t+'|'+team,sets=(d.sets||[]).filter(x=>x&&(x[0]||x[1]));
-    nieuw[k]={stand:d.stand,sets,v:bewaarVerloop(k,d)};
+    const v=bewaarVerloop(k,d);
+    if(v.veranderd)deelStand(m.id,v.set,v.cur[0],v.cur[1]);
+    nieuw[k]={stand:d.stand,sets,v:{set:v.set,sets:v.sets}};
+    // bij openen (en na 2 minuten op de achtergrond) eerst ophalen wat andere apparaten al zagen
+    if(!gehaald[m.id]||verborgenSinds>gehaald[m.id])setTimeout(()=>haalVerloop(m.id,k),0);
    }));
   }catch(e){nieuw=LIVE;}
   finally{liveBezig=false;}
@@ -466,7 +510,7 @@ async function stil(){
  stilBezig=true;try{D=await laad();fout='';teken();}catch(e){}finally{stilBezig=false;}
 }
 setInterval(stil,60000);
-document.addEventListener('visibilitychange',()=>{if(!document.hidden){checkLive();stil();}});
+document.addEventListener('visibilitychange',()=>{if(document.hidden){verborgen=Date.now();return;}if(verborgen&&Date.now()-verborgen>120e3)verborgenSinds=Date.now();checkLive();stil();});
 // zonder gedeelde training in de link start de app op de homepagina
 if(!location.hash.slice(1)&&typeof setView==='function')setView('home');
 })();
