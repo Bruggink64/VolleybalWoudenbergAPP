@@ -77,7 +77,7 @@ function rotModel(n){
  const srvK=rotSrv(n),balls=[{at:f=>{const F=f*4;if(F<1)return s0(F);if(F<2)return s1(F-1);return null;}},{at:f=>{const F=f*4;if(F<3.4)return null;const q=P(rotP4(n,srvK,F-3));return [q[0]+.5,1.1,q[1]];}}]
   .concat(R.tg.map(t=>{const to=[MX(t.to[0]),3,MZ(my(t.to[1]))],s2=seg3(sv,to,1.2);return {at:f=>{const F=f*4;return F>=2&&F<3?s2(F-2):null;},color:t.col};}));
  const caps=['Fase 1: service onderweg; SV, MID1 en DIA maken direct ruimte','Fase 2: pass naar SV; de aanvallers halen uit om aan te lopen','Fase 3: vier set-up-opties vanuit SV; iedereen loopt tegelijk aan',rotCap4(n)];
- return {title:R.title,dur:4/.48,items,balls,cap:f=>caps[Math.min(3,Math.floor(f*4))],sig:'r'+n};
+ return {title:R.title,dur:4/.48,crowd:true,items,balls,cap:f=>caps[Math.min(3,Math.floor(f*4))],sig:'r'+n};
 }
 // Verdediging en blokdekking: zelfde gegevens als het tabblad Verdediging (DEFS/DEFZ, getDef())
 function defModel(){
@@ -258,6 +258,20 @@ function build(model){
   [-1,1].forEach(sd=>{add(new THREE.BoxGeometry(2.6*s,8.8*s,2.6*s),mat(C.riser),sd*(ex+.6*s),4.4*s,-(ez+.2*s));add(new THREE.BoxGeometry(.12*s,6.2*s,.12*s),led,sd*(ex-.7*s),4.2*s,-(ez-1.1*s));});
   const pan=new THREE.BoxGeometry(.46,.08,.38),back=new THREE.BoxGeometry(.46,.44,.075).translate(0,.24,-.17);
   [[pan,C.seat],[back,C.seatB]].forEach(([geo,c])=>{const im=new THREE.InstancedMesh(geo,mat(c),seats.length);seats.forEach((m,i)=>im.setMatrixAt(i,m));im.instanceMatrix.needsUpdate=true;scene.add(im);});
+  // publiek op de tribune (alleen bij de 5-1 rotaties): bijna elke derde stoel bezet, vaste verdeling zodat het niet flikkert
+  if(model.crowd&&seats.length){
+   const pick=[];let rs=7;seats.forEach((m,i)=>{rs=(rs*16807)%2147483647;if(rs%100<(i%2?42:58))pick.push(m);});
+   const shirts=['#e11d48','#2563eb','#16a34a','#f59e0b','#7c3aed','#0891b2','#ffd100','#f1f5f9','#ea580c','#475569'];
+   const bodyG=THREE.CapsuleGeometry?new THREE.CapsuleGeometry(.17,.22,3,8):new THREE.CylinderGeometry(.17,.19,.45,8),headG=new THREE.SphereGeometry(.13,10,8);
+   const bodyI=new THREE.InstancedMesh(bodyG,new THREE.MeshLambertMaterial({color:'#ffffff'}),pick.length),headI=new THREE.InstancedMesh(headG,new THREE.MeshLambertMaterial({color:'#ffffff'}),pick.length);
+   const lt=new THREE.Matrix4(),c=new THREE.Color();
+   pick.forEach((m,i)=>{
+    lt.makeTranslation(0,.5,.02);bodyI.setMatrixAt(i,new THREE.Matrix4().multiplyMatrices(m,lt));
+    lt.makeTranslation(0,.93,.02);headI.setMatrixAt(i,new THREE.Matrix4().multiplyMatrices(m,lt));
+    bodyI.setColorAt(i,c.set(shirts[(i*7+Math.floor(i/5))%shirts.length]));
+    headI.setColorAt(i,c.set(['#dcb495','#c68e6b','#8d5a3b','#f1c9a5','#a9744f'][i%5]));});
+   [bodyI,headI].forEach(im=>{im.instanceMatrix.needsUpdate=true;if(im.instanceColor)im.instanceColor.needsUpdate=true;scene.add(im);});
+  }
   // clubembleem op de vloer langs de linkerzijlijn
   const im=logoImg(),bt=tex(THREE,512,256,(g)=>{rr(g,20,55,472,146,32);g.fillStyle='rgba(255,209,0,.14)';g.fill();g.lineWidth=5;g.strokeStyle='rgba(255,209,0,.72)';g.stroke();
    if(im){g.save();rr(g,44,72,144,112,18);g.clip();g.drawImage(im,44,70,144,116);g.restore();}
