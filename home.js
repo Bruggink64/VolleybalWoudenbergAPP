@@ -210,7 +210,7 @@ function verloopBlok(w,v){
  if(!l||!l.length||!(l[l.length-1][0]+l[l.length-1][1]))return '';
  const wijA=isW(w.a),eerste=l[0],e=l[l.length-1];
  const wie=t=>esc(isWb(t)?'Woudenberg '+teamVan(t):teamVan(t)),wij=wie(wijA?w.a:w.b),zij=wie(wijA?w.b:w.a);
- // wie maakte elk punt (bolletje geel = wij, rood = zij): w = wij, z = zij, ? = onbekend (beide teams scoorden tussen twee peilingen)
+ // wie maakte elk punt (bolletje geel = wij, rood = zij): w = wij, z = zij, ? = onbekend (beide teams scoorden tussen twee peilingen; geen bolletje, maar breekt wel een reeks)
  const pn=[];
  for(let j=1;j<l.length;j++){
   const da=l[j][0]-l[j-1][0],db=l[j][1]-l[j-1][1],wd=wijA?da:db,zd=wijA?db:da;
@@ -225,7 +225,7 @@ function verloopBlok(w,v){
  const reeks=rk>=3?'<p class="hm-vb-reeks '+vorig+'">'+(vorig==='w'?wij:zij)+' maakt '+rk+' punten op rij</p>':'';
  const al=eerste[0]+eerste[1];
  const bol=pn.length?'<div class="hm-vb-pn" aria-label="Punten in volgorde">'+(al?'<span class="hm-pn-voor">'+al+' eerder</span>':'')
-   +pn.map(c=>'<i class="'+c+'"></i>').join('')+'</div>':'';
+   +pn.filter(c=>c!=='?').map(c=>'<i class="'+c+'"></i>').join('')+'</div>':'';
  return '<div class="hm-vb"><div class="hm-vb-kop"><b>Punten set '+(i+1)+(vorige?' (afgelopen), '+e[0]+'-'+e[1]:'')+'</b></div>'
   +'<div class="hm-vb-leg"><span><i class="w"></i>'+wij+'</span><span><i class="z"></i>'+zij+'</span></div>'
   +bol+reeks
