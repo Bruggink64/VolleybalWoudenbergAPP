@@ -156,6 +156,7 @@ dialog#pick::backdrop,dialog#s_pick::backdrop{background:rgba(0,0,0,.45)}
 </style>
 <link rel="stylesheet" href="ontwerp.css">
 <link rel="stylesheet" href="home.css">
+<link rel="stylesheet" href="wedstrijd.css">
 <link rel="stylesheet" href="aanval.css">
 <link rel="stylesheet" href="stijl2d.css">
 </head>
@@ -245,7 +246,7 @@ window.setView=function(v){window.__wilView=v;if(v==='home')return;var t=documen
 <script src="ontwerp.js"></script>
 <script src="home.js"></script>
 <!-- De rest van de app laadt op de achtergrond, in deze volgorde (de proefversie op de beheerpagina leest deze lijst ook). -->
-<script data-later="stijl2d.js data.js scenes.js minis-extra.js app.js senioren.js senioren-obj.js senioren-app.js suggestie.js 3d.js aanval.js terug.js">
+<script data-later="wedstrijd.js stijl2d.js data.js scenes.js minis-extra.js app.js senioren.js senioren-obj.js senioren-app.js suggestie.js 3d.js aanval.js terug.js">
 (function(){var me=document.currentScript,F=me.getAttribute('data-later').split(' '),T=window.LAAD_TXT,last=null;
  F.forEach(function(f){var s=document.createElement('script');
   if(T&&f in T){if(!T[f])return;s.text=T[f];document.body.appendChild(s);return;} // proefversie: tekst staat al klaar
