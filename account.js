@@ -6,6 +6,7 @@
 // Gebruikt window.vvwFire uit suggestie.js (Google-inlog via Firebase). Laadt na app.js en senioren-app.js.
 (function(){
 const COL='trainersopslag',VLAG='vvw.account',VUIL='vvw.account.nietbewaard';
+const NAAMK='vvw.account.naam'; // voornaam voor de welkomsttitel op Home
 const LIJST={minis:{k:'vvw.trainingen',max:50},senioren:{k:'vvw.senioren.bewaard',max:20},teams:{k:'vvw.favteams',max:10}};
 const get=(k,d)=>{try{const v=localStorage.getItem(k);return v?JSON.parse(v):d;}catch(e){return d;}};
 const put=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v));return true;}catch(e){return false;}};
@@ -15,6 +16,8 @@ const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'
 const melding=t=>{try{if(typeof toast==='function')toast(t);}catch(e){}};
 let user=null,bezig=false,fout='',open=false,mailOpen=false,mailMsg='',mailAdres='',mailWw='';
 
+// voornaam: eerste woord van de Google-naam, anders het begin van het e-mailadres (jan.jansen@... -> Jan)
+function voornaam(u){let n=(u.naam||'').trim().split(/\s+/)[0]||(u.email||'').split('@')[0].split(/[._\-+0-9]/)[0]||'';n=n.slice(0,30);return n?n.charAt(0).toUpperCase()+n.slice(1):'';}
 // online lijst + lijst op dit apparaat samenvoegen: online eerst, daarna wat online nog niet bestaat
 function samen(online,lokaal,max){const s=new Set(online.map(x=>JSON.stringify(x)));return online.concat(lokaal.filter(x=>!s.has(JSON.stringify(x)))).slice(0,max);}
 function herteken(){
@@ -39,6 +42,7 @@ async function start(inloggen){
    put(LIJST[s].k,L);
   }
   user=u;aan.set(true);
+  try{localStorage.setItem(NAAMK,voornaam(u));}catch(e){}
   if(extra||vuil.get())await schrijf();
   herteken();
   if(inloggen)melding(extra?'Ingelogd. '+extra+(extra===1?' training van dit apparaat staat':' trainingen van dit apparaat staan')+' nu ook in je account':'Ingelogd: je trainingen staan nu online');
@@ -57,7 +61,7 @@ async function schrijf(){
 }
 async function uitloggen(){
  try{await window.vvwFire.logout();}catch(e){}
- user=null;aan.set(false);vuil.set(false);open=false;herteken();
+ user=null;aan.set(false);vuil.set(false);open=false;try{localStorage.removeItem(NAAMK);}catch(e){}herteken();
  melding('Uitgelogd. De trainingen blijven op dit apparaat staan');
 }
 async function wissen(btn){
