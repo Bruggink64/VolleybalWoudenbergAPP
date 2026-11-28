@@ -78,6 +78,9 @@ function fb(){
 }
 const AUTH={
  async login(){const {auth,U}=await fb();await U.signInWithPopup(auth,new U.GoogleAuthProvider());},
+ // inloggen met e-mail en een zelfgekozen wachtwoord (voor trainers zonder Google-account)
+ async mail(adres,ww,nieuw){const {auth,U}=await fb();await (nieuw?U.createUserWithEmailAndPassword:U.signInWithEmailAndPassword)(auth,adres,ww);},
+ async reset(adres){const {auth,U}=await fb();await U.sendPasswordResetEmail(auth,adres);},
  async token(){try{const {auth}=await fb();return auth.currentUser?await auth.currentUser.getIdToken():null;}catch(e){return null;}},
  async logout(){try{const {auth,U}=await fb();await U.signOut(auth);}catch(e){}}
 };
@@ -331,7 +334,7 @@ setInterval(()=>{try{if(dlg&&dlg.open&&dlg.querySelector('[data-rt]')&&!dlg.quer
 // online bewaren voor de beheerder (tabblad Aanval, aanval.js): één eigen document per Google-account.
 // Wie mag lezen en schrijven staat in tools/firestore.rules (alleen de beheerder, alleen zijn eigen document).
 if(ON)window.vvwFire={
- login:()=>AUTH.login(),logout:()=>AUTH.logout(),
+ login:()=>AUTH.login(),logout:()=>AUTH.logout(),mail:(a,w,n)=>AUTH.mail(a,w,n),reset:a=>AUTH.reset(a),
  async user(){try{const {auth}=await fb();const u=auth.currentUser;return u?{uid:u.uid,email:u.email||''}:null;}catch(e){return null;}},
  async lees(col,id){try{return await authed(DB+'/'+col+'/'+encodeURIComponent(id)+KEY);}catch(e){if(e.status===404)return null;throw e;}},
  schrijf:(col,id,fields)=>authed(DB+'/'+col+'/'+encodeURIComponent(id)+KEY,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({fields})}),

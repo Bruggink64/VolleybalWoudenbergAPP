@@ -23,6 +23,7 @@
 .hm-acc h3{margin:0 0 6px;font:700 15px var(--disp)}
 .hm-acc .row{display:flex;flex-wrap:wrap;gap:8px}
 .hm-acc .acc-info p{margin:6px 0}
+.hm-acc .acc-mail{display:grid;gap:8px;margin-top:10px;max-width:420px}.hm-acc .acc-mail input{width:100%;box-sizing:border-box;padding:10px 12px;border:1px solid var(--line);border-radius:10px;font:inherit;font-size:16px;background:var(--card);color:var(--ink)}
 /* favoriete teams */
 .hm-favknop.aan{background:var(--acc);color:#1d1d1b;border-color:var(--acc)}
 .hm-favknop.aan svg{fill:currentColor}
