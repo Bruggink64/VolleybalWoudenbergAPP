@@ -240,7 +240,7 @@ function draw(){
 // proefversie: de app uit het voorstel wordt hier in een venster getoond (zonder een andere site te openen)
 let pdlg=null;
 const RAW='https://raw.githubusercontent.com/'+REPO+'/';
-async function bouwProef(sha,oid){
+async function bouwProef(sha,oid,tab){
  const get=f=>fetch(RAW+sha+'/'+f).then(r=>{if(!r.ok)throw new Error(f+' '+r.status);return r.text();});
  let h=await get('index.html');
  const skip=/^(https?:)?\/\//,files=new Set();
@@ -264,6 +264,8 @@ async function bouwProef(sha,oid){
     var hd=document.querySelector('header');if(hd)hd.style.display='none';
     Array.prototype.forEach.call(e.querySelectorAll('.tools'),function(t){t.style.display='none';});},300);}catch(e){}};
   h=h.replace('</body>',()=>'<script>window.addEventListener("load",function(){('+spring.toString()+')('+JSON.stringify(oid)+');});<\/script></body>');}
+ // een voorstel voor een tabblad (<!-- weergave: rot -->): de proefversie opent meteen op dat tabblad
+ else if(tab){h=h.replace('</body>',()=>'<script>window.addEventListener("load",function(){setTimeout(function(){try{setView('+JSON.stringify(tab)+');}catch(e){}},400);});<\/script></body>');}
  return h;
 }
 async function preview(it){
@@ -274,7 +276,8 @@ async function preview(it){
  if(!pdlg.open)pdlg.showModal();
  pdlg.querySelector('[data-px]').onclick=()=>pdlg.close();
  try{
-  const html=await bouwProef(p.sha,oid);
+  const tab=(/<!--\s*weergave:\s*([a-z]+)\s*-->/.exec(p.body||'')||[])[1]||'';
+  const html=await bouwProef(p.sha,oid,tab);
   pdlg.innerHTML='<div class="sgb sgph"><h2>Voorstel (proefversie, nog niet live) <button type="button" data-px>Sluiten</button></h2>'
    +'<p class="sgsub">'+esc(p.tekst||'')+'</p></div><iframe class="sgpf" title="Proefversie van het voorstel"></iframe>';
   const f=pdlg.querySelector('iframe');f.setAttribute('sandbox','allow-scripts');f.srcdoc=html;
