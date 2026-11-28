@@ -17,7 +17,7 @@ const EXTRA=[
 // -------------------
 
 const FEED='https://api.nevobo.nl/export/vereniging/'+CLUB+'/';
-const LSK='vvw_home_v2',TEAMK='vvw_home_team',STK='vvw_home_stand_v8';
+const LSK='vvw_home_v2',TEAMK='vvw_home_team',STK='vvw_home_stand_v8',FAVK='vvw.favteams';
 // competitiestand: plek van elk team in de poules van onze teams (JSON-API van de Nevobo)
 const API='https://api.nevobo.nl';
 const $=id=>document.getElementById(id);
@@ -523,6 +523,8 @@ function teamKaart(team){
 
 function teken(){
  const el=$('v_home');if(!el)return;
+ // favoriete teams (ster naast de keuzelijst): snel kiezen met een knop; zonder keuze opent de app op de eerste favoriet
+ const fav=get(FAVK,[]).filter(t=>typeof t==='string').slice(0,10);if(fav.length&&localStorage.getItem(TEAMK)===null)put(TEAMK,fav[0]);
  const team=get(TEAMK,''),f=l=>team?l.filter(w=>w.team===team):l.filter(w=>!extraTeam(w.team)),ts=teams();
  const o=t=>'<option'+(t===team?' selected':'')+'>'+esc(t)+'</option>',ex=ts.filter(extraTeam);
  const opt='<option value="">Alle teams</option>'+ts.filter(t=>!extraTeam(t)).map(o).join('')+(ex.length?'<optgroup label="Andere clubs">'+ex.map(o).join('')+'</optgroup>':'');
@@ -530,7 +532,9 @@ function teken(){
  el.innerHTML='<section class="hm-welkom"><h2>'+esc(WELKOM_TITEL)+'</h2><p class="hm-lang">'+esc(WELKOM_TEKST)+'</p><p class="hm-kort">'+esc(WELKOM_KORT)+'</p>'
   +'<div class="hm-snel"><button type="button" data-v="gen">Training mini’s</button><button type="button" data-v="sen">Training jeugd &amp; senioren</button>'
   +'<button type="button" data-v="rot">5-1 rotaties</button><button type="button" data-v="def">Verdediging</button><button type="button" data-v="aanval">Aanval</button></div></section>'
-  +'<div class="hm-kop"><label for="hm_team">Team</label><select id="hm_team">'+opt+'</select><button type="button" id="hm_ver" class="hm-ver" aria-label="Vernieuwen" title="Vernieuwen"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a9 9 0 1 1-3-6.7M21 4v5h-5"/></svg><span>Vernieuwen</span></button></div>'
+  +'<div class="hm-kop"><label for="hm_team">Team</label><select id="hm_team">'+opt+'</select><button type="button" id="hm_ver" class="hm-ver" aria-label="Vernieuwen" title="Vernieuwen"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a9 9 0 1 1-3-6.7M21 4v5h-5"/></svg><span>Vernieuwen</span></button>'
+  +(team?'<button type="button" id="hm_fav" class="hm-ver hm-favknop'+(fav.includes(team)?' aan':'')+'" aria-pressed="'+fav.includes(team)+'" title="'+(fav.includes(team)?'Geen favoriet meer':'Markeer als favoriet')+'" aria-label="'+(fav.includes(team)?'Geen favoriet meer':'Markeer als favoriet')+'"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.3 6.4 20.2l1.1-6.2L3 9.6l6.2-.9z"/></svg><span>Favoriet</span></button>':'')+'</div>'
+  +(fav.length?'<div class="hm-favs" aria-label="Favoriete teams">'+fav.map(t=>'<button type="button" data-fav="'+esc(t)+'" aria-pressed="'+(t===team)+'">&#9733; '+esc(t)+'</button>').join('')+'<button type="button" data-fav="" aria-pressed="'+(!team)+'">Alle teams</button>'+'</div>':'')
   +weekStat(team)
   +(D?liveBlok(f(D.p)):'')
   +'<div class="hm-seg" role="tablist"><button type="button" role="tab" data-t="p" aria-selected="'+(tab==='p')+'">Programma</button><button type="button" role="tab" data-t="u" aria-selected="'+(tab==='u')+'">Uitslagen</button></div>'
@@ -541,6 +545,9 @@ function teken(){
  el.querySelectorAll('.hm-snel button').forEach(b=>b.onclick=()=>{setView(b.dataset.v);window.scrollTo(0,0);});
  $('hm_team').onchange=e=>{put(TEAMK,e.target.value);meerP=meerU=false;teken();};
  $('hm_ver').onclick=ververs;
+ if($('hm_fav'))$('hm_fav').onclick=()=>{const L=get(FAVK,[]),i=L.indexOf(team);if(i<0)L.push(team);else L.splice(i,1);put(FAVK,L.slice(0,10));
+  try{toast(i<0?team+' staat nu bij je favorieten':team+' is geen favoriet meer');}catch(e){}if(window.vvwAcc)vvwAcc.bewaard();teken();};
+ el.querySelectorAll('.hm-favs button').forEach(b=>b.onclick=()=>{put(TEAMK,b.dataset.fav);meerP=meerU=false;teken();});
  el.querySelectorAll('.hm-meerstat').forEach(b=>b.onclick=()=>{meerStat=!meerStat;teken();});
  el.querySelectorAll('.hm-stab button').forEach(b=>b.onclick=()=>{statTab=b.dataset.s;teken();});
  el.querySelectorAll('.hm-uv-knop').forEach(b=>b.onclick=()=>{const k=b.dataset.k,u=UIT[k];if(u&&u.open){u.open=false;teken();return;}if(u&&(u.v||u.laadt)){u.open=true;teken();return;}const w=D&&D.u.find(x=>liveKey(x)===k);if(w)laadUitslagVerloop(w);});
@@ -576,4 +583,5 @@ setInterval(stil,60000);
 document.addEventListener('visibilitychange',()=>{if(document.hidden){verborgen=Date.now();return;}if(verborgen&&Date.now()-verborgen>120e3)verborgenSinds=Date.now();checkLive();stil();});
 // zonder gedeelde training in de link start de app op de homepagina
 if(!location.hash.slice(1)&&typeof setView==='function')setView('home');
+window.vvwHomeTeken=()=>{try{teken();}catch(e){}};
 })();

@@ -20,6 +20,19 @@ service cloud.firestore {
       // lezen, goedkeuren/afwijzen en verwijderen: alleen de beheerder
       allow read, update, delete: if request.auth != null && request.auth.token.email == 'BEHEERDER_EMAIL' && request.auth.token.email_verified == true;
     }
+    // bewaarde trainingen van een trainer (account.js): elke trainer met een Google-account heeft één eigen
+    // document (document-id = zijn Firebase-uid). Alleen hij zelf mag het lezen, wijzigen of wissen,
+    // met alleen de velden minis en senioren (tekst, max 100.000 tekens), teams (favoriete teams, max 2.000) en tijd.
+    // Andere trainers zien niets.
+    match /trainersopslag/{uid} {
+      allow read, delete: if request.auth != null && request.auth.uid == uid;
+      allow create, update: if request.auth != null && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['minis','senioren','teams','tijd'])
+        && request.resource.data.minis is string && request.resource.data.minis.size() <= 100000
+        && request.resource.data.senioren is string && request.resource.data.senioren.size() <= 100000
+        && (!('teams' in request.resource.data) || (request.resource.data.teams is string && request.resource.data.teams.size() <= 2000))
+        && request.resource.data.tijd is timestamp;
+    }
     // aanvalscombinaties van de beheerder (tabblad Aanval): alleen de beheerder, alleen zijn eigen document
     // (document-id = zijn Firebase-uid), met alleen de velden lijst (tekst, max 50.000 tekens) en tijd
     match /aanvalcombis/{uid} {
