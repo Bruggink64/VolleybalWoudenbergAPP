@@ -179,9 +179,84 @@ async function wedstrijdenVandaag(){
   .concat(...(await Promise.all(EXTRA.map(e=>allePaginas('/competitie/wedstrijden?team='+teamPad(e)+dt).catch(()=>[])))));
  vandaag={dag:dk,bij:Date.now(),w:l.map(m=>({id:m['@id'],t:Date.parse(m.tijdstip||''),teams:m.teams||[]}))};return vandaag.w;
 }
-let liveBezig=false;
+// ---- puntenverloop ----
+// De Nevobo geeft alleen de huidige stand, geen lijst met punten. Daarom bouwt de app het verloop zelf op:
+// bij elke peiling die een andere stand geeft, komt er een punt bij. Bewaard in de browser (per wedstrijd, 1 dag),
+// zodat het verloop blijft staan als de app even dicht is geweest. Punten die tussen twee peilingen vallen, komen samen binnen.
+const VLK='vvw_live_verloop';
+function bewaarVerloop(k,d){
+ const alle=get(VLK,{}),nu=Date.now();
+ Object.keys(alle).forEach(x=>{if(nu-(alle[x].bij||0)>24*3600e3)delete alle[x];});
+ const raw=(d.sets||[]).map(x=>[+(x&&x[0])||0,+(x&&x[1])||0]);
+ let i=-1;raw.forEach((x,j)=>{if(x[0]||x[1])i=j;});
+ // alle gespeelde sets zijn al gewonnen door iemand: de volgende set (0-0) is begonnen
+ const gew=(+d.stand[0]||0)+(+d.stand[1]||0);
+ if(i<0||gew>i)i=Math.max(0,Math.min(gew,raw.length?raw.length-1:gew));
+ const cur=raw[i]||[0,0],r=alle[k]||{sets:{}};r.bij=nu;
+ const l=r.sets[i]||(r.sets[i]=[]),laatst=l[l.length-1];
+ if(!laatst||laatst[0]!==cur[0]||laatst[1]!==cur[1]){
+  // stand ging omlaag (correctie van de teller): punten die niet meer kloppen weghalen
+  while(l.length&&(l[l.length-1][0]>cur[0]||l[l.length-1][1]>cur[1]))l.pop();
+  l.push([cur[0],cur[1],nu]);
+ }
+ alle[k]=r;put(VLK,alle);
+ return {set:i,sets:r.sets};
+}
+// grafiek van het verschil in punten binnen een set, gezien vanuit ons team (boven de lijn = wij staan voor)
+function verloopSvg(l,wijA){
+ const pt=l.map(p=>({n:p[0]+p[1],d:wijA?p[0]-p[1]:p[1]-p[0]}));
+ if(pt[0].n>0)pt.unshift({n:0,d:0,gok:1});
+ const N=Math.max(pt[pt.length-1].n,20),M=Math.max(3,...pt.map(p=>Math.abs(p.d))),W=320,H=96,m=H/2-6;
+ const X=n=>(n/N*W).toFixed(1),Y=d=>(H/2-d/M*m).toFixed(1);
+ let pad='',start=pt[0].gok?1:0,gok='';
+ if(start)gok='<path class="hm-vg-gok" d="M0 '+Y(0)+'L'+X(pt[1].n)+' '+Y(pt[1].d)+'"/>';
+ pt.slice(start).forEach((p,j)=>{pad+=(j?'H'+X(p.n)+'V':'M'+X(p.n)+' ')+Y(p.d);});
+ const vlak='M'+X(pt[start].n)+' '+Y(0)+pad.replace(/^M[^ ]+ /,'V')+'V'+Y(0)+'Z';
+ return '<svg class="hm-vg" viewBox="-2 0 '+(W+4)+' '+H+'" preserveAspectRatio="none" role="img" aria-label="Puntenverloop">'
+  +'<defs><clipPath id="hmvgO"><rect x="-2" y="0" width="'+(W+4)+'" height="'+Y(0)+'"/></clipPath><clipPath id="hmvgN"><rect x="-2" y="'+Y(0)+'" width="'+(W+4)+'" height="'+H+'"/></clipPath></defs>'
+  +'<line class="hm-vg-0" x1="0" x2="'+W+'" y1="'+Y(0)+'" y2="'+Y(0)+'"/>'
+  +'<path class="hm-vg-voor" clip-path="url(#hmvgO)" d="'+vlak+'"/><path class="hm-vg-achter" clip-path="url(#hmvgN)" d="'+vlak+'"/>'
+  +gok+'<path class="hm-vg-lijn" d="'+pad+'"/></svg>';
+}
+function verloopBlok(w,v){
+ if(!v||!v.sets)return '';
+ let i=v.set,l=v.sets[i];
+ // nieuwe set nog op 0-0: laat het verloop van de vorige set zien
+ let vorige=false;if((!l||l.length<2&&!(l[0]&&(l[0][0]||l[0][1])))&&v.sets[i-1]&&v.sets[i-1].length>1){i--;l=v.sets[i];vorige=true;}
+ if(!l||!l.length||!(l[l.length-1][0]+l[l.length-1][1]))return '';
+ const wijA=isW(w.a),eerste=l[0],e=l[l.length-1];
+ const ons=p=>wijA?p[0]-p[1]:p[1]-p[0];let max=0,min=0;l.forEach(p=>{max=Math.max(max,ons(p));min=Math.min(min,ons(p));});
+ const wie=t=>esc(isWb(t)?'Woudenberg '+teamVan(t):teamVan(t)),wij=wie(wijA?w.a:w.b),zij=wie(wijA?w.b:w.a);
+ // wie maakte elk punt: w = wij, z = zij, ? = onbekend (beide teams scoorden tussen twee peilingen)
+ const pn=[];
+ for(let j=1;j<l.length;j++){
+  const da=l[j][0]-l[j-1][0],db=l[j][1]-l[j-1][1],wd=wijA?da:db,zd=wijA?db:da;
+  if(wd>0&&zd===0)for(let x=0;x<wd;x++)pn.push('w');
+  else if(zd>0&&wd===0)for(let x=0;x<zd;x++)pn.push('z');
+  else for(let x=0;x<da+db;x++)pn.push('?');
+ }
+ // reeksen: punten op rij voor hetzelfde team
+ let rk=0,rkW=0,rkZ=0,run=0,vorig='';
+ pn.forEach(c=>{run=c===vorig&&c!=='?'?run+1:1;vorig=c;if(c==='w')rkW=Math.max(rkW,run);if(c==='z')rkZ=Math.max(rkZ,run);});
+ rk=vorig&&vorig!=='?'?run:0;
+ const reeks=rk>=3?'<p class="hm-vb-reeks '+vorig+'">'+(vorig==='w'?wij:zij)+' maakt '+rk+' punten op rij</p>':'';
+ const al=eerste[0]+eerste[1];
+ const bol=pn.length?'<div class="hm-vb-pn" aria-label="Punten in volgorde">'+(al?'<span class="hm-pn-voor">'+al+' eerder</span>':'')
+   +pn.map(c=>'<i class="'+c+'"></i>').join('')+'</div>':'';
+ return '<div class="hm-vb"><div class="hm-vb-kop"><b>Puntenverloop set '+(i+1)+(vorige?' (afgelopen)':'')+'</b><span>'+e[0]+'-'+e[1]+'</span></div>'
+  +reeks+verloopSvg(l,wijA)
+  +'<div class="hm-vb-as"><span>▲ '+wij+(max>0?' max +'+max:'')+'</span><span>▼ '+zij+(min<0?' max +'+(-min):'')+'</span></div>'
+  +bol
+  +((rkW>1||rkZ>1)?'<p class="hm-vb-noot">Langste reeks: '+wij+' '+rkW+', '+zij+' '+rkZ+'.</p>':'')
+  +(al>0?'<p class="hm-vb-noot">Bijgehouden vanaf '+eerste[0]+'-'+eerste[1]+' ('+tijd(new Date(eerste[2]))+'); de stippellijn is daarvoor.</p>':'')
+  +'</div>';
+}
+let liveBezig=false,livePeil=0;
 async function checkLive(){
  if(liveBezig||!D||document.hidden)return;
+ // tijdens een live wedstrijd elke 10 seconden, anders elke 20 seconden
+ if(!Object.keys(LIVE).length&&Date.now()-livePeil<19000)return;
+ livePeil=Date.now();
  const el=$('v_home');if(!el||!el.offsetParent)return;
  const nu=Date.now(),loopt=t=>t<=nu+5*60e3&&t>=nu-3*3600e3;
  let nieuw={};
@@ -193,7 +268,8 @@ async function checkLive(){
     const team=m.teams.map(id=>S.eigenId[id]).find(Boolean);if(!team)return;
     const r=await fetch(API+m.id+'/live',{cache:'no-cache'}).catch(()=>null);if(!r||r.status!==200)return;
     const d=await r.json().catch(()=>null);if(!d||!d.stand)return;
-    nieuw[m.t+'|'+team]={stand:d.stand,sets:(d.sets||[]).filter(x=>x&&(x[0]||x[1]))};
+    const k=m.t+'|'+team,sets=(d.sets||[]).filter(x=>x&&(x[0]||x[1]));
+    nieuw[k]={stand:d.stand,sets,v:bewaarVerloop(k,d)};
    }));
   }catch(e){nieuw=LIVE;}
   finally{liveBezig=false;}
@@ -207,8 +283,8 @@ function liveBlok(lijst){
  return '<section class="card hm-live"><h3><i class="hm-puls"></i>Nu live</h3>'+l.map(w=>{const v=LIVE[liveKey(w)],n=v.sets.length;
   return '<a class="hm-w" href="'+esc(w.url)+'" target="_blank" rel="noopener"><span class="hm-s hm-ls">'+v.stand[0]+'–'+v.stand[1]+'</span>'
    +'<span class="hm-m"><span class="hm-ts">'+naam(w.a,w)+' <i>–</i> '+naam(w.b,w)+'</span>'
-   +'<span class="hm-z">'+bekerTag(w)+v.sets.map((x,i)=>i===n-1?'<b>'+x[0]+'-'+x[1]+'</b>':x[0]+'-'+x[1]).join(', ')+'</span></span></a>';}).join('')
-  +'<p class="hm-uitleg">Live stand uit het digitale wedstrijdformulier, ververst elke 20 seconden.</p></section>';
+   +'<span class="hm-z">'+bekerTag(w)+v.sets.map((x,i)=>i===n-1?'<b>'+x[0]+'-'+x[1]+'</b>':x[0]+'-'+x[1]).join(', ')+'</span></span></a>'+verloopBlok(w,v.v);}).join('')
+  +'<p class="hm-uitleg">Live stand uit het digitale wedstrijdformulier, ververst elke 10 seconden. Het puntenverloop houdt de app zelf bij zolang deze pagina open is.</p></section>';
 }
 
 function programma(lijst){
@@ -399,7 +475,7 @@ async function ververs(){
 }
 
 D=get(LSK,null);S=get(STK,null);teken();ververs().then(checkLive);
-setInterval(checkLive,20000);
+setInterval(checkLive,10000);
 // uitslagen elke 5 minuten opnieuw ophalen zolang de homepagina open staat; de statistieken worden daarna vanzelf opnieuw berekend
 let stilBezig=false;
 async function stil(){
