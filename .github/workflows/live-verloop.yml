@@ -1,0 +1,23 @@
+# Houdt het puntenverloop van live wedstrijden bij in Firebase, ook als niemand de app open heeft.
+# Start elk uur (GitHub kan een geplande taak 5-15 minuten later starten) en draait maximaal ~65 minuten;
+# stopt meteen als er in dat uur geen wedstrijd van onze teams bezig is of begint. Gratis voor openbare repo's.
+name: Live puntenverloop
+on:
+  schedule:
+    - cron: '0 * * * *'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: live-verloop
+  cancel-in-progress: false
+jobs:
+  verloop:
+    runs-on: ubuntu-latest
+    timeout-minutes: 80
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: node tools/live-verloop.mjs
