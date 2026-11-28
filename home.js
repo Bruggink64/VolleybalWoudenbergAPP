@@ -7,7 +7,7 @@
 const CLUB='CKL8Z3K';                 // verenigingscode van VV Woudenberg bij de Nevobo
 const WELKOM_TITEL='Welkom';   // met de voornaam erachter als iemand is ingelogd: "Welkom, Yannick!"
 const WELKOM_TEKST='Fijn dat je er bent! Of je nu speelt, traint, fluit, aanmoedigt of als ouder langs de lijn staat: hier vind je alles van VV Woudenberg. Zie wie er deze week speelt, hoe onze teams het deden en volg wedstrijden live. Trainers stellen hier in een paar tikken een training samen. Veel volleybalplezier!';
-const WELKOM_KORT='Zie wie er deze week speelt, volg wedstrijden live en stel snel een training samen.'; // op de telefoon
+const WELKOM_KORT='Zie wie er deze week speelt, volg wedstrijden live of stel snel een training samen.'; // op de telefoon
 const AANTAL=8;                       // aantal wedstrijden per lijst voordat "Meer tonen" verschijnt
 // teams van andere clubs die we volgen: Nevobo-verenigingscode, team (soort/nummer), naam in de app,
 // en hoe de naam in de Nevobo-gegevens eruitziet. Ze staan apart in de teamkeuze en tellen niet mee bij "Alle teams".
