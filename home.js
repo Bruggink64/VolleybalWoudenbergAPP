@@ -226,7 +226,7 @@ function verloopBlok(w,v){
  const al=eerste[0]+eerste[1];
  const bol=pn.length?'<div class="hm-vb-pn" aria-label="Punten in volgorde">'+(al?'<span class="hm-pn-voor">'+al+' eerder</span>':'')
    +pn.map(c=>'<i class="'+c+'"></i>').join('')+'</div>':'';
- return '<div class="hm-vb"><div class="hm-vb-kop"><b>Punten set '+(i+1)+(vorige?' (afgelopen)':'')+'</b><span>'+e[0]+'-'+e[1]+'</span></div>'
+ return '<div class="hm-vb"><div class="hm-vb-kop"><b>Punten set '+(i+1)+(vorige?' (afgelopen), '+e[0]+'-'+e[1]:'')+'</b></div>'
   +'<div class="hm-vb-leg"><span><i class="w"></i>'+wij+'</span><span><i class="z"></i>'+zij+'</span></div>'
   +bol+reeks
   +((rkW>1||rkZ>1)?'<p class="hm-vb-noot">Langste reeks: '+wij+' '+rkW+', '+zij+' '+rkZ+'.</p>':'')
@@ -265,7 +265,8 @@ function liveBlok(lijst){
  return '<section class="card hm-live"><h3><i class="hm-puls"></i>Nu live</h3>'+l.map(w=>{const v=LIVE[liveKey(w)],n=v.sets.length;
   return '<a class="hm-w" href="'+esc(w.url)+'" target="_blank" rel="noopener"><span class="hm-s hm-ls">'+v.stand[0]+'–'+v.stand[1]+'</span>'
    +'<span class="hm-m"><span class="hm-ts">'+naam(w.a,w)+' <i>–</i> '+naam(w.b,w)+'</span>'
-   +'<span class="hm-z">'+bekerTag(w)+v.sets.map((x,i)=>i===n-1?'<b>'+x[0]+'-'+x[1]+'</b>':x[0]+'-'+x[1]).join(', ')+'</span></span></a>'+verloopBlok(w,v.v);}).join('')
+   +'<span class="hm-z">'+bekerTag(w)+'</span>'
+   +'<span class="hm-sets">'+v.sets.map((x,i)=>'<span class="hm-set'+(i===n-1?' nu':'')+'"><small>Set '+(i+1)+'</small>'+x[0]+'-'+x[1]+'</span>').join('')+'</span></span></a>'+verloopBlok(w,v.v);}).join('')
   +'<p class="hm-uitleg">Live stand uit het digitale wedstrijdformulier, ververst elke 10 seconden. Het puntenverloop houdt de app zelf bij zolang deze pagina open is.</p></section>';
 }
 

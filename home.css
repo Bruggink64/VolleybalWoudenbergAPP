@@ -175,7 +175,6 @@
 /* puntenverloop binnen de set bij een live wedstrijd: een bolletje per punt */
 .hm-vb{margin:2px 0 10px;padding:10px 12px 8px;border-radius:12px;background:var(--chip,rgba(0,0,0,.04))}
 .hm-vb-kop{display:flex;justify-content:space-between;align-items:baseline;font:600 13.5px var(--disp);margin-bottom:4px}
-.hm-vb-kop span{font-variant-numeric:tabular-nums;color:#e5484d;font-weight:800}
 .hm-vb-leg{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:12px;color:var(--mut)}
 .hm-vb-leg span{display:inline-flex;align-items:center;gap:5px}
 .hm-vb-leg i,.hm-vb-pn i{display:inline-block;width:14px;height:14px;border-radius:50%;background:var(--mut,#999);opacity:.4;flex:none}
@@ -188,3 +187,10 @@
 .hm-vb-reeks.w{background:#ffd100;color:#1d1d1b}
 .hm-vb-reeks.z{background:#e5484d;color:#fff}
 .hm-vb-noot{font-size:11.5px;color:var(--mut);margin:2px 0 0}
+/* setstanden bij een live wedstrijd: de lopende set groot en rood */
+.hm-sets{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.hm-set{display:inline-flex;flex-direction:column;align-items:center;min-width:52px;padding:3px 8px 4px;border-radius:10px;background:var(--chip);font:700 15px/1.15 var(--disp);font-variant-numeric:tabular-nums;color:var(--ink)}
+.hm-set small{font:600 10.5px/1.2 var(--disp);color:var(--mut);text-transform:uppercase;letter-spacing:.03em}
+.hm-set.nu{background:#e5484d;color:#fff;font-size:22px;min-width:72px;padding:4px 12px 6px}
+.hm-set.nu small{color:rgba(255,255,255,.85)}
+.hm-live .hm-z:empty{display:none}
